@@ -19,6 +19,7 @@
 
 GtkSkillList::GtkSkillList (void)
 {
+  this->total_plan_sp = 0;
 }
 
 /* ---------------------------------------------------------------- */
@@ -152,6 +153,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
   /* Go through list and do mighty things. Caching the cskill variable
    * will greatly reduce relookup of the charsheet skill. */
   ApiCharSheetSkill* cskill = 0;
+  this->total_plan_sp = 0;
   for (unsigned int i = 0; i < this->size(); ++i)
   {
     GtkSkillInfo& info = this->at(i);
@@ -204,6 +206,17 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
         csp = dsp;
     }
 
+    /* The SP/h needs to be doubled if the char is below 1.6mio SP. */
+#if 0 // Disabled for now because it's not consistent with the rest of the app
+    bool double_sp = this->charsheet->total_sp + (dsp - csp)
+        + this->total_plan_sp < 1600000;
+    if (double_sp && !active)
+    {
+      spps *= 2.0;
+      spph *= 2;
+    }
+#endif
+
     time_t timediff = (time_t)((double)(dsp - csp) / spps);
     info.start_sp = csp;
     info.dest_sp = dsp;
@@ -215,6 +228,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
     info.spph = spph;
 
     duration += timediff;
+    this->total_plan_sp += info.dest_sp - info.start_sp;
 
     /* If the current skill is a training skill not already known,
      * it has impact on the SP/h. Apply this impact. */
@@ -808,7 +822,8 @@ GtkTrainingPlan::update_plan (bool rebuild)
     this->total_time.set_text(EveTime::get_string_for_timediff
         (this->skills.back().train_duration, false)
         + "  (" + Helpers::get_string_from_sizet(this->skills.size())
-        + " skills)");
+        + " skills, " + Helpers::get_dotted_str_from_uint
+        (this->skills.get_total_plan_sp()) + " SP)");
   }
 }
 

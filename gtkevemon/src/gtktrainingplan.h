@@ -65,6 +65,7 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
   private:
     ApiCharSheetPtr charsheet;
     ApiInTrainingPtr training;
+    unsigned int total_plan_sp;
 
   protected:
     void append_skill (ApiSkill const* skill, int level, bool objective);
@@ -92,6 +93,9 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
     bool has_plan_skill (ApiSkill const* skill, int level,
         bool make_objective = false);
     bool is_dependency (unsigned int index);
+
+    /* Returns the total SP in the plan. */
+    unsigned int get_total_plan_sp (void) const;
 
     /* Calculate all details for the skill plan. If attributes and
      * the learning level are specified, these are used instead
@@ -242,6 +246,12 @@ inline void
 GtkSkillList::append_skill (ApiSkill const* skill, int level)
 {
   this->append_skill(skill, level, true);
+}
+
+inline unsigned int
+GtkSkillList::get_total_plan_sp (void) const
+{
+  return this->total_plan_sp;
 }
 
 inline sigc::signal<void, ApiSkill const*>&

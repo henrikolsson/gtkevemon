@@ -162,11 +162,6 @@ class GtkCharPage : public Gtk::VBox
     bool on_live_sp_image_update (void);
     bool calc_live_values (double& level_sp, double& total_sp, double& frac);
 
-    /* Functions to toggle between a paitence information and
-     * the real skill list (active during HTTP requests). */
-    void set_skilllist_info (Gtk::Widget& widget);
-    void set_skill_list (void);
-
   public:
     GtkCharPage (void);
 

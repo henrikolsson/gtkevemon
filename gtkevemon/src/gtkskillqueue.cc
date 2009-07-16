@@ -52,7 +52,7 @@ GtkSkillQueue::GtkSkillQueue (void)
     queue_view_cols(&queue_view, &queue_cols)
 {
   /* Setup EVE API fetcher. */
-  this->queue_fetcher.set_doctype(EVE_API_DOCTYPE_SKILLQUEUE);
+  this->queue_fetcher.set_doctype(API_DOCTYPE_SKILLQUEUE);
   this->queue_fetcher.signal_done().connect(sigc::mem_fun
       (*this, &GtkSkillQueue::on_apidata_available));
 

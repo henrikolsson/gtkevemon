@@ -59,7 +59,7 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
   }
 
   /* Prepare even more informations. */
-  unsigned int spph = sheet->get_spph_for_skill(skill);
+  unsigned int spph = training->get_current_spph();
   double spps = (double)spph / 3600.0;
 
   std::string to_level_str = Helpers::get_roman_from_int(to_level);

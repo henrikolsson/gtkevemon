@@ -39,16 +39,16 @@ EveApiFetcher::setup_fetcher (void)
 
   switch (this->type)
   {
-    case EVE_API_DOCTYPE_CHARLIST:
+    case API_DOCTYPE_CHARLIST:
       fetcher->set_path("/account/Characters.xml.aspx");
       break;
-    case EVE_API_DOCTYPE_CHARSHEET:
+    case API_DOCTYPE_CHARSHEET:
       fetcher->set_path("/char/CharacterSheet.xml.aspx");
       break;
-    case EVE_API_DOCTYPE_INTRAINING:
+    case API_DOCTYPE_INTRAINING:
       fetcher->set_path("/char/SkillInTraining.xml.aspx");
       break;
-    case EVE_API_DOCTYPE_SKILLQUEUE:
+    case API_DOCTYPE_SKILLQUEUE:
       fetcher->set_path("/char/SkillQueue.xml.aspx");
       break;
     default:
@@ -134,12 +134,12 @@ EveApiFetcher::process_caching (EveApiData& data)
   file += "/";
   switch (this->type)
   {
-    case EVE_API_DOCTYPE_CHARLIST:
+    case API_DOCTYPE_CHARLIST:
       file += this->auth.user_id;
       break;
-    case EVE_API_DOCTYPE_SKILLQUEUE:
-    case EVE_API_DOCTYPE_INTRAINING:
-    case EVE_API_DOCTYPE_CHARSHEET:
+    case API_DOCTYPE_SKILLQUEUE:
+    case API_DOCTYPE_INTRAINING:
+    case API_DOCTYPE_CHARSHEET:
       file += this->auth.char_id;
       break;
     default:
@@ -218,13 +218,13 @@ EveApiFetcher::get_doc_name (void)
 {
   switch (this->type)
   {
-    case EVE_API_DOCTYPE_CHARLIST:
+    case API_DOCTYPE_CHARLIST:
       return "Characters.xml";
-    case EVE_API_DOCTYPE_INTRAINING:
+    case API_DOCTYPE_INTRAINING:
       return "SkillInTraining.xml";
-    case EVE_API_DOCTYPE_CHARSHEET:
+    case API_DOCTYPE_CHARSHEET:
       return "CharacterSheet.xml";
-    case EVE_API_DOCTYPE_SKILLQUEUE:
+    case API_DOCTYPE_SKILLQUEUE:
       return "SkillQueue.xml";
     default:
       return "Unknown";

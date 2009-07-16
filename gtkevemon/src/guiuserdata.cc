@@ -21,7 +21,7 @@ GuiUserData::GuiUserData (void)
   : apply_button(Gtk::Stock::APPLY)
 {
   /* Setup the EVE API fetcher. */
-  this->charlist_fetcher.set_doctype(EVE_API_DOCTYPE_CHARLIST);
+  this->charlist_fetcher.set_doctype(API_DOCTYPE_CHARLIST);
   this->charlist_fetcher.signal_done().connect(sigc::mem_fun
       (*this, &GuiUserData::on_charlist_available));
 

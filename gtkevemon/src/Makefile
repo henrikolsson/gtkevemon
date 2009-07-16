@@ -38,6 +38,12 @@ gemcache:
 	${RM} gemcache
 	${CXX} -o gemcache gemcache.cc ${CXXFLAGS}
 
+#test: ${OBJECTS}
+#	${RM} gemtest
+#	${CXX} -c -o character.o character.cc ${CXXFLAGS}
+#	${CXX} -c -o gemtest.o gemtest.cc ${CXXFLAGS}
+#	${CXX} -o gemtest apibase.o apicharsheet.o apiintraining.o apiskillqueue.o apiskilltree.o asynchttp.o character.o eveapi.o evetime.o gemtest.o http.o config.o conf.o net*.o x*.o helpers.o argumentsettings.o apicerttree.o ${LDFLAGS}
+
 %.o: %.cc
 	${CXX} -c -o $@ $< ${CXXFLAGS}
 

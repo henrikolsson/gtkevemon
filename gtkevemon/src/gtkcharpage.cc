@@ -36,8 +36,8 @@ GtkCharPage::GtkCharPage (void)
     info_display(INFO_STYLE_TOP_HSEP)
 {
   /* Setup the API HTTP fetchers and API data. */
-  this->sheet_fetcher.set_doctype(EVE_API_DOCTYPE_CHARSHEET);
-  this->training_fetcher.set_doctype(EVE_API_DOCTYPE_INTRAINING);
+  this->sheet_fetcher.set_doctype(API_DOCTYPE_CHARSHEET);
+  this->training_fetcher.set_doctype(API_DOCTYPE_INTRAINING);
   this->sheet = ApiCharSheet::create();
   this->training = ApiInTraining::create();
 

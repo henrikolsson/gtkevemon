@@ -40,7 +40,8 @@ print("Writing defines.h...\n");
 open FILE, "> src/defines.h" or die("Cannot open defines.h (writing)");
 print FILE $file_output;
 close FILE;
-
+print("Continuing...\n");
+sleep(3);
 print("Executing SVN...\n");
 system("svn ci");
 
