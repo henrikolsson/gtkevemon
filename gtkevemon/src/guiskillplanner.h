@@ -17,12 +17,10 @@
 #include <gtkmm/notebook.h>
 
 #include "winbase.h"
+#include "character.h"
 #include "gtkitemdetails.h"
 #include "gtkitembrowser.h"
 #include "gtktrainingplan.h"
-#include "apiskilltree.h"
-#include "apicharsheet.h"
-#include "apiintraining.h"
 
 class GuiSkillPlanner : public WinBase
 {
@@ -33,8 +31,7 @@ class GuiSkillPlanner : public WinBase
     GtkTrainingPlan plan_gui;
 
     /* Character stuff. */
-    ApiCharSheetPtr charsheet;
-    ApiInTrainingPtr training;
+    CharacterPtr character;
 
     /* Misc. */
     Gtk::Notebook details_nb;
@@ -54,8 +51,7 @@ class GuiSkillPlanner : public WinBase
     GuiSkillPlanner (void);
     ~GuiSkillPlanner (void);
 
-    void set_character (ApiCharSheetPtr sheet);
-    void set_training (ApiInTrainingPtr training);
+    void set_character (CharacterPtr character);
 };
 
 #endif /* GUI_SKILL_PLANNER_HEADER */

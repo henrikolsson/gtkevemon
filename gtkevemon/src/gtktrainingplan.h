@@ -23,9 +23,7 @@
 #include "gtkcolumnsbase.h"
 #include "config.h"
 #include "gtkconfwidgets.h"
-#include "apiskilltree.h"
-#include "apiintraining.h"
-#include "apicharsheet.h"
+#include "character.h"
 
 /* Update the time values for skills this milli seconds. */
 #define PLANNER_SKILL_TIME_UPDATE 10000
@@ -63,8 +61,7 @@ struct GtkSkillInfo
 class GtkSkillList : public std::vector<GtkSkillInfo>
 {
   private:
-    ApiCharSheetPtr charsheet;
-    ApiInTrainingPtr training;
+    CharacterPtr character;
     unsigned int total_plan_sp;
 
   protected:
@@ -74,11 +71,9 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
 
   public:
     GtkSkillList (void);
-    void set_character (ApiCharSheetPtr charsheet);
-    void set_training (ApiInTrainingPtr training);
 
-    ApiCharSheetPtr get_character (void);
-    ApiInTrainingPtr get_training (void);
+    void set_character (CharacterPtr character);
+    CharacterPtr get_character (void) const;
 
     void append_skill (ApiSkill const* skill, int level);
     void move_skill (unsigned int from, unsigned int to);
@@ -151,8 +146,7 @@ class GtkTreeViewColumns : public GtkColumnsBase
 class GtkTrainingPlan : public Gtk::VBox
 {
   private:
-    ApiCharSheetPtr charsheet;
-    ApiInTrainingPtr training;
+    CharacterPtr character;
     GtkSkillList skills;
 
     GtkConfSectionSelection plan_selection;
@@ -208,8 +202,7 @@ class GtkTrainingPlan : public Gtk::VBox
     GtkTrainingPlan (void);
     ~GtkTrainingPlan (void);
 
-    void set_character (ApiCharSheetPtr character);
-    void set_training (ApiInTrainingPtr training);
+    void set_character (CharacterPtr character);
 
     void append_skill (ApiSkill const* skill, int level);
 
@@ -219,27 +212,15 @@ class GtkTrainingPlan : public Gtk::VBox
 /* ---------------------------------------------------------------- */
 
 inline void
-GtkSkillList::set_character (ApiCharSheetPtr charsheet)
+GtkSkillList::set_character (CharacterPtr character)
 {
-  this->charsheet = charsheet;
+  this->character = character;
 }
 
-inline void
-GtkSkillList::set_training (ApiInTrainingPtr training)
+inline CharacterPtr
+GtkSkillList::get_character (void) const
 {
-  this->training = training;
-}
-
-inline ApiCharSheetPtr
-GtkSkillList::get_character (void)
-{
-  return this->charsheet;
-}
-
-inline ApiInTrainingPtr
-GtkSkillList::get_training (void)
-{
-  return this->training;
+  return this->character;
 }
 
 inline void

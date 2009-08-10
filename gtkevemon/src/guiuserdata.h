@@ -49,8 +49,6 @@ class GuiUserDataComboColRecord : public Gtk::TreeModel::ColumnRecord
 class GuiUserData : public WinBase
 {
   private:
-
-  private:
     EveApiFetcher charlist_fetcher;
 
     Gtk::Entry userid_entry;
@@ -65,8 +63,6 @@ class GuiUserData : public WinBase
     Glib::RefPtr<Gtk::ListStore> char_store;
     Gtk::TreeView char_list;
 
-    sigc::signal<void, EveApiAuth> sig_char_added;
-
     void init_from_config (void);
     void on_add_clicked (void);
     void on_apply_clicked (void);
@@ -76,8 +72,6 @@ class GuiUserData : public WinBase
 
   public:
     GuiUserData (void);
-
-    sigc::signal<void, EveApiAuth> signal_char_added (void);
 };
 
 /* ---------------------------------------------------------------- */

@@ -120,23 +120,15 @@ GuiSkillPlanner::store_to_config (void)
 /* ---------------------------------------------------------------- */
 
 void
-GuiSkillPlanner::set_character (ApiCharSheetPtr sheet)
+GuiSkillPlanner::set_character (CharacterPtr character)
 {
-  this->charsheet = sheet;
-  this->details_gui.set_character(sheet);
-  this->plan_gui.set_character(sheet);
-  this->skill_browser.set_character(sheet);
-  this->cert_browser.set_character(sheet);
-  this->set_title(this->charsheet->name + " - GtkEveMon");
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GuiSkillPlanner::set_training (ApiInTrainingPtr training)
-{
-  this->training = training;
-  this->plan_gui.set_training(training);
+  this->character = character;
+  this->details_gui.set_character(character);
+  this->plan_gui.set_character(character);
+  /* FIXME: Pass character to browsers to register changed signal? */
+  this->skill_browser.set_character(character->cs);
+  this->cert_browser.set_character(character->cs);
+  this->set_title(character->get_char_name() + " - GtkEveMon");
 }
 
 /* ---------------------------------------------------------------- */

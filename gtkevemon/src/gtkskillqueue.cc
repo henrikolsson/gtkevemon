@@ -52,10 +52,6 @@ GtkSkillQueue::GtkSkillQueue (void)
     queue_view_cols(&queue_view, &queue_cols)
 {
   /* Setup EVE API fetcher. */
-  this->queue_fetcher.set_doctype(API_DOCTYPE_SKILLQUEUE);
-  this->queue_fetcher.signal_done().connect(sigc::mem_fun
-      (*this, &GtkSkillQueue::on_apidata_available));
-
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
   scwin->add(this->queue_view);
 
@@ -81,9 +77,23 @@ GtkSkillQueue::~GtkSkillQueue (void)
 /* ---------------------------------------------------------------- */
 
 void
+GtkSkillQueue::set_character (CharacterPtr character)
+{
+  this->character = character;
+  this->character->signal_skill_queue_updated().connect
+      (sigc::mem_fun(*this, &GtkSkillQueue::on_apidata_available));
+  this->character->signal_cached_warning().connect(sigc::bind
+      (sigc::mem_fun(*this, &GtkSkillQueue::on_api_problems), true));
+  this->character->signal_request_error().connect(sigc::bind
+      (sigc::mem_fun(*this, &GtkSkillQueue::on_api_problems), false));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GtkSkillQueue::refresh (void)
 {
-  this->queue_fetcher.async_request();
+  this->character->request_skillqueue();
 }
 
 /* ---------------------------------------------------------------- */
@@ -108,21 +118,12 @@ GtkSkillQueue::store_to_config (void)
 
 /* ---------------------------------------------------------------- */
 
+#include <iostream>
+
 void
-GtkSkillQueue::on_apidata_available (EveApiData data)
+GtkSkillQueue::on_apidata_available (void)
 {
-  ApiSkillQueuePtr sq = ApiSkillQueue::create();
-  try
-  {
-    sq->set_api_data(data);
-    if (sq->is_locally_cached())
-      this->raise_error(data.exception, true);
-  }
-  catch (Exception& e)
-  {
-    this->raise_error(e, false);
-    return;
-  }
+  ApiSkillQueuePtr sq = this->character->sq;
 
   /* Debugging. */
   //sq->debug_dump();
@@ -159,6 +160,17 @@ GtkSkillQueue::on_apidata_available (EveApiData data)
     row[this->queue_cols.training]
         = EveTime::get_string_for_timediff(training, true);
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillQueue::on_api_problems (EveApiDocType sheet,
+    std::string error, bool cache)
+{
+  if (sheet != API_DOCTYPE_SKILLQUEUE)
+    return;
+  this->raise_error(error, cache);
 }
 
 /* ---------------------------------------------------------------- */

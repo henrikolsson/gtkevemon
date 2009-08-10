@@ -16,7 +16,8 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           gtkcolumnsbase.cc gtkdownloader.cc gtkitemdetails.cc \
           gtkitembrowser.cc gtktrainingplan.cc gtkskillqueue.cc \
           imagestore.cc argumentsettings.cc xmltrainingplan.cc \
-          server.cc serverlist.cc helpers.cc conf.cc config.cc \
+          server.cc serverlist.cc character.cc characterlist.cc \
+          helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
@@ -37,12 +38,6 @@ depend:
 gemcache:
 	${RM} gemcache
 	${CXX} -o gemcache gemcache.cc ${CXXFLAGS}
-
-#test: ${OBJECTS}
-#	${RM} gemtest
-#	${CXX} -c -o character.o character.cc ${CXXFLAGS}
-#	${CXX} -c -o gemtest.o gemtest.cc ${CXXFLAGS}
-#	${CXX} -o gemtest apibase.o apicharsheet.o apiintraining.o apiskillqueue.o apiskilltree.o asynchttp.o character.o eveapi.o evetime.o gemtest.o http.o config.o conf.o net*.o x*.o helpers.o argumentsettings.o apicerttree.o ${LDFLAGS}
 
 %.o: %.cc
 	${CXX} -c -o $@ $< ${CXXFLAGS}

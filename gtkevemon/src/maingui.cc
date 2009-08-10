@@ -25,12 +25,18 @@
 #include "guiaboutdialog.h"
 #include "guievelauncher.h"
 #include "guiversionchecker.h"
+#include "guiskillplanner.h"
+#include "guixmlsource.h"
+#include "guicharexport.h"
 #include "maingui.h"
 
 MainGui::MainGui (void)
   : info_display(INFO_STYLE_FRAMED), iconified(false)
 {
   this->conf_windowtitle = Config::conf.get_value("settings.verbose_wintitle");
+  this->conf_detailed_tooltip = Config::conf.get_value
+      ("settings.detailed_tray_tooltip");
+
   this->notebook.set_scrollable(true);
 
   this->versionchecker.set_info_display(&this->info_display);
@@ -204,6 +210,13 @@ MainGui::MainGui (void)
   this->notebook.signal_switch_page().connect(sigc::mem_fun
       (*this, &MainGui::on_pages_switched));
 
+  /* Connect signals of the character list. */
+  CharacterListPtr charlist = CharacterList::request();
+  charlist->signal_char_added().connect
+      (sigc::mem_fun(*this, &MainGui::add_character));
+  charlist->signal_char_removed().connect
+      (sigc::mem_fun(*this, &MainGui::remove_character));
+
   /* Setup timers for refresh and GUI update for the servers. */
   Glib::signal_timeout().connect(sigc::mem_fun
       (*this, &MainGui::refresh_servers), MAINGUI_SERVER_REFRESH);
@@ -215,14 +228,8 @@ MainGui::MainGui (void)
       &MainGui::update_windowtitle), MAINGUI_WINDOWTITLE_UPDATE);
 
   this->update_time();
-  this->init_from_config();
+  this->init_from_charlist();
   this->versionchecker.request_versions();
-}
-
-/* ---------------------------------------------------------------- */
-
-MainGui::~MainGui (void)
-{
 }
 
 /* ---------------------------------------------------------------- */
@@ -245,20 +252,19 @@ MainGui::update_tooltip (void)
   if (!this->notebook.get_show_tabs())
     return true;
 
-  bool detailed = Config::conf.get_value
-      ("settings.detailed_tray_tooltip")->get_bool();
-
+  bool detailed = this->conf_detailed_tooltip->get_bool();
   std::string tooltip;
-  Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
-  for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
-      iter != childs.end(); iter++)
-  {
-    if (iter != childs.begin())
-      tooltip += "\n";
 
-    std::string char_tttext = ((GtkCharPage*)*iter)->get_tooltip_text(detailed);
-    if (!char_tttext.empty())
-      tooltip += char_tttext;
+  CharacterListPtr clist = CharacterList::request();
+  for (std::size_t i = 0; i < clist->chars.size(); ++i)
+  {
+    std::string char_tt = clist->chars[i]->get_summary_text(detailed);
+    if (!char_tt.empty())
+    {
+      if (i != 0)
+        tooltip += "\n";
+      tooltip += char_tt;
+    }
   }
 
   this->tray->set_tooltip(tooltip);
@@ -268,107 +274,59 @@ MainGui::update_tooltip (void)
 /* ---------------------------------------------------------------- */
 
 void
-MainGui::setup_profile (void)
+MainGui::init_from_charlist (void)
 {
-  GuiUserData* dialog = new GuiUserData();
-  dialog->set_transient_for(*this);
-  dialog->signal_char_added().connect(sigc::mem_fun
-      (*this, &MainGui::add_character));
+  CharacterListPtr clist = CharacterList::request();
+  for (std::size_t i = 0; i < clist->chars.size(); ++i)
+    this->add_character(clist->chars[i]);
+
+  this->check_if_no_pages();
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-MainGui::configuration (void)
+MainGui::add_character (CharacterPtr character)
 {
-  GuiConfiguration* dialog = new GuiConfiguration();
-  dialog->set_transient_for(*this);
-  dialog->signal_tray_settings_changed().connect(sigc::mem_fun
-      (*this, &MainGui::update_tray_settings));
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::about_dialog (void)
-{
-  Gtk::Window* dialog = new GuiAboutDialog();
-  dialog->set_transient_for(*this);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::version_checker (void)
-{
-  GuiVersionChecker* checker = new GuiVersionChecker();
-  checker->request_versions();
-  checker->set_transient_for(*this);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::launch_eve (void)
-{
-  try
+  /* If tabs are not shown, the welcome page is visible. */
+  if (this->notebook.get_show_tabs() == false)
   {
-    Gtk::Window* win = GuiEveLauncher::launch_eve();
-    if (win != 0)
-      win->set_transient_for(*this);
+    this->notebook.pages().clear();
+    this->notebook.set_show_tabs(true);
   }
-  catch (Exception& e)
-  {
-    this->info_display.append(INFO_WARNING, e);
-  }
+
+  /* Create the new character page for the notebook. */
+  GtkCharPage* page = Gtk::manage(new GtkCharPage(character));
+  page->set_parent_window(this);
+  this->notebook.append_page(*page, character->get_char_name(), false);
+  this->notebook.set_current_page(-1);
+
+  character->signal_name_available().connect(sigc::mem_fun
+      (*this, &MainGui::update_char_name));
+
+  /* Update tray icon tooltips. */
+  this->update_tooltip();
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-MainGui::close (void)
+MainGui::remove_character (std::string char_id)
 {
-  Gtk::Main::quit();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::init_from_config (void)
-{
-  ConfSectionPtr char_sect = Config::conf.get_section("characters");
-  for (conf_values_t::iterator iter = char_sect->values_begin();
-      iter != char_sect->values_end(); iter++)
+  Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
+  for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
+      iter != childs.end(); iter++)
   {
-    std::string user_id = iter->first;
-    std::string api_key;
-    try
+    CharacterPtr character = ((GtkCharPage*)*iter)->get_character();
+    if (character->get_char_id() == char_id)
     {
-      api_key = Config::conf.get_section("accounts."
-          + user_id)->get_value("apikey")->get_string();
-    }
-    catch (...)
-    {
-      std::cout << "Error getting account information for "
-          << user_id << std::endl;
-      continue;
-    }
-
-    EveApiAuth auth(user_id, api_key);
-
-    std::string char_ids = **iter->second;
-    StringVector chars = Helpers::split_string(char_ids, ',');
-    for (unsigned int i = 0; i < chars.size(); ++i)
-    {
-      if (chars[i].empty())
-        continue;
-
-      auth.char_id = chars[i];
-      this->internal_add_character(auth);
+      this->notebook.remove_page(**iter);
+      break;
     }
   }
 
   this->check_if_no_pages();
+  this->update_tooltip();
 }
 
 /* ---------------------------------------------------------------- */
@@ -394,13 +352,13 @@ MainGui::check_if_no_pages (void)
     info_hbox->pack_start(*info_label, true, true, 0);
 
     Gtk::HBox* button_hbox = MK_HBOX;
-    Gtk::Button* open_profile_but = Gtk::manage
+    Gtk::Button* add_characters_but = Gtk::manage
         (new Gtk::Button("Add characters"));
-    open_profile_but->set_image(*Gtk::manage
+    add_characters_but->set_image(*Gtk::manage
         (new Gtk::Image(Gtk::Stock::ADD, Gtk::ICON_SIZE_BUTTON)));
 
     button_hbox->pack_start(*MK_HSEP, true, true, 0);
-    button_hbox->pack_start(*open_profile_but, false, false, 0);
+    button_hbox->pack_start(*add_characters_but, false, false, 0);
     button_hbox->pack_end(*MK_HSEP, true, true, 0);
 
     Gtk::VBox* upper_vbox = MK_VBOX0;
@@ -414,7 +372,7 @@ MainGui::check_if_no_pages (void)
     main_vbox->pack_start(*bottom_vbox, true, true, 0);
     main_vbox->show_all();
 
-    open_profile_but->signal_clicked().connect
+    add_characters_but->signal_clicked().connect
         (sigc::mem_fun(*this, &MainGui::setup_profile));
 
     this->notebook.set_show_tabs(false);
@@ -435,6 +393,34 @@ MainGui::update_time (void)
 
   this->localtime_label.set_text("Local time: "
       + EveTime::get_local_time_string());
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+MainGui::update_windowtitle (void)
+{
+  int current = this->notebook.get_current_page();
+  if (current < 0
+      || !this->notebook.get_show_tabs()
+      || !this->conf_windowtitle->get_bool())
+  {
+    this->set_title("GtkEveMon");
+    return true;
+  }
+
+  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
+  CharacterPtr character = page->get_character();
+  Glib::ustring title;
+
+  title.append(character->get_char_name());
+  title.append(": ");
+  title.append(character->get_remaining_text(true));
+  title.append(" - GtkEveMon");
+
+  this->set_title(title);
 
   return true;
 }
@@ -517,10 +503,8 @@ MainGui::on_tray_icon_clicked (void)
 /* ---------------------------------------------------------------- */
 
 bool
-MainGui::on_delete_event (GdkEventAny* event)
+MainGui::on_delete_event (GdkEventAny* /*event*/)
 {
-  event = 0;
-
   if (Config::conf.get_value("settings.minimize_on_close")->get_bool())
     this->iconify();
   else
@@ -532,11 +516,8 @@ MainGui::on_delete_event (GdkEventAny* event)
 /* ---------------------------------------------------------------- */
 
 void
-MainGui::on_pages_changed (Gtk::Widget* widget, guint pnum)
+MainGui::on_pages_changed (Gtk::Widget* /*widget*/, guint /*pnum*/)
 {
-  widget = 0;
-  pnum = 0;
-
   Gtk::MenuItem* char_menu = (Gtk::MenuItem*)this->uiman->get_widget
       ("/MenuBar/MenuCharacter");
 
@@ -549,167 +530,29 @@ MainGui::on_pages_changed (Gtk::Widget* widget, guint pnum)
 /* ---------------------------------------------------------------- */
 
 void
-MainGui::on_pages_switched (GtkNotebookPage* page, guint pnum)
+MainGui::on_pages_switched (GtkNotebookPage* /*page*/, guint /*pnum*/)
 {
-  page = 0;
-  pnum = 0;
   this->update_windowtitle();
 }
 
 /* ---------------------------------------------------------------- */
 
-bool
-MainGui::internal_add_character (EveApiAuth const& auth)
-{
-  /* If tabs are not shown, the welcome page is visible. */
-  if (this->notebook.get_show_tabs() == false)
-  {
-    this->notebook.pages().clear();
-    this->notebook.set_show_tabs(true);
-  }
-
-  /* Check if character already exists. */
-  bool found = false;
-  Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
-  for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
-      iter != childs.end(); iter++)
-  {
-    EveApiAuth const& tmp_auth = ((GtkCharPage*)*iter)->get_character();
-    if (tmp_auth.user_id == auth.user_id && tmp_auth.char_id == auth.char_id)
-    {
-      found = true;
-      break;
-    }
-  }
-
-  if (found)
-    return false;
-
-  /* Create the new character page for the notebook. */
-  GtkCharPage* page = Gtk::manage(new GtkCharPage);
-  page->set_parent_window(this);
-  page->set_character(auth);
-  this->notebook.append_page(*page, auth.char_id, false);
-  this->notebook.set_current_page(-1);
-
-  /* Update tray icon tooltips. */
-  this->update_tooltip();
-
-  /* Register close signal for the character page. */
-  page->signal_close_request().connect(sigc::mem_fun
-      (*this, &MainGui::remove_character));
-  page->signal_sheet_updated().connect(sigc::mem_fun
-      (*this, &MainGui::update_char_page));
-
-  return true;
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-MainGui::internal_remove_character (EveApiAuth const& auth)
-{
-  bool removed = false;
-
-  Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
-  for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
-      iter != childs.end(); iter++)
-  {
-    EveApiAuth const& tmp_auth = ((GtkCharPage*)*iter)->get_character();
-    if (tmp_auth.user_id == auth.user_id && tmp_auth.char_id == auth.char_id)
-    {
-      this->notebook.remove_page(**iter);
-      removed = true;
-      break;
-    }
-  }
-
-  this->check_if_no_pages();
-  this->update_tooltip();
-
-  return removed;
-}
-
-/* ---------------------------------------------------------------- */
-
 void
-MainGui::add_character (EveApiAuth const& auth)
-{
-  bool inserted = this->internal_add_character(auth);
-
-  if (!inserted)
-    return;
-
-  /* Add the character to the configuration. */
-  ConfSectionPtr char_sect = Config::conf.get_section("characters");
-  try
-  {
-    ConfValuePtr value = char_sect->get_value(auth.user_id);
-    value->set(**value + "," + auth.char_id);
-  }
-  catch (...)
-  {
-    char_sect->add(auth.user_id, ConfValue::create(auth.char_id));
-  }
-
-  /* Save the configuration. */
-  Config::save_to_file();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::remove_character (EveApiAuth const& auth)
-{
-  bool removed = this->internal_remove_character(auth);
-
-  if (!removed)
-    return;
-
-  /* Remove the character from the configuration
-   * (actually recreate the whole list). */
-  ConfSectionPtr char_sect = Config::conf.get_section("characters");
-  char_sect->clear_values();
-
-  if (this->notebook.get_show_tabs())
-  {
-    Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
-    for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
-        iter != childs.end(); iter++)
-    {
-      EveApiAuth const& pageauth = ((GtkCharPage*)*iter)->get_character();
-      try
-      {
-        ConfValuePtr value = char_sect->get_value(pageauth.user_id);
-        value->set(**value + "," + pageauth.char_id);
-      }
-      catch (...)
-      {
-        char_sect->add(pageauth.user_id, ConfValue::create(pageauth.char_id));
-      }
-    }
-  }
-
-  /* Save the configuration. */
-  Config::save_to_file();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::update_char_page (EveApiAuth const& auth)
+MainGui::update_char_name (std::string char_id)
 {
   Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
   for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
       iter != childs.end(); iter++)
   {
-    EveApiAuth const& tmp_auth = ((GtkCharPage*)*iter)->get_character();
-    if (tmp_auth.user_id == auth.user_id && tmp_auth.char_id == auth.char_id)
+    CharacterPtr tmp_char = ((GtkCharPage*)*iter)->get_character();
+    if (tmp_char->get_char_id() == char_id)
     {
       GtkCharPage* page = (GtkCharPage*)*iter;
-      this->notebook.set_tab_label_text(*page, page->get_char_name());
+      this->notebook.set_tab_label_text(*page, tmp_char->get_char_name());
     }
   }
+
+  this->update_tooltip();
 }
 
 /* ---------------------------------------------------------------- */
@@ -774,14 +617,78 @@ MainGui::destroy_tray_icon (void)
 /* ---------------------------------------------------------------- */
 
 void
+MainGui::setup_profile (void)
+{
+  GuiUserData* dialog = new GuiUserData();
+  dialog->set_transient_for(*this);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::configuration (void)
+{
+  GuiConfiguration* dialog = new GuiConfiguration();
+  dialog->set_transient_for(*this);
+  dialog->signal_tray_settings_changed().connect(sigc::mem_fun
+      (*this, &MainGui::update_tray_settings));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::about_dialog (void)
+{
+  Gtk::Window* dialog = new GuiAboutDialog();
+  dialog->set_transient_for(*this);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::version_checker (void)
+{
+  GuiVersionChecker* checker = new GuiVersionChecker();
+  checker->request_versions();
+  checker->set_transient_for(*this);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::launch_eve (void)
+{
+  try
+  {
+    Gtk::Window* win = GuiEveLauncher::launch_eve();
+    if (win != 0)
+      win->set_transient_for(*this);
+  }
+  catch (Exception& e)
+  {
+    this->info_display.append(INFO_WARNING, e);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 MainGui::create_skillplan (void)
 {
   int current = this->notebook.get_current_page();
   if (current < 0)
     return;
+  CharacterPtr character = CharacterList::request()->chars[current];
 
-  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
-  page->open_skill_planner();
+  if (!character->cs->valid || !character->ts->valid)
+  {
+    this->info_display.append(INFO_WARNING, "Cannot open the skill "
+        "planner without valid character sheets!");
+    return;
+  }
+
+  GuiSkillPlanner* planner = new GuiSkillPlanner();
+  planner->set_character(character);
 }
 
 /* ---------------------------------------------------------------- */
@@ -792,9 +699,27 @@ MainGui::view_xml_source (void)
   int current = this->notebook.get_current_page();
   if (current < 0)
     return;
+  CharacterPtr character = CharacterList::request()->chars[current];
 
-  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
-  page->open_source_viewer();
+  ApiCharSheetPtr cs = character->cs;
+  ApiInTrainingPtr ts = character->ts;
+  ApiSkillQueuePtr sq = character->sq;
+
+  if (!cs->valid && !ts->valid && !sq->valid)
+  {
+    this->info_display.append(INFO_WARNING, "Cannot open the source "
+        "viewer without a valid sheet!");
+    return;
+  }
+
+  GuiXmlSource* window = new GuiXmlSource();
+
+  if (cs->valid)
+    window->append(cs->get_http_data(), "CharacterSheet.xml");
+  if (ts->valid)
+    window->append(ts->get_http_data(), "SkillInTraining.xml");
+  if (sq->valid)
+    window->append(sq->get_http_data(), "SkillQueue.xml");
 }
 
 /* ---------------------------------------------------------------- */
@@ -805,34 +730,22 @@ MainGui::export_char_info (void)
   int current = this->notebook.get_current_page();
   if (current < 0)
     return;
+  CharacterPtr character = CharacterList::request()->chars[current];
 
-  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
-  page->open_info_exporter();
+  if (!character->cs->valid)
+  {
+    this->info_display.append(INFO_WARNING, "Cannot open the exporter "
+        "without valid character sheet!");
+    return;
+  }
+
+  new GuiCharExport(character->cs);
 }
 
 /* ---------------------------------------------------------------- */
 
-bool
-MainGui::update_windowtitle (void)
+void
+MainGui::close (void)
 {
-  int current = this->notebook.get_current_page();
-  if (current < 0
-      || !this->notebook.get_show_tabs()
-      || !this->conf_windowtitle->get_bool())
-  {
-    this->set_title("GtkEveMon");
-    return true;
-  }
-
-  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
-  Glib::ustring title;
-
-  title.append(page->get_char_name());
-  title.append(": ");
-  title.append(page->get_skill_remaining(true));
-  title.append(" - GtkEveMon");
-
-  this->set_title(title);
-
-  return true;
+  Gtk::Main::quit();
 }

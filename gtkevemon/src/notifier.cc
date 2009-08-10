@@ -9,13 +9,16 @@
 #include "notifier.h"
 
 int
-Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
+Notifier::exec (CharacterPtr character)
 {
+  ApiCharSheetPtr cs = character->cs;
+  ApiInTrainingPtr ts = character->ts;
+
   /* Check if the sheets are valid. */
-  if (sheet.get() == 0 || !sheet->valid)
+  if (!cs->valid)
     throw Exception("Character sheet is invalid. Please report this issue!");
 
-  if (training.get() == 0 || !training->valid)
+  if (!ts->valid)
     throw Exception("Training sheet is invalid. Please report this issue!");
 
   /* Receive configuration values. */
@@ -32,8 +35,8 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
     minsp = Helpers::get_int_from_string(minspstr);
 
   /* Collect some required information. */
-  int training_id = training->skill;
-  int to_level = training->to_level;
+  int training_id = ts->skill;
+  int to_level = ts->to_level;
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkill const* skill = tree->get_skill_for_id(training_id);
 
@@ -59,7 +62,7 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
   }
 
   /* Prepare even more informations. */
-  unsigned int spph = training->get_current_spph();
+  unsigned int spph = ts->get_current_spph();
   double spps = (double)spph / 3600.0;
 
   std::string to_level_str = Helpers::get_roman_from_int(to_level);
@@ -73,7 +76,7 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
   std::string local_time = EveTime::get_local_time_string();
 
   /* Parse command and data and substitude variables. */
-  Notifier::replace(command, "$CHAR", sheet->name);
+  Notifier::replace(command, "$CHAR", cs->name);
   Notifier::replace(command, "$SKILL", skill->name);
   Notifier::replace(command, "$LEVEL", to_level_str);
   Notifier::replace(command, "$STARTSP", start_sp_str);
@@ -84,7 +87,7 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
   Notifier::replace(command, "$EVETIME", eve_time);
   Notifier::replace(command, "$LOCALTIME", local_time);
 
-  Notifier::replace(data, "$CHAR", sheet->name);
+  Notifier::replace(data, "$CHAR", cs->name);
   Notifier::replace(data, "$SKILL", skill->name);
   Notifier::replace(data, "$LEVEL", to_level_str);
   Notifier::replace(data, "$STARTSP", start_sp_str);

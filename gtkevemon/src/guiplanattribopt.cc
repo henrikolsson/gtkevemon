@@ -344,15 +344,15 @@ GuiPlanAttribOpt::optimize_plan (void)
   GtkSkillList plan_part = this->plan;
 
   /* Fetch the character from the plan. */
-  ApiCharSheetPtr character = this->plan.get_character();
+  ApiCharSheetPtr charsheet = this->plan.get_character()->cs;
 
   /* Fetch the base, the implant, the skill attribute points and the level of
    * the learning factor. */
-  ApiCharAttribs base_atts = character->base;
-  ApiCharAttribs implant_atts = character->implant;
-  ApiCharAttribs total_atts = character->total;
-  ApiCharAttribs skill_atts = character->get_skill_attributes();
-  int learning_level = character->get_learning_skill_level();
+  ApiCharAttribs base_atts = charsheet->base;
+  ApiCharAttribs implant_atts = charsheet->implant;
+  ApiCharAttribs total_atts = charsheet->total;
+  ApiCharAttribs skill_atts = charsheet->get_skill_attributes();
+  int learning_level = charsheet->get_learning_skill_level();
   double learning_factor = learning_level * 0.02;
 
   if (this->plan_offset > 0)
@@ -370,7 +370,7 @@ GuiPlanAttribOpt::optimize_plan (void)
         ApiSkill const* skill = info.skill;
 
         if (cskill == 0 || skill->id != cskill->id)
-          cskill = character->get_skill_for_id(skill->id);
+          cskill = charsheet->get_skill_for_id(skill->id);
 
         if (cskill == 0 || cskill->level < info.plan_level)
         {

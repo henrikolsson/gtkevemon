@@ -18,6 +18,7 @@
 #include "helpers.h"
 #include "notifier.h"
 #include "exception.h"
+#include "characterlist.h"
 #include "apiintraining.h"
 #include "apicharsheet.h"
 #include "apiskilltree.h"
@@ -25,49 +26,16 @@
 #include "gtkdefines.h"
 #include "gtkhelpers.h"
 #include "guiskill.h"
-#include "guiskillplanner.h"
-#include "guixmlsource.h"
-#include "guicharexport.h"
 #include "guiskillqueue.h"
 #include "gtkcharpage.h"
 
-GtkCharPage::GtkCharPage (void)
+GtkCharPage::GtkCharPage (CharacterPtr character)
   : Gtk::VBox(false, 5),
+    character(character),
     info_display(INFO_STYLE_TOP_HSEP)
 {
-  /* Setup the API HTTP fetchers and API data. */
-  this->sheet_fetcher.set_doctype(API_DOCTYPE_CHARSHEET);
-  this->training_fetcher.set_doctype(API_DOCTYPE_INTRAINING);
-  this->sheet = ApiCharSheet::create();
-  this->training = ApiInTraining::create();
-
+  /* Setup GUI. */
   this->char_image.set_enable_clicks();
-
-  /* GUI stuff. */
-  Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
-  name_column->set_title("Skill name (rank)");
-  name_column->pack_start(this->skill_cols.icon, false);
-  #ifdef GLIBMM_PROPERTIES_ENABLED
-  Gtk::CellRendererText* name_renderer = Gtk::manage(new Gtk::CellRendererText);
-  name_column->pack_start(*name_renderer, true);
-  name_column->add_attribute(name_renderer->property_markup(),
-      this->skill_cols.name);
-  #else
-  /* FIXME: Activate markup here. */
-  name_column->pack_start(this->skill_cols.name);
-  #endif
-
-  this->skill_store = Gtk::TreeStore::create(this->skill_cols);
-  this->skill_store->set_sort_column
-      (this->skill_cols.name, Gtk::SORT_ASCENDING);
-  this->skill_view.set_model(this->skill_store);
-  this->skill_view.set_rules_hint(true);
-  this->skill_view.append_column(*name_column);
-  this->skill_view.append_column("Points", this->skill_cols.points);
-  this->skill_view.append_column("Level", this->skill_cols.level);
-  this->skill_view.get_column(0)->set_expand(true);
-  this->skill_view.get_column(1)->get_first_cell_renderer()
-      ->set_property("xalign", 1.0f);
 
   this->refresh_but.set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_MENU)));
@@ -98,6 +66,33 @@ GtkCharPage::GtkCharPage (void)
   this->charsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
   this->trainsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
 
+  /* Setup skill list. */
+  Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
+  name_column->set_title("Skill name (rank)");
+  name_column->pack_start(this->skill_cols.icon, false);
+  #ifdef GLIBMM_PROPERTIES_ENABLED
+  Gtk::CellRendererText* name_renderer = Gtk::manage(new Gtk::CellRendererText);
+  name_column->pack_start(*name_renderer, true);
+  name_column->add_attribute(name_renderer->property_markup(),
+      this->skill_cols.name);
+  #else
+  /* FIXME: Activate markup here. */
+  name_column->pack_start(this->skill_cols.name);
+  #endif
+
+  this->skill_store = Gtk::TreeStore::create(this->skill_cols);
+  this->skill_store->set_sort_column
+      (this->skill_cols.name, Gtk::SORT_ASCENDING);
+  this->skill_view.set_model(this->skill_store);
+  this->skill_view.set_rules_hint(true);
+  this->skill_view.append_column(*name_column);
+  this->skill_view.append_column("Points", this->skill_cols.points);
+  this->skill_view.append_column("Level", this->skill_cols.level);
+  this->skill_view.get_column(0)->set_expand(true);
+  this->skill_view.get_column(1)->get_first_cell_renderer()
+      ->set_property("xalign", 1.0f);
+
+  /* Build GUI elements. */
   Gtk::ScrolledWindow* scwin = Gtk::manage(new Gtk::ScrolledWindow);
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
@@ -246,13 +241,15 @@ GtkCharPage::GtkCharPage (void)
   this->skill_view.signal_query_tooltip().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_query_skillview_tooltip));
 
-  this->sheet_fetcher.signal_done().connect(sigc::mem_fun
-      (*this, &GtkCharPage::on_charsheet_available));
-  this->training_fetcher.signal_done().connect(sigc::mem_fun
-      (*this, &GtkCharPage::on_intraining_available));
+  this->character->signal_api_info_changed().connect
+      (sigc::mem_fun(*this, &GtkCharPage::api_info_changed));
+  this->character->signal_skill_completed().connect
+      (sigc::mem_fun(*this, &GtkCharPage::on_skill_completed));
+  this->character->signal_request_error().connect(sigc::bind
+      (sigc::mem_fun(*this, &GtkCharPage::on_api_error), false));
+  this->character->signal_cached_warning().connect(sigc::bind
+      (sigc::mem_fun(*this, &GtkCharPage::on_api_error), true));
 
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,
-      &GtkCharPage::update_remaining), CHARPAGE_REMAINING_UPDATE);
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::on_live_sp_value_update), CHARPAGE_LIVE_SP_LABEL_UPDATE);
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
@@ -262,7 +259,9 @@ GtkCharPage::GtkCharPage (void)
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::update_cached_duration), CHARPAGE_UPDATE_CACHED_DURATION);
 
-  /* Update GUI. */
+  /* Request data update and update GUI. */
+  this->request_documents();
+  this->char_image.set(this->character->get_char_id());
   this->update_charsheet_details();
   this->update_training_details();
 
@@ -273,26 +272,17 @@ GtkCharPage::GtkCharPage (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::set_character (EveApiAuth const& character)
-{
-  this->character = character;
-  this->sheet_fetcher.set_auth(character);
-  this->training_fetcher.set_auth(character);
-  this->char_image.set(this->character.char_id);
-  this->update_charsheet_details();
-  this->request_documents();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
 GtkCharPage::update_charsheet_details (void)
 {
+  ApiCharSheetPtr cs = this->character->cs;
+
+  this->char_name_label.set_text("<b>"
+      + this->character->get_char_name() + "</b>");
+  this->char_name_label.set_use_markup(true);
+
   /* Set character information. */
-  if (!this->sheet->valid)
+  if (!cs->valid)
   {
-    this->char_name_label.set_text("<b>" + this->character.char_id + "</b>");
-    this->char_name_label.set_use_markup(true);
     this->char_info_label.set_text("---");
     this->corp_label.set_text("---");
     this->balance_label.set_text("---");
@@ -315,39 +305,36 @@ GtkCharPage::update_charsheet_details (void)
         ("settings.trunc_corpname");
 
     /* Set character labels. */
-    this->char_name_label.set_text("<b>" + this->sheet->name + "</b>");
-    this->char_name_label.set_use_markup(true);
-    this->char_info_label.set_text(this->sheet->gender + ", "
-        + this->sheet->race + ", " + this->sheet->bloodline);
-    this->balance_label.set_text(Helpers::get_dotted_isk
-        (this->sheet->balance) + " ISK");
+    this->char_info_label.set_text(cs->gender + ", "
+        + cs->race + ", " + cs->bloodline);
+    this->balance_label.set_text(Helpers::get_dotted_isk(cs->balance) + " ISK");
 
     if (trunc_corpname->get_bool())
     {
-      this->corp_label.set_text(Helpers::trunc_string(this->sheet->corp, 25));
-      this->corp_label.set_tooltip_text(this->sheet->corp);
+      this->corp_label.set_text(Helpers::trunc_string(cs->corp, 25));
+      this->corp_label.set_tooltip_text(cs->corp);
     }
     else
-      this->corp_label.set_text(this->sheet->corp);
+      this->corp_label.set_text(cs->corp);
 
 
     this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
-        (this->sheet->total_sp));
+        (cs->total_sp));
     this->known_skills_label.set_text(Helpers::get_string_from_sizet
-        (this->sheet->skills.size()) + " known skills ("
-        + Helpers::get_string_from_uint(this->sheet->skills_at[5])
+        (cs->skills.size()) + " known skills ("
+        + Helpers::get_string_from_uint(cs->skills_at[5])
         + " at V)");
 
     this->attr_cha_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total.cha, 2));
+        (cs->total.cha, 2));
     this->attr_int_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total.intl, 2));
+        (cs->total.intl, 2));
     this->attr_per_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total.per, 2));
+        (cs->total.per, 2));
     this->attr_mem_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total.mem, 2));
+        (cs->total.mem, 2));
     this->attr_wil_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total.wil, 2));
+        (cs->total.wil, 2));
 
     /* Build list of known skills per level (tooltip). */
     Glib::ustring skills_at_tt;
@@ -358,7 +345,7 @@ GtkCharPage::update_charsheet_details (void)
       skills_at_tt += Helpers::get_string_from_uint(i);
       skills_at_tt += ": ";
       skills_at_tt += Helpers::get_string_from_uint
-          (this->sheet->skills_at[i]);
+          (cs->skills_at[i]);
       if (i != 5)
         skills_at_tt += "\n";
     }
@@ -366,12 +353,12 @@ GtkCharPage::update_charsheet_details (void)
     /* Build clone information (tooltip). */
     Glib::ustring clone_tt;
     clone_tt = "<u><b>Character clone information</b></u>\nName: ";
-    clone_tt += this->sheet->clone_name + "\nKeeps: ";
-    clone_tt += Helpers::get_dotted_str_from_str(this->sheet->clone_sp);
+    clone_tt += cs->clone_name + "\nKeeps: ";
+    clone_tt += Helpers::get_dotted_str_from_str(cs->clone_sp);
     clone_tt += " SP";
 
-    unsigned int clone_sp = Helpers::get_int_from_string(this->sheet->clone_sp);
-    if (this->sheet->total_sp > clone_sp)
+    unsigned int clone_sp = Helpers::get_int_from_string(cs->clone_sp);
+    if (cs->total_sp > clone_sp)
     {
       clone_tt += "\n\n<b>Warning:</b> Your clone is outdated!";
       this->clone_warning_label.set_markup("<b>(outdated)</b>");
@@ -384,43 +371,43 @@ GtkCharPage::update_charsheet_details (void)
     /* Build detailed attribute information (tooltip). */
     Glib::ustring attr_cha_tt;
     attr_cha_tt = "<u><b>Attribute: Charisma</b></u>\nBase: ";
-    attr_cha_tt += Helpers::get_string_from_double(this->sheet->base.cha, 2);
+    attr_cha_tt += Helpers::get_string_from_double(cs->base.cha, 2);
     attr_cha_tt += "\nImplants: ";
-    attr_cha_tt += Helpers::get_string_from_double(this->sheet->implant.cha, 2);
+    attr_cha_tt += Helpers::get_string_from_double(cs->implant.cha, 2);
     attr_cha_tt += "\nSkills: ";
-    attr_cha_tt += Helpers::get_string_from_double(this->sheet->skill.cha, 2);
+    attr_cha_tt += Helpers::get_string_from_double(cs->skill.cha, 2);
 
     Glib::ustring attr_int_tt;
     attr_int_tt = "<u><b>Attribute: Intelligence</b></u>\nBase: ";
-    attr_int_tt += Helpers::get_string_from_double(this->sheet->base.intl, 2);
+    attr_int_tt += Helpers::get_string_from_double(cs->base.intl, 2);
     attr_int_tt += "\nImplants: ";
-    attr_int_tt += Helpers::get_string_from_double(this->sheet->implant.intl,2);
+    attr_int_tt += Helpers::get_string_from_double(cs->implant.intl,2);
     attr_int_tt += "\nSkills: ";
-    attr_int_tt += Helpers::get_string_from_double(this->sheet->skill.intl, 2);
+    attr_int_tt += Helpers::get_string_from_double(cs->skill.intl, 2);
 
     Glib::ustring attr_per_tt;
     attr_per_tt = "<u><b>Attribute: Perception</b></u>\nBase: ";
-    attr_per_tt += Helpers::get_string_from_double(this->sheet->base.per, 2);
+    attr_per_tt += Helpers::get_string_from_double(cs->base.per, 2);
     attr_per_tt += "\nImplants: ";
-    attr_per_tt += Helpers::get_string_from_double(this->sheet->implant.per, 2);
+    attr_per_tt += Helpers::get_string_from_double(cs->implant.per, 2);
     attr_per_tt += "\nSkills: ";
-    attr_per_tt += Helpers::get_string_from_double(this->sheet->skill.per, 2);
+    attr_per_tt += Helpers::get_string_from_double(cs->skill.per, 2);
 
     Glib::ustring attr_mem_tt;
     attr_mem_tt = "<u><b>Attribute: Memory</b></u>\nBase: ";
-    attr_mem_tt += Helpers::get_string_from_double(this->sheet->base.mem, 2);
+    attr_mem_tt += Helpers::get_string_from_double(cs->base.mem, 2);
     attr_mem_tt += "\nImplants: ";
-    attr_mem_tt += Helpers::get_string_from_double(this->sheet->implant.mem, 2);
+    attr_mem_tt += Helpers::get_string_from_double(cs->implant.mem, 2);
     attr_mem_tt += "\nSkills: ";
-    attr_mem_tt += Helpers::get_string_from_double(this->sheet->skill.mem, 2);
+    attr_mem_tt += Helpers::get_string_from_double(cs->skill.mem, 2);
 
     Glib::ustring attr_wil_tt;
     attr_wil_tt = "<u><b>Attribute: Willpower</b></u>\nBase: ";
-    attr_wil_tt += Helpers::get_string_from_double(this->sheet->base.wil, 2);
+    attr_wil_tt += Helpers::get_string_from_double(cs->base.wil, 2);
     attr_wil_tt += "\nImplants: ";
-    attr_wil_tt += Helpers::get_string_from_double(this->sheet->implant.wil, 2);
+    attr_wil_tt += Helpers::get_string_from_double(cs->implant.wil, 2);
     attr_wil_tt += "\nSkills: ";
-    attr_wil_tt += Helpers::get_string_from_double(this->sheet->skill.wil, 2);
+    attr_wil_tt += Helpers::get_string_from_double(cs->skill.wil, 2);
 
     /* Update some character sheet related skills. */
     this->known_skills_label.set_tooltip_markup(skills_at_tt);
@@ -441,30 +428,47 @@ GtkCharPage::update_charsheet_details (void)
 void
 GtkCharPage::update_training_details (void)
 {
+  ApiInTrainingPtr ts = this->character->ts;
+
   /* Set training information. */
-  if (!this->training->valid)
+  if (!ts->valid)
   {
     this->training_label.set_text("---");
     this->remaining_label.set_text("---");
     this->finish_eve_label.set_text("---");
     this->finish_local_label.set_text("---");
     this->spph_label.set_text("---");
+    this->spph_label.set_has_tooltip(false);
     this->live_sp_label.set_text("---");
   }
   else
   {
-    if (this->training->in_training)
+    if (ts->in_training)
     {
-      this->training_label.set_text(this->get_skill_in_training());
+      this->training_label.set_text(this->character->get_training_text());
 
       std::string downtime_str;
-      if (EveTime::is_in_eve_downtime(this->training->end_time_t))
+      if (EveTime::is_in_eve_downtime(ts->end_time_t))
         downtime_str = " <i>(in DT!)</i>";
       this->finish_eve_label.set_markup(EveTime::get_gm_time_string
-          (this->training->end_time_t, false) + downtime_str);
+          (ts->end_time_t, false) + downtime_str);
       this->finish_local_label.set_markup(EveTime::get_local_time_string
-          (EveTime::adjust_local_time(this->training->end_time_t), false)
-          + downtime_str);
+          (EveTime::adjust_local_time(ts->end_time_t), false) + downtime_str);
+      this->spph_label.set_text(Helpers::get_string_from_uint
+          (this->character->training_spph) + " SP per hour");
+
+      /* Set SP/h tooltip. */
+      std::stringstream spph_tooltip;
+      spph_tooltip << "<b><u>Training based</u></b>\n"
+          << this->character->training_spph << " SP/h";
+      if (this->character->cs->valid)
+      {
+        spph_tooltip << "\n<b><u>Attribute based</u></b>\n"
+            << this->character->cs->get_spph_for_skill
+            (this->character->training_skill) << " SP/h";
+      }
+      this->spph_label.set_has_tooltip(true);
+      this->spph_label.set_tooltip_markup(spph_tooltip.str());
     }
     else
     {
@@ -473,6 +477,7 @@ GtkCharPage::update_training_details (void)
       this->finish_eve_label.set_text("---");
       this->finish_local_label.set_text("---");
       this->spph_label.set_text("0 SP per hour");
+      this->spph_label.set_has_tooltip(false);
       this->live_sp_label.set_text("---");
     }
   }
@@ -501,11 +506,11 @@ GtkCharPage::update_skill_list (void)
 {
   this->skill_store->clear();
 
-  if (!this->sheet->valid)
+  if (!this->character->cs->valid)
     return;
 
+  /* Load the skill tree. */
   ApiSkillTreePtr tree;
-
   try
   {
     tree = ApiSkillTree::request();
@@ -520,8 +525,8 @@ GtkCharPage::update_skill_list (void)
   ApiSkill skill_training;
   skill_training.id = -1;
   skill_training.group = -1;
-  if (this->training->valid && this->training->in_training)
-    skill_training = *this->skill_info.char_skill->details;
+  if (this->character->is_training())
+    skill_training = *this->character->training_skill;
 
   /* Append all groups to the store. Save their iterators for the children.
    * Format is <group_id, <model iter, group sp> >. */
@@ -543,7 +548,7 @@ GtkCharPage::update_skill_list (void)
   }
 
   /* Append all skills to the skill groups. */
-  std::vector<ApiCharSheetSkill>& skills = this->sheet->skills;
+  std::vector<ApiCharSheetSkill>& skills = this->character->cs->skills;
   for (unsigned int i = 0; i < skills.size(); ++i)
   {
     /* Get skill object. */
@@ -571,7 +576,7 @@ GtkCharPage::update_skill_list (void)
       (*iter)[this->skill_cols.icon] = ImageStore::skillicons[2];
 
       /* Update of the SkillInTrainingInfo. */
-      this->skill_info.tree_skill_iter = iter;
+      this->tree_skill_iter = iter;
     }
     else
     {
@@ -613,7 +618,7 @@ GtkCharPage::update_skill_list (void)
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)
-      this->skill_info.tree_group_iter = iter->second.iter;
+      this->tree_group_iter = iter->second.iter;
   }
 }
 
@@ -630,17 +635,17 @@ GtkCharPage::request_documents (void)
   std::string train_cached("<unknown>");
 
   /* Check which docs to re-request. */
-  if (this->sheet->valid && !this->sheet->is_locally_cached())
+  if (this->character->cs->valid && !this->character->cs->is_locally_cached())
   {
-    time_t char_cached_t = this->sheet->get_cached_until_t();
+    time_t char_cached_t = this->character->cs->get_cached_until_t();
     char_cached = EveTime::get_gm_time_string(char_cached_t, false);
     if (evetime < char_cached_t)
       update_char = false;
   }
 
-  if (this->training->valid && !this->training->is_locally_cached())
+  if (this->character->ts->valid && !this->character->ts->is_locally_cached())
   {
-    time_t train_cached_t = this->training->get_cached_until_t();
+    time_t train_cached_t = this->character->ts->get_cached_until_t();
     train_cached = EveTime::get_gm_time_string(train_cached_t, false);
     if (evetime < train_cached_t)
       update_training = false;
@@ -675,16 +680,16 @@ GtkCharPage::request_documents (void)
   }
 
   /* Request the documents. */
-  if (update_char && !this->sheet_fetcher.is_busy())
+  if (update_char)
   {
     this->charsheet_info_label.set_text("Requesting...");
-    this->sheet_fetcher.async_request();
+    this->character->request_charsheet();
   }
 
-  if (update_training && !this->training_fetcher.is_busy())
+  if (update_training)
   {
     this->trainsheet_info_label.set_text("Requesting...");
-    this->training_fetcher.async_request();
+    this->character->request_trainingsheet();
   }
 }
 
@@ -698,9 +703,11 @@ GtkCharPage::check_expired_sheets (void)
   if (!value->get_bool())
     return true;
 
+  ApiCharSheetPtr cs = this->character->cs;
+  ApiInTrainingPtr ts = this->character->ts;
+
   /* Skip automatic update if both sheets are cached. */
-  if (this->training->valid && this->training->is_locally_cached()
-      && this->sheet->valid && this->sheet->is_locally_cached())
+  if (ts->is_locally_cached() && cs->is_locally_cached())
     return true;
 
   //std::cout << "Checking for expired sheets..." << std::endl;
@@ -708,8 +715,8 @@ GtkCharPage::check_expired_sheets (void)
   time_t evetime = EveTime::get_eve_time();
 
   /* Check which docs to re-request. */
-  if (!this->training->valid || evetime >= this->training->get_cached_until_t()
-      || !this->sheet->valid || evetime >= this->sheet->get_cached_until_t())
+  if (!ts->valid || evetime >= ts->get_cached_until_t()
+      || !cs->valid || evetime >= cs->get_cached_until_t())
     this->request_documents();
 
   return true;
@@ -718,161 +725,14 @@ GtkCharPage::check_expired_sheets (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_charsheet_available (EveApiData data)
-{
-  if (data.data.get() == 0)
-  {
-    this->on_charsheet_error(data.exception);
-    return;
-  }
-
-  try
-  {
-    this->sheet->set_api_data(data);
-    if (data.locally_cached)
-      this->on_charsheet_error(data.exception, true);
-  }
-  catch (Exception& e)
-  {
-    this->on_charsheet_error(e);
-    return;
-  }
-
-  /* Update the GUI. */
-  this->api_info_changed();
-  this->update_charsheet_details();
-
-  this->on_live_sp_value_update();
-  this->on_live_sp_image_update();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::on_intraining_available (EveApiData data)
-{
-  if (data.data.get() == 0)
-  {
-    this->on_intraining_error(data.exception);
-    return;
-  }
-
-  try
-  {
-    this->training->set_api_data(data);
-    if (data.locally_cached)
-      this->on_intraining_error(data.exception, true);
-  }
-  catch (Exception& e)
-  {
-    this->on_intraining_error(e);
-    return;
-  }
-
-  /* Update the GUI. */
-  this->api_info_changed();
-  this->update_charsheet_details();
-  this->update_training_details();
-
-  this->on_live_sp_value_update();
-  this->on_live_sp_image_update();
-  this->update_remaining();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
 GtkCharPage::api_info_changed (void)
 {
-  /* If we got a valid character sheet, emit a signal for notification. */
-  if (this->sheet->valid)
-    this->sig_sheet_updated.emit(this->character);
-
-  /* Update worked-up information. */
-  if (this->sheet->valid
-    && this->training->valid
-    && this->training->in_training)
-  {
-    /* Both, char sheet and training sheet is available and there is
-     * a skill in training. We make sure the character sheet is up
-     * to date by adding the previous level of the skill in training. */
-    this->sheet->add_char_skill(this->training->skill,
-        this->training->to_level - 1);
-
-    /* Cache current skill in training and the SP/h. */
-    this->skill_info.char_skill = this->sheet->get_skill_for_id
-        (this->training->skill);
-    this->skill_info.total_sp = this->sheet->total_sp;
-    this->skill_info.sp_per_hour = this->training->get_current_spph();
-    this->spph_label.set_text(Helpers::get_string_from_uint
-        (this->skill_info.sp_per_hour) + " SP per hour");
-    this->spph_label.set_tooltip_markup("<b><u>Attribute based</u></b>\n"
-        + Helpers::get_string_from_uint(this->sheet->get_spph_for_skill
-        (this->skill_info.char_skill->details))
-        + " SP/h\n<b><u>Training based</u></b>\n"
-        + Helpers::get_string_from_uint(this->skill_info.sp_per_hour)
-        + " SP/h");
-
-    /* Cache the total skill points for the skill in training. */
-    ApiCharSheetSkill* training_skill = this->skill_info.char_skill;
-    int training_skill_group = training_skill->details->group;
-    this->skill_info.skill_group_sp = 0;
-    for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
-    {
-      ApiCharSheetSkill& skill = this->sheet->skills[i];
-      if (skill.details->group == training_skill_group)
-        this->skill_info.skill_group_sp += skill.points;
-    }
-
-    /* Since there is a skill in training, remove the points
-     * for partial training processes for easier GUI updates
-     * for the live SP counting. */
-    if (training_skill->points > training_skill->points_start)
-    {
-      int diff = training_skill->points - training_skill->points_start;
-      this->skill_info.total_sp -= diff;
-      this->skill_info.skill_group_sp -= diff;
-    }
-  }
-  else
-  {
-    if (this->sheet->valid && this->training->valid
-        && this->training->holds_completed)
-    {
-      /* The training sheet holds a skill that is already completed.
-       * We can use this information to update the character sheet if
-       * it does not yet have the new skill level. */
-      this->sheet->add_char_skill(this->training->skill,
-          this->training->to_level);
-    }
-
-    this->skill_info.char_skill = 0;
-    this->skill_info.sp_per_hour = 0;
-    this->skill_info.skill_group_sp = 0;
-  }
-
   /* Update the char sheet and training sheet info. */
   this->update_cached_duration();
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-GtkCharPage::update_remaining (void)
-{
-  if (this->training->valid && this->training->in_training)
-  {
-    time_t evetime = EveTime::get_eve_time();
-    time_t finish = this->training->end_time_t;
-    time_t diff = finish - evetime;
-
-    if (diff < 0)
-      this->on_skill_completed();
-    else
-      this->remaining_label.set_text(this->get_skill_remaining());
-  }
-
-  return true;
+  this->update_charsheet_details();
+  this->update_training_details();
+  this->on_live_sp_value_update();
+  this->on_live_sp_image_update();
 }
 
 /* ---------------------------------------------------------------- */
@@ -881,12 +741,14 @@ bool
 GtkCharPage::update_cached_duration (void)
 {
   time_t current = EveTime::get_eve_time();
+  ApiCharSheetPtr cs = this->character->cs;
+  ApiInTrainingPtr ts = this->character->ts;
 
-  if (this->training->valid)
+  if (ts->valid)
   {
-    time_t cached_until = this->training->get_cached_until_t();
+    time_t cached_until = ts->get_cached_until_t();
 
-    if (this->training->is_locally_cached())
+    if (ts->is_locally_cached())
       this->trainsheet_info_label.set_text("Locally cached!");
     else if (cached_until > current)
       this->trainsheet_info_label.set_text(EveTime::get_minute_str_for_diff
@@ -895,11 +757,11 @@ GtkCharPage::update_cached_duration (void)
       this->trainsheet_info_label.set_text("Ready for update!");
   }
 
-  if (this->sheet->valid)
+  if (cs->valid)
   {
-    time_t cached_until = this->sheet->get_cached_until_t();
+    time_t cached_until = cs->get_cached_until_t();
 
-    if (this->sheet->is_locally_cached())
+    if (cs->is_locally_cached())
       this->charsheet_info_label.set_text("Locally cached!");
     else if (cached_until > current)
       this->charsheet_info_label.set_text(EveTime::get_minute_str_for_diff
@@ -920,7 +782,7 @@ GtkCharPage::create_tray_notify (void)
   this->tray_notify->signal_activate().connect(sigc::mem_fun
      (*this, &GtkCharPage::remove_tray_notify));
   //this->tray_notify->set_blinking(true);
-  this->tray_notify->set_tooltip(this->get_char_name() + " has "
+  this->tray_notify->set_tooltip(this->character->get_char_name() + " has "
       "completed " + this->training_label.get_text() + "!");
 }
 
@@ -951,7 +813,7 @@ GtkCharPage::popup_error_dialog (std::string const& title,
 void
 GtkCharPage::exec_notification_handler (void)
 {
-  if (!this->training->valid)
+  if (!this->character->ts->valid)
     return;
 
   ConfValuePtr active = Config::conf.get_value("notifications.exec_handler");
@@ -961,7 +823,7 @@ GtkCharPage::exec_notification_handler (void)
   int ret;
   try
   {
-    ret = Notifier::exec(this->sheet, this->training);
+    ret = Notifier::exec(this->character);
   }
   catch (Exception& e)
   {
@@ -989,26 +851,10 @@ GtkCharPage::on_skill_completed (void)
   this->finish_eve_label.set_text("---");
   this->finish_local_label.set_text("---");
   this->spph_label.set_text("0 SP per hour");
+  this->spph_label.set_has_tooltip(false);
   this->live_sp_label.set_text("---");
 
-  /* Remove skill from training. */
-  this->training->in_training = false;
-
-  /* Update skill for the character. */
-  ApiCharSheetSkill* cskill = this->skill_info.char_skill;
-  if (cskill != 0)
-  {
-    cskill->level = this->training->to_level;
-    cskill->points_start = ApiCharSheet::calc_start_sp
-        (cskill->level, cskill->details->rank);
-    cskill->points_dest = ApiCharSheet::calc_dest_sp
-        (cskill->level, cskill->details->rank);
-    cskill->points = cskill->points_start;
-    cskill->completed = 0.0;
-  }
-
   /* Update GUI to reflect changes. */
-  this->api_info_changed();
   this->update_charsheet_details();
 
   /* Now bring up some notifications. */
@@ -1036,7 +882,8 @@ GtkCharPage::on_skill_completed (void)
     Gtk::MessageDialog* md = new Gtk::MessageDialog
         ("Skill training completed!",
         false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
-    md->set_secondary_text("Congratulations. <b>" + this->get_char_name()
+    md->set_secondary_text("Congratulations. <b>"
+        + this->character->get_char_name()
         + "</b> has just completed the skill training for <b>"
         + this->training_label.get_text() + "</b>.", true);
     md->set_title("Skill training completed!");
@@ -1066,7 +913,7 @@ GtkCharPage::on_skill_completed (void)
 void
 GtkCharPage::on_close_clicked (void)
 {
-  this->sig_close_request.emit(this->character);
+  CharacterList::request()->remove_character(this->character->get_char_id());
 }
 
 /* ---------------------------------------------------------------- */
@@ -1092,7 +939,8 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   if (skill_id < 0 || cskill == 0)
     return false;
 
-  GtkHelpers::create_tooltip(tooltip, cskill->details, cskill, this->sheet);
+  GtkHelpers::create_tooltip(tooltip, cskill->details, cskill,
+      this->character->cs);
   return true;
 }
 
@@ -1128,24 +976,32 @@ GtkCharPage::on_skill_activated (Gtk::TreeModel::Path const& path,
 bool
 GtkCharPage::on_live_sp_value_update (void)
 {
-  double level_sp, total_sp, fraction;
-  bool success = this->calc_live_values(level_sp, total_sp, fraction);
-  if (!success)
+  /* Update the live values. This may trigger skill completed. */
+  this->character->update_live_info();
+
+  /* Check if the character is training. */
+  if (!this->character->is_training())
     return true;
 
+  /* A skill is in training. Fill some values. */
+  this->remaining_label.set_text(this->character->get_remaining_text());
   this->live_sp_label.set_text(Helpers::get_dotted_str_from_uint
-      ((unsigned int)level_sp) + " SP ("
-      + Helpers::get_string_from_double(fraction * 100.0, 1) + "%)");
+      (this->character->training_level_sp) + " SP ("
+      + Helpers::get_string_from_double
+      (this->character->training_level_done * 100.0, 2) + "%)");
 
+  /* Check if the character sheet is valid. */
+  if (!this->character->cs->valid)
+    return true;
+
+  /* Character sheet is also valid. Fill some more values. */
   this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
-      (this->skill_info.total_sp + (unsigned int)level_sp));
+      (this->character->char_live_sp));
 
-  (*this->skill_info.tree_skill_iter)[this->skill_cols.points]
-      = Helpers::get_dotted_str_from_uint((unsigned int)total_sp);
-
-  (*this->skill_info.tree_group_iter)[this->skill_cols.points]
-      = Helpers::get_dotted_str_from_uint
-      (this->skill_info.skill_group_sp + (unsigned int)level_sp);
+  (*this->tree_skill_iter)[this->skill_cols.points]
+      = Helpers::get_dotted_str_from_uint(this->character->training_skill_sp);
+  (*this->tree_group_iter)[this->skill_cols.points]
+      = Helpers::get_dotted_str_from_uint(this->character->char_group_live_sp);
 
   return true;
 }
@@ -1155,61 +1011,60 @@ GtkCharPage::on_live_sp_value_update (void)
 bool
 GtkCharPage::on_live_sp_image_update (void)
 {
-  double level_sp, total_sp, fraction;
-  bool success = this->calc_live_values(level_sp, total_sp, fraction);
-  if (!success)
+  if (!this->character->cs->valid || !this->character->is_training())
     return true;
 
   Glib::RefPtr<Gdk::Pixbuf> new_icon = ImageStore::skill_progress
-      (this->skill_info.char_skill->level, fraction);
-
-  (*this->skill_info.tree_skill_iter)[this->skill_cols.level] = new_icon;
+      (this->character->training_cskill->level,
+      this->character->training_level_done);
+  (*this->tree_skill_iter)[this->skill_cols.level] = new_icon;
 
   return true;
 }
 
 /* ---------------------------------------------------------------- */
 
-bool
-GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
+void
+GtkCharPage::on_api_error (EveApiDocType dt, std::string msg, bool cached)
 {
-  if (!this->training->valid
-      || !this->training->in_training
-      || !this->sheet->valid
-      || this->skill_info.char_skill == 0)
-    return false;
+  std::string doc;
+  switch (dt)
+  {
+    case API_DOCTYPE_CHARSHEET:
+      doc = "CharacterSheet.xml";
+      this->charsheet_info_label.set_text("Error requesting!");
+      break;
+    case API_DOCTYPE_INTRAINING:
+      doc = "SkillInTraining.xml";
+      this->trainsheet_info_label.set_text("Error requesting!");
+      break;
+    case API_DOCTYPE_SKILLQUEUE:
+      doc = "SkillQueue.xml";
+      break;
+    default:
+      std::cout << "Warning: Received API error for unknown DT!" << std::endl;
+      return;
+  }
 
-  ApiCharSheetSkill* skill = this->skill_info.char_skill;
+  std::cout << "Error: Failed to request " << doc << ": " << msg << std::endl;
 
-  time_t evetime = EveTime::get_eve_time();
-  time_t finish = this->training->end_time_t;
-  time_t diff = finish - evetime;
+  InfoItemType info_type;
+  std::string heading;
+  if (cached)
+  {
+    info_type = INFO_WARNING;
+    heading = "Error requesting " + doc + "! Using cache.";
+  }
+  else
+  {
+    info_type = INFO_ERROR;
+    heading = "Error requesting " + doc + "!";
+  }
 
-  double spps = this->skill_info.sp_per_hour / 3600.0;
-
-  /* Assign values. Do sanity checks, e.g. if SP/s is wrong. */
-  total_sp = (double)skill->points_dest - (double)diff * spps;
-  //if (total_sp < 0.0) total_sp = 0.0;
-  level_sp = total_sp - (double)skill->points_start;
-  //if (level_sp < 0.0) level_sp = 0.0;
-  frac = level_sp / (double)(skill->points_dest - skill->points_start);
-
-  #if 0
-  std::cout << "Live SP debugging for " << this->sheet->name << std::endl;
-  std::cout << "  EVE time: " << evetime << ", finish time: " << finish
-      << ", diff: " << diff << ", diff * SP/s: " << (double)diff * spps
-      << std::endl
-
-      << "  Start SP: " << skill->points_start << ", Dest SP: "
-      << skill->points_dest << ", SP/s: " << spps << std::endl
-
-      << "  1) Total skill SP: " << total_sp
-      << ", level skill SP: " << level_sp
-      << ", SP/h: " << spps * 3600.0
-      << std::endl;
-  #endif
-
-  return true;
+  this->info_display.append(info_type, heading,
+      "There was an error while requesting " + doc + " from the EVE API."
+      "The EVE API is either offline, or the requested document is "
+      "not understood by GtkEveMon. The error message is:\n\n" + msg);
 }
 
 /* ---------------------------------------------------------------- */
@@ -1230,62 +1085,6 @@ GtkCharPage::on_skilltree_error (std::string const& e)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_charsheet_error (std::string const& e, bool cached)
-{
-  this->charsheet_info_label.set_text("Error requesting!");
-  std::cout << "Error requesting char sheet: " << e << std::endl;
-
-  InfoItemType info_type;
-  std::string message;
-  if (cached)
-  {
-    info_type = INFO_WARNING;
-    message = "Error requesting character sheet! Using cache.";
-  }
-  else
-  {
-    info_type = INFO_ERROR;
-    message = "Error requesting character sheet!";
-  }
-
-  this->info_display.append(info_type, message,
-      "There was an error while requesting the character "
-      "sheet from the EVE API. The EVE API is either offline, or the "
-      "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + e);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::on_intraining_error (std::string const& e, bool cached)
-{
-  this->trainsheet_info_label.set_text("Error requesting!");
-  std::cout << "Error requesting training sheet: " << e << std::endl;
-
-  InfoItemType info_type;
-  std::string message;
-  if (cached)
-  {
-    info_type = INFO_WARNING;
-    message = "Error requesting training sheet! Using cache.";
-  }
-  else
-  {
-    info_type = INFO_ERROR;
-    message = "Error requesting training sheet!";
-  }
-
-  this->info_display.append(info_type, message,
-      "There was an error while requesting the training "
-      "sheet from the EVE API. The EVE API is either offline, or the "
-      "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + e);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
 GtkCharPage::on_info_clicked (void)
 {
   /* Enable this to rape the info button to send notifications. */
@@ -1295,13 +1094,13 @@ GtkCharPage::on_info_clicked (void)
   std::string char_cached("<unknown>");
   std::string train_cached("<unknown>");
 
-  if (this->sheet->valid)
+  if (this->character->cs->valid)
     char_cached = EveTime::get_gm_time_string
-        (this->sheet->get_cached_until_t(), false);
+        (this->character->cs->get_cached_until_t(), false);
 
-  if (this->training->valid)
+  if (this->character->ts->valid)
     train_cached = EveTime::get_gm_time_string
-        (this->training->get_cached_until_t(), false);
+        (this->character->ts->get_cached_until_t(), false);
 
   Gtk::MessageDialog md("Information about cached sheets",
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
@@ -1320,141 +1119,4 @@ GtkCharPage::on_skillqueue_clicked (void)
 {
   Gtk::Window* skillqueue = new GuiSkillQueue(this->character);
   skillqueue->set_transient_for(*this->parent_window);
-}
-
-/* ---------------------------------------------------------------- */
-
-std::string
-GtkCharPage::get_char_name (void)
-{
-  if (this->sheet->valid)
-    return this->sheet->name;
-  else
-    return this->character.char_id;
-}
-
-/* ---------------------------------------------------------------- */
-
-std::string
-GtkCharPage::get_tooltip_text (bool detailed)
-{
-  if (!this->sheet->valid)
-    return "";
-
-  std::string ret;
-
-  ret += this->sheet->name;
-  ret += " - ";
-
-  if (this->training->valid && this->training->in_training)
-  {
-    ret += this->get_skill_remaining(true);
-    if (detailed)
-    {
-      ret += " - ";
-      ret += this->get_skill_in_training();
-    }
-  }
-  else
-    ret += "Not training!";
-
-  return ret;
-}
-
-/* ---------------------------------------------------------------- */
-
-std::string
-GtkCharPage::get_skill_in_training (void)
-{
-  if (this->training->valid && this->training->in_training)
-  {
-    int skill_id = this->training->skill;
-    int to_level = this->training->to_level;
-    std::string to_level_str = Helpers::get_roman_from_int(to_level);
-    std::string skill_str;
-
-    try
-    {
-      ApiSkillTreePtr skills = ApiSkillTree::request();
-      skill_str = skills->get_skill_for_id(skill_id)->name;
-    }
-    catch (Exception& e)
-    {
-      /* This happens if the ID is not found. */
-      skill_str = Helpers::get_string_from_int(skill_id);
-    }
-
-    return skill_str + " " + to_level_str;
-  }
-  else
-  {
-    return "No skill in training!";
-  }
-}
-
-/* ---------------------------------------------------------------- */
-
-std::string
-GtkCharPage::get_skill_remaining (bool slim)
-{
-  if (!this->training->valid)
-    return "No training information!";
-
-  if (!this->training->in_training)
-    return "No skill in training!";
-
-  time_t evetime = EveTime::get_eve_time();
-  time_t finish = this->training->end_time_t;
-  time_t diff = finish - evetime;
-
-  return EveTime::get_string_for_timediff(diff, slim);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::open_skill_planner (void)
-{
-  if (!this->sheet->valid || !this->training->valid)
-  {
-    this->info_display.append(INFO_WARNING, "Cannot open the skill "
-        "planner without valid character sheets!");
-    return;
-  }
-
-  GuiSkillPlanner* planner = new GuiSkillPlanner();
-  planner->set_training(this->training);
-  planner->set_character(this->sheet);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::open_source_viewer (void)
-{
-  if (!this->sheet->valid || !this->training->valid)
-  {
-    this->info_display.append(INFO_WARNING, "Cannot open the source "
-        "viewer without valid sheets!");
-    return;
-  }
-
-  GuiXmlSource* window = new GuiXmlSource();
-  window->append(this->sheet->get_http_data(), "CharacterSheet.xml");
-  window->append(this->training->get_http_data(), "SkillInTraining.xml");
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::open_info_exporter (void)
-{
-  if (!this->sheet->valid)
-  {
-    this->info_display.append(INFO_WARNING, "Cannot open the exporter "
-        "without a valid character sheet!");
-    return;
-  }
-
-  new GuiCharExport(this->sheet);
 }

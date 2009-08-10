@@ -15,8 +15,7 @@
 
 #include <string>
 
-#include "apicharsheet.h"
-#include "apiintraining.h"
+#include "character.h"
 
 /* This class handles the notification to external applications. */
 class Notifier
@@ -26,7 +25,7 @@ class Notifier
         std::string const& replace);
 
   public:
-    static int exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training);
+    static int exec (CharacterPtr character);
 };
 
 #endif /* NOTIFIER_HEADER */

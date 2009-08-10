@@ -17,8 +17,9 @@
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/textbuffer.h>
+#include <gtkmm/scrolledwindow.h>
 
-#include "apicharsheet.h"
+#include "character.h"
 #include "apiskilltree.h"
 #include "apicerttree.h"
 #include "apiitemtree.h"
@@ -66,12 +67,12 @@ class GtkItemHistory : public Gtk::HBox
 class GtkItemDetailsBase
 {
   protected:
-    ApiCharSheetPtr charsheet;
+    CharacterPtr character;
     SignalPlanningRequested sig_planning_requested;
     SignalApiElementSelected sig_element_selected;
 
   public:
-    void set_character (ApiCharSheetPtr character);
+    void set_character (CharacterPtr character);
     SignalPlanningRequested& signal_planning_requested (void);
     SignalApiElementSelected& signal_element_selected (void);
 };
@@ -181,9 +182,9 @@ GtkItemHistory::signal_elem_changed (void)
 }
 
 inline void
-GtkItemDetailsBase::set_character (ApiCharSheetPtr character)
+GtkItemDetailsBase::set_character (CharacterPtr character)
 {
-  this->charsheet = character;
+  this->character = character;
 }
 
 inline SignalPlanningRequested&

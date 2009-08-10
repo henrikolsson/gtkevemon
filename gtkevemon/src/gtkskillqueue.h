@@ -18,7 +18,7 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/box.h>
 
-#include "eveapi.h"
+#include "character.h"
 #include "gtkcolumnsbase.h"
 
 class GtkSkillQueueColumns : public Gtk::TreeModel::ColumnRecord
@@ -59,7 +59,7 @@ class GtkSkillQueueViewCols : public GtkColumnsBase
 class GtkSkillQueue : public Gtk::VBox
 {
   private:
-    EveApiFetcher queue_fetcher;
+    CharacterPtr character;
 
     GtkSkillQueueColumns queue_cols;
     Glib::RefPtr<Gtk::ListStore> queue_store;
@@ -67,7 +67,8 @@ class GtkSkillQueue : public Gtk::VBox
     GtkSkillQueueViewCols queue_view_cols;
 
   protected:
-    void on_apidata_available (EveApiData data);
+    void on_apidata_available (void);
+    void on_api_problems (EveApiDocType sheet, std::string error, bool cache);
     void raise_error (std::string const& error, bool cached);
     void init_from_config (void);
     void store_to_config (void);
@@ -76,7 +77,7 @@ class GtkSkillQueue : public Gtk::VBox
     GtkSkillQueue (void);
     ~GtkSkillQueue (void);
 
-    void set_auth_data (EveApiAuth const& auth);
+    void set_character (CharacterPtr character);
     void refresh (void);
 };
 
@@ -94,12 +95,6 @@ GtkSkillQueueColumns::GtkSkillQueueColumns (void)
   this->add(this->end_time);
   this->add(this->duration);
   this->add(this->training);
-}
-
-inline void
-GtkSkillQueue::set_auth_data (EveApiAuth const& auth)
-{
-  this->queue_fetcher.set_auth(auth);
 }
 
 #endif /* GTK_SKILL_QUEUE_HEADER */

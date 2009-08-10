@@ -10,6 +10,8 @@ ApiSkillQueue::set_api_data (EveApiData const& data)
 {
   this->valid = false;
 
+  this->queue.clear();
+
   this->ApiBase::set_api_data(data);
   this->parse_xml();
 

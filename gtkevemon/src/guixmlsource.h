@@ -26,6 +26,7 @@ class GuiXmlSource : public WinBase
 
   public:
     GuiXmlSource (void);
+
     void append (HttpDataPtr data, std::string const& title);
 };
 

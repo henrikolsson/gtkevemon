@@ -165,7 +165,7 @@ GtkDependencyList::recurse_append_skill_req (ApiSkill const* skill,
       + Helpers::get_roman_from_int(level);
   (*slot)[this->deps_cols.data] = skill;
 
-  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
+  ApiCharSheetSkill* cskill = this->character->cs->get_skill_for_id(skill->id);
   Glib::RefPtr<Gdk::Pixbuf> skill_icon;
   if (cskill == 0)
     skill_icon = ImageStore::skilldeps[0];
@@ -198,7 +198,7 @@ GtkDependencyList::recurse_append_cert_req (ApiCert const* cert,
   (*slot)[this->deps_cols.data] = cert;
 
   Glib::RefPtr<Gdk::Pixbuf> cert_icon;
-  int grade = this->charsheet->get_grade_for_class(cert->class_details->id);
+  int grade = this->character->cs->get_grade_for_class(cert->class_details->id);
   if (grade == 0)
     cert_icon = ImageStore::skilldeps[0];
   else if (grade >= cert->grade)
@@ -266,9 +266,15 @@ GtkDependencyList::on_view_button_pressed (GdkEventButton* event)
   if (elem == 0 || elem->get_type() != API_ELEM_SKILL)
     return;
 
+  // TODO make switch, allow certs
+  // - certs deps to a new plan
+  // - certs deps to the current plan (sensitive)
+  // - implement: add a cert (signal cert planning requested?)
+
   ApiSkill const* skill = (ApiSkill const*)elem;
   GtkSkillContextMenu* context = Gtk::manage(new GtkSkillContextMenu);
-  context->set_skill(skill, this->charsheet->get_level_for_skill(skill->id));
+  context->set_skill(skill,
+      this->character->cs->get_level_for_skill(skill->id));
   context->popup(event->button, event->time);
   context->signal_planning_requested().connect(sigc::mem_fun
       (this->sig_planning_requested, &SignalPlanningRequested::emit));
@@ -314,8 +320,6 @@ GtkDependencyList::on_query_element_tooltip (int x, int y, bool key,
 }
 
 /* ================================================================ */
-
-#include <iostream>
 
 GtkItemDetails::GtkItemDetails (void)
   : Gtk::VBox(false, 5)
@@ -388,7 +392,7 @@ GtkItemDetails::on_element_changed (ApiElement const* elem)
       this->element_icon.set(ImageStore::skill->scale_simple
           (35, 35, Gdk::INTERP_BILINEAR));
 
-      this->skill_details.set_character(this->charsheet);
+      this->skill_details.set_character(this->character);
       this->skill_details.set_skill(skill);
 
       this->cert_details.hide();
@@ -408,7 +412,7 @@ GtkItemDetails::on_element_changed (ApiElement const* elem)
       this->element_icon.set(ImageStore::certificate->scale_simple
           (35, 35, Gdk::INTERP_BILINEAR));
 
-      this->cert_details.set_character(this->charsheet);
+      this->cert_details.set_character(this->character);
       this->cert_details.set_certificate(cert);
 
       this->skill_details.hide();
@@ -530,21 +534,23 @@ GtkSkillDetails::set_skill (ApiSkill const* skill)
       (ApiSkillTree::get_attrib_name(skill->secondary));
   this->desc_buffer->set_text(skill->desc);
 
+  ApiCharSheetPtr cs = this->character->cs;
+
   /* Fill character related values. */
-  if (this->charsheet.get() == 0 || !this->charsheet->valid)
+  if (!cs->valid)
     return;
 
-  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
+  ApiCharSheetSkill* cskill = cs->get_skill_for_id(skill->id);
   time_t timediff = 0;
-  double spps = (double)this->charsheet->get_spph_for_skill(skill) / 3600.0;
+  double spps = (double)cs->get_spph_for_skill(skill) / 3600.0;
 
   for (unsigned int i = 0; i < 5; ++i)
   {
     Glib::ustring to_level_str;
     if (cskill == 0 || cskill->level < (int)i)
     {
-      int start_sp = this->charsheet->calc_start_sp(i, skill->rank);
-      int dest_sp = this->charsheet->calc_dest_sp(i, skill->rank);
+      int start_sp = cs->calc_start_sp(i, skill->rank);
+      int dest_sp = cs->calc_dest_sp(i, skill->rank);
       timediff += (time_t)((double)(dest_sp - start_sp) / spps);
       to_level_str = EveTime::get_string_for_timediff(timediff, true);
     }
@@ -565,7 +571,7 @@ GtkSkillDetails::set_skill (ApiSkill const* skill)
     this->skill_level[i].set_text(to_level_str);
   }
 
-  this->deps.set_character(this->charsheet);
+  this->deps.set_character(this->character);
   this->deps.set_skill(skill);
 }
 
@@ -606,6 +612,6 @@ GtkCertDetails::set_certificate (ApiCert const* cert)
 {
   this->desc_buffer->set_text(cert->desc);
 
-  this->deps.set_character(this->charsheet);
+  this->deps.set_character(this->character);
   this->deps.set_cert(cert);
 }

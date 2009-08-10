@@ -54,6 +54,7 @@ class ApiBase : public XmlBase
     void enforce_cache_time (time_t min_cache_time);
 
   public:
+    ApiBase (void);
     virtual ~ApiBase (void);
     virtual void set_api_data (EveApiData const& data);
 
@@ -64,6 +65,13 @@ class ApiBase : public XmlBase
 };
 
 /* ---------------------------------------------------------------- */
+
+inline
+ApiBase::ApiBase (void)
+{
+  this->locally_cached = false;
+  this->cached_until_t = 0;
+}
 
 inline
 ApiBase::~ApiBase (void)

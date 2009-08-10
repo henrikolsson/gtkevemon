@@ -7,7 +7,7 @@
 #include "gtkdefines.h"
 #include "guiskillqueue.h"
 
-GuiSkillQueue::GuiSkillQueue (EveApiAuth const& auth)
+GuiSkillQueue::GuiSkillQueue (CharacterPtr character)
 {
   Gtk::Frame* main_frame = MK_FRAME0;
   main_frame->add(this->queue);
@@ -35,6 +35,6 @@ GuiSkillQueue::GuiSkillQueue (EveApiAuth const& auth)
   this->set_title("Training queue - GtkEveMon");
   this->show_all();
 
-  this->queue.set_auth_data(auth);
+  this->queue.set_character(character);
   this->queue.refresh();
 }

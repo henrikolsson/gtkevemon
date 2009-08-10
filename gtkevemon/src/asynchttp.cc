@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <sstream>
 
 #include "httpstatus.h"
@@ -33,6 +34,10 @@ AsyncHttp::run (void)
     this->http_result.exception = e;
     this->http_result.data.reset();
   }
+
+  /* Simulate some lag. */
+  //::srand(::time(0));
+  //::sleep(::rand() % 3 + 1);
 
   this->sig_dispatch.emit();
   return 0;

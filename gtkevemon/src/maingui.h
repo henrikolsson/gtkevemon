@@ -20,10 +20,11 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/statusicon.h>
 
-#include "gtkinfodisplay.h"
+#include "character.h"
+#include "characterlist.h"
 #include "versionchecker.h"
+#include "gtkinfodisplay.h"
 #include "gtkserver.h"
-#include "eveapi.h"
 
 /* Refresh the list of servers every this milli seconds. */
 #define MAINGUI_SERVER_REFRESH 600000
@@ -38,6 +39,7 @@ class MainGui : public Gtk::Window
 {
   private:
     ConfValuePtr conf_windowtitle;
+    ConfValuePtr conf_detailed_tooltip;
     VersionChecker versionchecker;
     std::vector<GtkServer*> gtkserver;
     Glib::RefPtr<Gtk::ActionGroup> actions;
@@ -51,9 +53,10 @@ class MainGui : public Gtk::Window
 
   private:
     /* Misc helpers. */
-    void init_from_config (void);
-    bool internal_add_character (EveApiAuth const& auth);
-    bool internal_remove_character (EveApiAuth const& auth);
+    void init_from_charlist (void);
+    void add_character (CharacterPtr character);
+    void remove_character (std::string char_id);
+
     void on_pages_changed (Gtk::Widget* widget, guint pnum);
     void on_pages_switched (GtkNotebookPage* page, guint pnum);
     void check_if_no_pages (void);
@@ -64,18 +67,18 @@ class MainGui : public Gtk::Window
     bool update_time (void);
     bool update_tooltip (void);
     bool update_windowtitle (void);
-    void update_char_page (EveApiAuth const& auth);
+    void update_char_name (std::string char_id);
 
     /* Actions. */
     void setup_profile (void);
     void configuration (void);
     void about_dialog (void);
     void version_checker (void);
-    void close (void);
     void launch_eve (void);
     void create_skillplan (void);
     void view_xml_source (void);
     void export_char_info (void);
+    void close (void);
 
     /* Window state and tray icon. */
     bool on_window_state_event (GdkEventWindowState* event);
@@ -89,8 +92,13 @@ class MainGui : public Gtk::Window
   public:
     MainGui (void);
     ~MainGui (void);
-    void add_character (EveApiAuth const& auth);
-    void remove_character (EveApiAuth const& auth);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline
+MainGui::~MainGui (void)
+{
+}
 
 #endif /* MAIN_GUI_HEADER */

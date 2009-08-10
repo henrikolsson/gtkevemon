@@ -31,7 +31,7 @@ GtkSkillList::append_skill (ApiSkill const* skill, int level, bool objective)
   if (this->has_plan_skill(skill, level, objective))
     return;
 
-  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
+  ApiCharSheetSkill* cskill = this->character->cs->get_skill_for_id(skill->id);
   int char_level = cskill ? cskill->level : 0;
 
   /* Also skip skill if already char has it. */
@@ -125,8 +125,8 @@ GtkSkillList::calc_details (bool use_active_spph)
 {
   /* Get attribute values for the character and delegate work. We _really_
    * need a copy of the attribs here, otherwise the character is modified! */
-  unsigned int learning_level = this->charsheet->get_learning_skill_level();
-  ApiCharAttribs attribs = this->charsheet->total;
+  unsigned int learning_level = this->character->cs->get_learning_skill_level();
+  ApiCharAttribs attribs = this->character->cs->total;
   this->calc_details(attribs, learning_level, use_active_spph);
 }
 
@@ -136,13 +136,15 @@ void
 GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
     bool use_active_spph)
 {
+  ApiInTrainingPtr ts = this->character->ts;
+  ApiCharSheetPtr cs = this->character->cs;
+
   int train_skill = -1;
   int train_level = -1;
-  if (this->training.get() != 0 && this->training->valid
-      && this->training->in_training)
+  if (this->character->is_training())
   {
-    train_skill = this->training->skill;
-    train_level = this->training->to_level;
+    train_skill = ts->skill;
+    train_level = ts->to_level;
   }
 
   /* Cached values for time calculations. */
@@ -161,7 +163,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
 
     /* Only relookup the character skill if we really need to. */
     if (cskill == 0 || skill->id != cskill->id)
-      cskill = this->charsheet->get_skill_for_id(skill->id);
+      cskill = cs->get_skill_for_id(skill->id);
 
     /* Update the skill icon. */
     if (skill->id == train_skill && info.plan_level == train_level)
@@ -181,21 +183,21 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
     /* SP per second and per hour. */
     unsigned int spph;
     if (active && use_active_spph)
-      spph = this->training->get_current_spph();
+      spph = ts->get_current_spph();
     else
-      spph = this->charsheet->get_spph_for_skill(skill, attribs);
+      spph = cs->get_spph_for_skill(skill, attribs);
     double spps = spph / 3600.0;
 
     /* Start SP, dest SP and current SP. */
-    int ssp = this->charsheet->calc_start_sp(info.plan_level - 1, skill->rank);
-    int dsp = this->charsheet->calc_dest_sp(info.plan_level - 1, skill->rank);
+    int ssp = cs->calc_start_sp(info.plan_level - 1, skill->rank);
+    int dsp = cs->calc_dest_sp(info.plan_level - 1, skill->rank);
     int csp = ssp;
 
     /* Set current SP only if in training or previous char level available. */
     if (active)
     {
-      double live_spps = this->training->get_current_spph() / 3600.0;
-      time_t diff_time = this->training->end_time_t - now_eve;
+      double live_spps = ts->get_current_spph() / 3600.0;
+      time_t diff_time = ts->end_time_t - now_eve;
       csp = dsp - (int)((double)diff_time * live_spps);
     }
     else if (cskill != 0)
@@ -208,7 +210,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
 
     /* The SP/h needs to be doubled if the char is below 1.6mio SP. */
 #if 0 // Disabled for now because it's not consistent with the rest of the app
-    bool double_sp = this->charsheet->total_sp + (dsp - csp)
+    bool double_sp = cs->total_sp + (dsp - csp)
         + this->total_plan_sp < 1600000;
     if (double_sp && !active)
     {
@@ -277,7 +279,7 @@ GtkSkillList::has_plan_dep_skills (unsigned int index)
           && this->at(j).plan_level >= skill->deps[i].second)
         has_this_dep = true;
 
-      if (this->charsheet->get_level_for_skill
+      if (this->character->cs->get_level_for_skill
           (skill->deps[i].first) >= skill->deps[i].second)
         has_this_dep = true;
     }
@@ -294,7 +296,7 @@ GtkSkillList::has_plan_dep_skills (unsigned int index)
 bool
 GtkSkillList::has_char_dep_skills (ApiSkill const* skill, int level)
 {
-  int char_level = this->charsheet->get_level_for_skill(skill->id);
+  int char_level = this->character->cs->get_level_for_skill(skill->id);
 
   /* Check if previous level of skill is available. */
   if (level > 1)
@@ -308,7 +310,8 @@ GtkSkillList::has_char_dep_skills (ApiSkill const* skill, int level)
   /* Check if deps are available. */
   for (unsigned int i = 0; i < skill->deps.size(); ++i)
   {
-    int dep_level = this->charsheet->get_level_for_skill(skill->deps[i].first);
+    int dep_level = this->character->cs->get_level_for_skill
+        (skill->deps[i].first);
     if (dep_level < skill->deps[i].second)
       return false;
   }
@@ -321,8 +324,7 @@ GtkSkillList::has_char_dep_skills (ApiSkill const* skill, int level)
 bool
 GtkSkillList::has_char_skill (ApiSkill const* skill, int level)
 {
-  //for (unsigned int i = 0; i < this->charsheet->skills.size(); ++i)
-  if (this->charsheet->get_level_for_skill(skill->id) >= level)
+  if (this->character->cs->get_level_for_skill(skill->id) >= level)
     return true;
 
   return false;
@@ -677,25 +679,17 @@ GtkTrainingPlan::store_to_config (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkTrainingPlan::set_character (ApiCharSheetPtr character)
+GtkTrainingPlan::set_character (CharacterPtr character)
 {
-  this->charsheet = character;
-
+  this->character = character;
   this->skills.set_character(character);
-  this->portrait.set(character->char_id);
 
-  std::string key_name = "plans." + character->char_id;
+  std::string const& char_id = this->character->get_char_id();
+  this->portrait.set(char_id);
+
+  std::string key_name = "plans." + char_id;
   ConfValuePtr current_plan = Config::conf.get_value("planner.current_plan");
   this->plan_selection.set_parent_config_section(key_name, **current_plan);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkTrainingPlan::set_training (ApiInTrainingPtr training)
-{
-  this->training = training;
-  this->skills.set_training(training);
 }
 
 /* ---------------------------------------------------------------- */
@@ -745,7 +739,7 @@ GtkTrainingPlan::on_objective_toggled (Glib::ustring const& path)
 void
 GtkTrainingPlan::update_plan (bool rebuild)
 {
-  if (this->charsheet.get() == 0 || !this->charsheet->valid)
+  if (this->character.get() == 0 || !this->character->cs->valid)
     return;
 
   this->updating_liststore = true;

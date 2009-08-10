@@ -10,11 +10,12 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/messagedialog.h>
 
+#include "config.h"
 #include "gtkdefines.h"
 #include "gtkhelpers.h"
 #include "exception.h"
 #include "apicharlist.h"
-#include "config.h"
+#include "characterlist.h"
 #include "guiuserdata.h"
 
 GuiUserData::GuiUserData (void)
@@ -284,7 +285,7 @@ GuiUserData::on_add_clicked (void)
 
     Glib::ustring charid = (*iter)[this->char_cols.charid];
     auth.char_id = charid;
-    this->sig_char_added.emit(auth);
+    CharacterList::request()->add_character(auth);
   }
 
   this->close();
@@ -308,12 +309,4 @@ GuiUserData::on_history_selected (void)
     this->apikey_entry.set_text(apikey);
     this->char_store->clear();
   }
-}
-
-/* ---------------------------------------------------------------- */
-
-sigc::signal<void, EveApiAuth>
-GuiUserData::signal_char_added (void)
-{
-  return this->sig_char_added;
 }

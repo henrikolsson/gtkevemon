@@ -14,6 +14,7 @@
 #define GUI_SKILL_QUEUE_HEADER
 
 #include "winbase.h"
+#include "character.h"
 #include "gtkskillqueue.h"
 
 class GuiSkillQueue : public WinBase
@@ -22,7 +23,7 @@ class GuiSkillQueue : public WinBase
     GtkSkillQueue queue;
 
   public:
-    GuiSkillQueue (EveApiAuth const& auth);
+    GuiSkillQueue (CharacterPtr character);
 };
 
 #endif /* GUI_SKILL_QUEUE_HEADER */
