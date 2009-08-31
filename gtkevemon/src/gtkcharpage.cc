@@ -913,6 +913,18 @@ GtkCharPage::on_skill_completed (void)
 void
 GtkCharPage::on_close_clicked (void)
 {
+  Gtk::MessageDialog md("Really close the character?",
+      false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+  md.set_secondary_text("You are about to remove <b>"
+      + this->character->get_char_name() + "</b>\n"
+      "from monitoring. Do you want to continue?", true);
+  md.set_title("Close Character?");
+  md.set_transient_for(*this->parent_window);
+
+  int ret = md.run();
+  if (ret != Gtk::RESPONSE_OK)
+    return;
+
   CharacterList::request()->remove_character(this->character->get_char_id());
 }
 
