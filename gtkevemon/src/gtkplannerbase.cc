@@ -5,23 +5,16 @@
 
 #include "imagestore.h"
 #include "helpers.h"
+#include "gtkdefines.h"
 #include "gtkplannerbase.h"
 
-GtkSkillContextMenu::GtkSkillContextMenu (void)
+GtkElementContextMenu::GtkElementContextMenu (void)
 {
   this->signal_selection_done().connect(sigc::mem_fun
-      (*this, &GtkSkillContextMenu::delete_me));
+      (*this, &GtkElementContextMenu::delete_me));
 }
 
-/* ---------------------------------------------------------------- */
-
-void
-GtkSkillContextMenu::delete_me (void)
-{
-  delete this;
-}
-
-/* ---------------------------------------------------------------- */
+/* ================================================================ */
 
 void
 GtkSkillContextMenu::set_skill (ApiSkill const* skill, int min_level)
@@ -55,12 +48,27 @@ GtkSkillContextMenu::on_training_requested (int level)
   this->sig_planning_requested.emit(this->skill, level);
 }
 
+/* ================================================================ */
+
+void
+GtkCertContextMenu::set_cert (ApiCert const* cert)
+{
+  this->cert = cert;
+  Gtk::ImageMenuItem* menuitem = Gtk::manage(new Gtk::ImageMenuItem
+      (*MK_IMG_PB(ImageStore::certificate_small),
+      "Train certificate"));
+  menuitem->signal_activate().connect(sigc::mem_fun
+      (*this, &GtkCertContextMenu::on_training_requested));
+  this->append(*menuitem);
+  this->show_all();
+}
+
 /* ---------------------------------------------------------------- */
 
-sigc::signal<void, ApiSkill const*, int>&
-GtkSkillContextMenu::signal_planning_requested (void)
+void
+GtkCertContextMenu::on_training_requested (void)
 {
-  return sig_planning_requested;
+  this->sig_planning_requested.emit(this->cert, 0);
 }
 
 /* ================================================================ */

@@ -43,11 +43,10 @@ class ItemBrowserBase
     /* Executed if a mouse button is pressed. */
     void on_view_button_pressed (GdkEventButton* event);
     /* Executed if planning was requested from the context menu. */
-    void on_planning_requested (ApiSkill const* skill, int level);
+    void on_planning_requested (ApiElement const* skill, int level);
     /* Tooltip query. */
     bool on_query_element_tooltip (int x, int y, bool key,
         Glib::RefPtr<Gtk::Tooltip> const& tooltip);
-
 
   public:
     ItemBrowserBase (void);
@@ -123,9 +122,9 @@ ItemBrowserBase::signal_planning_requested (void)
 }
 
 inline void
-ItemBrowserBase::on_planning_requested (ApiSkill const* skill, int level)
+ItemBrowserBase::on_planning_requested (ApiElement const* elem, int level)
 {
-  this->sig_planning_requested.emit(skill, level);
+  this->sig_planning_requested.emit(elem, level);
 }
 
 inline void

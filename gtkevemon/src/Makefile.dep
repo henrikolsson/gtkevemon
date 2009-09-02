@@ -92,7 +92,7 @@ gtkinfodisplay.o: gtkinfodisplay.cc evetime.h exception.h gtkdefines.h \
   http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h xml.h apicharsheet.h apicerttree.h gtkinfodisplay.h \
   winbase.h
-gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h \
+gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h gtkdefines.h \
   gtkplannerbase.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
   asynchttp.h http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
   thread.h thread_posix.h exception.h xml.h apicerttree.h

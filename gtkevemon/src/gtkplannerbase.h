@@ -21,26 +21,51 @@
 #include "apiskilltree.h"
 #include "apicerttree.h"
 
-typedef sigc::signal<void, ApiSkill const*, int> SignalPlanningRequested;
+typedef sigc::signal<void, ApiElement const*, int> SignalPlanningRequested;
 typedef sigc::signal<void, ApiElement const*> SignalApiElementSelected;
 typedef sigc::signal<void, ApiElement const*> SignalApiElementActivated;
 
 /* ---------------------------------------------------------------- */
 
-class GtkSkillContextMenu : public Gtk::Menu
+class GtkElementContextMenu : public Gtk::Menu
 {
-  private:
-    ApiSkill const* skill;
-    sigc::signal<void, ApiSkill const*, int> sig_planning_requested;
+  protected:
+    SignalPlanningRequested sig_planning_requested;
 
   protected:
-    void on_training_requested (int level);
     void delete_me (void);
 
   public:
-    GtkSkillContextMenu (void);
+    GtkElementContextMenu (void);
+    SignalPlanningRequested& signal_planning_requested (void);
+};
+
+/* ---------------------------------------------------------------- */
+
+class GtkSkillContextMenu : public GtkElementContextMenu
+{
+  private:
+    ApiSkill const* skill;
+
+  protected:
+    void on_training_requested (int level);
+
+  public:
     void set_skill (ApiSkill const* skill, int min_level);
-    sigc::signal<void, ApiSkill const*, int>& signal_planning_requested (void);
+};
+
+/* ---------------------------------------------------------------- */
+
+class GtkCertContextMenu : public GtkElementContextMenu
+{
+  private:
+    ApiCert const* cert;
+
+  protected:
+    void on_training_requested (void);
+
+  public:
+    void set_cert (ApiCert const* cert);
 };
 
 /* ---------------------------------------------------------------- */
@@ -78,6 +103,18 @@ typedef GuiPlannerCols<ApiSkill const*> GuiPlannerSkillCols;
 typedef GuiPlannerCols<ApiCert const*> GuiPlannerCertCols;
 
 /* ---------------------------------------------------------------- */
+
+inline SignalPlanningRequested&
+GtkElementContextMenu::signal_planning_requested (void)
+{
+  return this->sig_planning_requested;
+}
+
+inline void
+GtkElementContextMenu::delete_me (void)
+{
+  delete this;
+}
 
 inline
 GtkListViewHelper::GtkListViewHelper (Glib::RefPtr<Gtk::TreeModel> const& model)

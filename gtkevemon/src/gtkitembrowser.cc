@@ -91,7 +91,7 @@ ItemBrowserBase::on_view_button_pressed (GdkEventButton* event)
   if (elem == 0)
     return;
 
-  /* Only skills have context menus for now. */
+  /* Skills and certs have context menus. */
   switch (elem->get_type())
   {
     case API_ELEM_SKILL:
@@ -103,7 +103,20 @@ ItemBrowserBase::on_view_button_pressed (GdkEventButton* event)
       menu->popup(event->button, event->time);
       menu->signal_planning_requested().connect(sigc::mem_fun
           (*this, &ItemBrowserBase::on_planning_requested));
+      break;
     }
+
+    case API_ELEM_CERT:
+    {
+      ApiCert const* cert = (ApiCert const*)elem;
+      GtkCertContextMenu* menu = Gtk::manage(new GtkCertContextMenu);
+      menu->set_cert(cert);
+      menu->popup(event->button, event->time);
+      menu->signal_planning_requested().connect(sigc::mem_fun
+          (*this, &ItemBrowserBase::on_planning_requested));
+      break;
+    }
+
     default:
       break;
   }

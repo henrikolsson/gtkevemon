@@ -76,6 +76,8 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
     CharacterPtr get_character (void) const;
 
     void append_skill (ApiSkill const* skill, int level);
+    void append_cert (ApiCert const* cert);
+
     void move_skill (unsigned int from, unsigned int to);
     //void fix_skill (unsigned int index);
     void insert_skill (unsigned int pos, GtkSkillInfo const& info);
@@ -204,7 +206,7 @@ class GtkTrainingPlan : public Gtk::VBox
 
     void set_character (CharacterPtr character);
 
-    void append_skill (ApiSkill const* skill, int level);
+    void append_element (ApiElement const* skill, int level);
 
     sigc::signal<void, ApiSkill const*>& signal_skill_activated (void);
 };

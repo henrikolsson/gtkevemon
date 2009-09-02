@@ -40,7 +40,7 @@ class GuiSkillPlanner : public WinBase
 
     void on_element_selected (ApiElement const* elem);
     void on_element_activated (ApiElement const* elem);
-    void on_planning_requested (ApiSkill const* skill, int level);
+    void on_planning_requested (ApiElement const* skill, int level);
 
     void init_from_config (void);
     void store_to_config (void);

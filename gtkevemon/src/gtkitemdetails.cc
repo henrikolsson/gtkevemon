@@ -263,21 +263,43 @@ GtkDependencyList::on_view_button_pressed (GdkEventButton* event)
 
   Gtk::TreeModel::iterator iter = selection->get_selected();
   ApiElement const* elem = (*iter)[this->deps_cols.data];
-  if (elem == 0 || elem->get_type() != API_ELEM_SKILL)
+  if (elem == 0) // || elem->get_type() != API_ELEM_SKILL)
     return;
+
+  switch (elem->get_type())
+  {
+    case API_ELEM_SKILL:
+    {
+      ApiSkill const* skill = (ApiSkill const*)elem;
+      GtkSkillContextMenu* context = Gtk::manage(new GtkSkillContextMenu);
+      context->set_skill(skill,
+          this->character->cs->get_level_for_skill(skill->id));
+      context->popup(event->button, event->time);
+      context->signal_planning_requested().connect(sigc::mem_fun
+          (this->sig_planning_requested, &SignalPlanningRequested::emit));
+      break;
+    }
+
+    case API_ELEM_CERT:
+    {
+      ApiCert const* cert = (ApiCert const*)elem;
+      GtkCertContextMenu* context = Gtk::manage(new GtkCertContextMenu);
+      context->set_cert(cert);
+      context->popup(event->button, event->time);
+      context->signal_planning_requested().connect(sigc::mem_fun
+          (this->sig_planning_requested, &SignalPlanningRequested::emit));
+      break;
+    }
+
+    default:
+      break;
+  }
 
   // TODO make switch, allow certs
   // - certs deps to a new plan
   // - certs deps to the current plan (sensitive)
   // - implement: add a cert (signal cert planning requested?)
 
-  ApiSkill const* skill = (ApiSkill const*)elem;
-  GtkSkillContextMenu* context = Gtk::manage(new GtkSkillContextMenu);
-  context->set_skill(skill,
-      this->character->cs->get_level_for_skill(skill->id));
-  context->popup(event->button, event->time);
-  context->signal_planning_requested().connect(sigc::mem_fun
-      (this->sig_planning_requested, &SignalPlanningRequested::emit));
 
   return;
 }

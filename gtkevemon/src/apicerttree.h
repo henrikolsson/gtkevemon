@@ -46,7 +46,9 @@ class ApiCert : public ApiElement
     std::string desc;
     ApiCertClass const* class_details;
 
+    /* Skill deps are in format (skill id, skill level). */
     std::vector<std::pair<int, int> > skilldeps;
+    /* Cert deps are in format (cert id, cert grade). */
     std::vector<std::pair<int, int> > certdeps;
 
   public:

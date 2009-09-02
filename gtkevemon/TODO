@@ -6,7 +6,6 @@ User interface
  - Fix caching to detect error documents
  - Create .bak files before a cache files is overwritten
  - Reload skill in training after training finishes
- - Allow certs to be added to the training plan
 
 
 Skill Browser / Planner

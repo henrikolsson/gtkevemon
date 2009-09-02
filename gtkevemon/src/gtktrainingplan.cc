@@ -69,6 +69,32 @@ GtkSkillList::append_skill (ApiSkill const* skill, int level, bool objective)
 /* ---------------------------------------------------------------- */
 
 void
+GtkSkillList::append_cert (ApiCert const* cert)
+{
+  ApiSkillTreePtr stree = ApiSkillTree::request();
+  ApiCertTreePtr ctree = ApiCertTree::request();
+
+  /* Walk over all prerequisite certs and add them. */
+  for (std::size_t i = 0; i < cert->certdeps.size(); ++i)
+  {
+    int cert_id = cert->certdeps[i].first;
+    ApiCert const* dcert = ctree->get_certificate_for_id(cert_id);
+    this->append_cert(dcert);
+  }
+
+  /* Walk over all prerequisite skills and add them. */
+  for (std::size_t i = 0; i < cert->skilldeps.size(); ++i)
+  {
+    int skill_id = cert->skilldeps[i].first;
+    int skill_level = cert->skilldeps[i].second;
+    ApiSkill const* skill = stree->get_skill_for_id(skill_id);
+    this->append_skill(skill, skill_level);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GtkSkillList::move_skill (unsigned int from, unsigned int to)
 {
   this->insert_skill(to, GtkSkillInfo());
@@ -695,7 +721,7 @@ GtkTrainingPlan::set_character (CharacterPtr character)
 /* ---------------------------------------------------------------- */
 
 void
-GtkTrainingPlan::append_skill (ApiSkill const* skill, int level)
+GtkTrainingPlan::append_element (ApiElement const* element, int level)
 {
   if (this->plan_section.get() == 0)
   {
@@ -711,7 +737,18 @@ GtkTrainingPlan::append_skill (ApiSkill const* skill, int level)
     return;
   }
 
-  this->skills.append_skill(skill, level);
+  switch (element->get_type())
+  {
+    case API_ELEM_SKILL:
+      this->skills.append_skill((ApiSkill const*)element, level);
+      break;
+    case API_ELEM_CERT:
+      this->skills.append_cert((ApiCert const*)element);
+      break;
+    default:
+      break;
+  };
+
   this->update_plan(true);
 }
 
@@ -1227,7 +1264,7 @@ GtkTrainingPlan::on_import_plan (void)
     if (plan[i].prerequisite)
       continue;
 
-    this->append_skill(plan[i].skill, plan[i].level);
+    this->append_element(plan[i].skill, plan[i].level);
   }
 }
 

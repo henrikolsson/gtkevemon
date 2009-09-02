@@ -55,6 +55,8 @@ GuiSkillPlanner::GuiSkillPlanner (void)
       (sigc::mem_fun(*this, &GuiSkillPlanner::on_element_selected));
   this->cert_browser.signal_element_activated().connect
       (sigc::mem_fun(*this, &GuiSkillPlanner::on_element_activated));
+  this->cert_browser.signal_planning_requested().connect
+      (sigc::mem_fun(*this, &GuiSkillPlanner::on_planning_requested));
 
   close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
   this->plan_gui.signal_skill_activated().connect(sigc::mem_fun
@@ -151,10 +153,10 @@ GuiSkillPlanner::on_element_activated (ApiElement const* elem)
 /* ---------------------------------------------------------------- */
 
 void
-GuiSkillPlanner::on_planning_requested (ApiSkill const* skill, int level)
+GuiSkillPlanner::on_planning_requested (ApiElement const* elem, int level)
 {
   this->details_nb.set_current_page(0);
-  this->plan_gui.append_skill(skill, level);
+  this->plan_gui.append_element(elem, level);
 }
 
 /* ---------------------------------------------------------------- */
