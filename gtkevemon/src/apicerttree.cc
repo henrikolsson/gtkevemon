@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -66,7 +67,7 @@ ApiCertTree::refresh (void)
 
   std::cout << "Seeking XML: " << CERTTREE_FN
       << " not found. Shutdown!" << std::endl;
-  ::exit(0);
+  ::exit(EXIT_FAILURE);
 }
 
 /* ---------------------------------------------------------------- */

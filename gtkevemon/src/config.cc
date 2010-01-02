@@ -109,14 +109,13 @@ Config::init_config_path (void)
       else
       {
         std::cout << "Warning: Couldn't even determine CWD!" << std::endl;
-        user_conf_dir = "/tmp";
+        user_conf_dir = OS_TEMP_DIR;
       }
     }
     else
     {
       user_conf_dir = user_info->pw_dir;
-      user_conf_dir += "/";
-      user_conf_dir += CONF_HOME_DIR;
+      user_conf_dir += "/" CONF_HOME_DIR;
     }
   }
   else
@@ -137,8 +136,8 @@ Config::init_config_path (void)
     if (ret < 0)
     {
       std::cout << "Error: Couldn't create the config directory!" << std::endl;
-      std::cout << "Error: Falling back to /tmp" << std::endl;
-      user_conf_dir = "/tmp";
+      std::cout << "Error: Falling back to " OS_TEMP_DIR << std::endl;
+      user_conf_dir = OS_TEMP_DIR;
     }
   }
 

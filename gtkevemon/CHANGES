@@ -1,3 +1,9 @@
+[b]Revision 1.7-106 to Revision 1.7-107[/b]
+[list]
+[li]Confirmation dialog when closing a character.[/li]
+[li]New option to add certificates to the training plan.[/li]
+[/list]
+
 [b]Revision 1.7-102 to Revision 1.7-105[/b]
 [list]
 [li]External notifier gets SP/h from training sheet now.[/li]

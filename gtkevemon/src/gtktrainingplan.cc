@@ -565,6 +565,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->treeview.set_headers_visible(true);
   this->treeview.set_rules_hint(true);
   this->treeview.set_reorderable(true);
+  //this->treeview.set_grid_lines(Gtk::TREE_VIEW_GRID_LINES_VERTICAL);
   //this->viewcols.set_format("+0 +1 +2 +3 -4 -5 -6 -7 -8");
   this->updating_liststore = false;
 

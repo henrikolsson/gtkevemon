@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -65,7 +66,7 @@ ApiSkillTree::refresh (void)
 
   std::cout << "Seeking XML: " << SKILLTREE_FN
       << " not found. Shutdown!" << std::endl;
-  ::exit(0);
+  ::exit(EXIT_FAILURE);
 }
 
 /* ---------------------------------------------------------------- */

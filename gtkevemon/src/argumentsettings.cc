@@ -43,12 +43,12 @@ ArgumentSettings::init (int argc, char** argv)
     else if (sw == "-h" || sw == "--help")
     {
       ArgumentSettings::show_help();
-      ::exit(0);
+      ::exit(EXIT_SUCCESS);
     }
     else if (sw == "-v" || sw == "--version")
     {
       std::cout << "GtkEveMon Version: " GTKEVEMON_VERSION_STR << std::endl;
-      ::exit(0);
+      ::exit(EXIT_SUCCESS);
     }
     else if (sw == "-c" || sw == "--config-dir")
     {

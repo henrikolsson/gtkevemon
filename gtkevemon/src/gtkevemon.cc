@@ -24,7 +24,6 @@
 #include "maingui.h"
 
 #include "apicharsheet.h"
-#include <iostream>
 
 void
 signal_received (int signum)

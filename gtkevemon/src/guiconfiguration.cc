@@ -1,4 +1,3 @@
-#include <sys/stat.h>
 #include <iostream>
 #include <gtkmm/table.h>
 #include <gtkmm/stock.h>
@@ -511,20 +510,20 @@ GuiConfiguration::GuiConfiguration (void)
   notebook->append_page(*page_timeformat, "Time format");
   notebook->append_page(*page_network, "Network");
 
-  Gtk::VBox* main_vbox = MK_VBOX;
-  main_vbox->pack_start(*notebook, true, true, 0);
-  main_vbox->pack_end(*button_bar, false, false, 0);
-
   Gtk::Frame* image_frame = MK_FRAME0;
   image_frame->set_shadow_type(Gtk::SHADOW_IN);
   image_frame->add(*Gtk::manage(new Gtk::Image(ImageStore::aboutlogo)));
 
   Gtk::HBox* main_hbox = MK_HBOX;
-  main_hbox->set_border_width(5);
   main_hbox->pack_start(*image_frame, false, false, 0);
-  main_hbox->pack_start(*main_vbox, true, true, 0);
+  main_hbox->pack_start(*notebook, true, true, 0);
 
-  this->add(*main_hbox);
+  Gtk::VBox* main_vbox = MK_VBOX;
+  main_vbox->set_border_width(5);
+  main_vbox->pack_start(*main_hbox, true, true, 0);
+  main_vbox->pack_end(*button_bar, false, false, 0);
+
+  this->add(*main_vbox);
   this->set_title("Configuration - GtkEveMon");
   this->show_all();
 

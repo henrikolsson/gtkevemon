@@ -107,10 +107,10 @@ GuiVersionChecker::~GuiVersionChecker (void)
     Gtk::Main::quit();
 
   if (this->startup_mode && !this->is_updated)
-    ::exit(0);
+    ::exit(EXIT_SUCCESS);
 
   if (!this->startup_mode && this->is_updated)
-    ::exit(0);
+    ::exit(EXIT_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -248,7 +248,7 @@ GuiVersionChecker::on_close_clicked (void)
   this->close();
 
   if (startup_mode)
-    ::exit(0);
+    ::exit(EXIT_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */

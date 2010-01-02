@@ -59,7 +59,7 @@ get_default_config_dir (void)
   if (user_info == 0 || user_info->pw_dir == 0)
   {
     std::cerr << "Error: Couldn't determine home directory!" << std::endl;
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 
   user_conf_dir = user_info->pw_dir;
@@ -87,7 +87,7 @@ print_file (std::string const& filename, std::string const& conf_dir)
   {
     std::cerr << "Error accessing " << fullpath << ": "
         << ::strerror(errno) << std::endl;
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
   std::cout << in.rdbuf() << std::endl;
   in.close();
@@ -101,7 +101,7 @@ main (int argc, char** argv)
   if (argc <= 1)
   {
     ::usage(argv);
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 
   std::string config_dir;
@@ -116,19 +116,19 @@ main (int argc, char** argv)
     if (argi == "-h" || argi == "--help")
     {
       ::usage(argv);
-      ::exit(0);
+      ::exit(EXIT_SUCCESS);
     }
     else if (argi == "-v" || argi == "--version")
     {
       std::cout << "GtkEveMon Version: " GTKEVEMON_VERSION_STR << std::endl;
-      ::exit(0);
+      ::exit(EXIT_SUCCESS);
     }
 
     /* Arguments with exactly two parameters. */
     if (i + 1 >= argc)
     {
       ::usage(argv);
-      ::exit(1);
+      ::exit(EXIT_FAILURE);
     }
 
     if (argi == "-c" || argi == "--config-dir")
@@ -160,7 +160,7 @@ main (int argc, char** argv)
     std::cout << "Argument \"" << argi << "\" not recognized!"
         << std::endl << std::endl;
     ::usage(argv, true);
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 
   if (!char_sheet_cid.empty())

@@ -18,12 +18,15 @@
 #define NET_NAMESPACE_END }
 
 #ifdef WIN32
+# define NET_INVALID_SOCKET INVALID_SOCKET;
+# define WIN32_LEAN_AND_MEAN
+# define NOMINMAX
+# include <ws2tcpip.h>
   typedef ULONG in_addr_t;
   typedef SOCKET NetSocketFD;
-# define NET_INVALID_SOCKET INVALID_SOCKET;
 #else
-  typedef int NetSocketFD;
 # define NET_INVALID_SOCKET -1
+  typedef int NetSocketFD;
 #endif
 
 #endif /* NET_DEFINES_HEADER */

@@ -1,14 +1,5 @@
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <cstring> // memset
 #include <iostream>
-#include <cmath>
-#include <cerrno>
-#include <cstring>
-#include <cstdlib>
 #include <sstream>
 #include <string>
 
@@ -65,7 +56,7 @@ Http::initialize_defaults (void)
 {
   this->method = HTTP_METHOD_GET;
   this->port = 80;
-  this->agent = "VerySimpleHttpRequester";
+  this->agent = "GtkEveMon HTTP Requester";
   this->proxy_port = 80;
   this->http_state = HTTP_STATE_READY;
   this->bytes_read = 0;

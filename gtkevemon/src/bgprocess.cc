@@ -98,7 +98,7 @@ BGProcess::run (void)
 
     /* Give up. */
     std::cout << "Cannot execute program: " << ::strerror(errno) << std::endl;
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 
   std::cout << "PID " << pid << " created." << std::endl;

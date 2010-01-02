@@ -1,6 +1,7 @@
 CXX ?= g++
 
-CORES = $(shell grep processor /proc/cpuinfo | wc -l)
+CORES_LINE = $(shell system_profiler SPHardwareDataType | grep Cores)
+CORES = $(lastword $(CORES_LINE))
 
 GCC_FLAGS = -Wall -Wextra -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g -pedantic
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)

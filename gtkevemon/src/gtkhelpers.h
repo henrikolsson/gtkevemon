@@ -19,13 +19,14 @@
 
 #include "apiskilltree.h"
 #include "apicharsheet.h"
+#include "character.h"
 
 class GtkHelpers
 {
   public:
     static void create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
         ApiSkill const* skill, ApiCharSheetSkill* cskill = 0,
-        ApiCharSheetPtr sheet = ApiCharSheetPtr());
+        CharacterPtr character = CharacterPtr());
 
     static void create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
         ApiCert const* cert);

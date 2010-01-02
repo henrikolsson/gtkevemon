@@ -90,7 +90,7 @@ PipedExec::exec (const std::vector<std::string>& cmd)
     error_msg += ::strerror(errno);
     std::cerr << error_msg << std::endl;
 
-    ::exit(1);
+    ::exit(EXIT_FAILURE);
   }
 }
 

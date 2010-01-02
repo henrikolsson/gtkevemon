@@ -10,15 +10,78 @@
 void
 GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
         ApiSkill const* skill, ApiCharSheetSkill* cskill,
-        ApiCharSheetPtr sheet)
+        CharacterPtr character)
 {
   tooltip->set_icon(ImageStore::skill);
 
   std::stringstream ss;
-  ss << "Name: " << skill->name << "\n"
-      << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
+
+  if (cskill != 0)
+    ss << "Name: " << skill->name << " "
+        << Helpers::get_roman_from_int(cskill->level) << "\n";
+  else
+    ss << "Name: " << skill->name << "\n";
+
+  ss << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
       << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\n";
 
+  if (cskill != 0 && cskill->level != 5)
+  {
+    /* Fill basic information available from the character skill. */
+    int current_sp = cskill->points;
+    double completed = cskill->completed;
+
+    /* Get more information available from char/training sheet. */
+    double spph = 0.0;
+    time_t time_remaining = 0;
+
+    if (character.get() != 0 && character->cs->valid)
+    {
+      /* Insert live information if the current skill is in training. */
+      if (character->ts->valid  && character->ts->in_training
+          && character->training_skill == skill)
+      {
+        /* Fill live information. */
+        current_sp = character->training_skill_sp;
+        completed = character->training_level_done;
+        spph = character->training_spph;
+        time_remaining = character->training_remaining;
+      }
+      else
+      {
+        /* Fill information from char sheet. */
+        int sp_remaining = cskill->points_dest - current_sp;
+        spph = (double)character->cs->get_spph_for_skill(skill);
+        time_remaining = (time_t)(3600.0 * (double)sp_remaining / spph);
+      }
+    }
+
+    ss << "Skill level from " << Helpers::get_dotted_str_from_int
+        (cskill->points_start) << " to " << Helpers::get_dotted_str_from_int
+        (cskill->points_dest) << " SP\n";
+
+    if (cskill->points_start != current_sp)
+      ss << "Current SP: " << Helpers::get_dotted_str_from_int
+          (current_sp) << "\n";
+
+    if (spph != 0.0 && time_remaining != 0)
+    {
+      ss << "SP per hour: " << (int)spph << "\n";
+      if (completed != 0.0)
+        ss << "Remaining time: ";
+      else
+        ss << "Training time: ";
+      ss << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
+    }
+
+    if (completed != 0.0)
+      ss << "Completed: " << Helpers::get_string_from_double
+          (completed * 100.0, 2) << "%\n";
+  }
+
+
+#if 0
+  /* Old version without live SP counting. */
   if (cskill != 0 && sheet.get() != 0 && sheet->valid && cskill->level != 5)
   {
     int sp_to_go = cskill->points_dest - cskill->points;
@@ -34,8 +97,9 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
         << Helpers::get_dotted_str_from_int(cskill->points_dest) << "\n"
         << "Training time: " << next_level_str << "\n";
   }
+#endif
 
-  ss  << "\n" << skill->desc;
+  ss << "\n" << skill->desc;
   tooltip->set_text(ss.str());
 }
 

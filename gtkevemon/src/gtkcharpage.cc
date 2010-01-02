@@ -91,6 +91,7 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->skill_view.get_column(0)->set_expand(true);
   this->skill_view.get_column(1)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
+  //this->skill_view.set_grid_lines(Gtk::TREE_VIEW_GRID_LINES_BOTH);
 
   /* Build GUI elements. */
   Gtk::ScrolledWindow* scwin = Gtk::manage(new Gtk::ScrolledWindow);
@@ -951,8 +952,7 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   if (skill_id < 0 || cskill == 0)
     return false;
 
-  GtkHelpers::create_tooltip(tooltip, cskill->details, cskill,
-      this->character->cs);
+  GtkHelpers::create_tooltip(tooltip, cskill->details, cskill, this->character);
   return true;
 }
 
