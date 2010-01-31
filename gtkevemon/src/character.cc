@@ -149,6 +149,13 @@ Character::process_api_data (void)
     ApiSkillTreePtr tree = ApiSkillTree::request();
     this->training_skill = tree->get_skill_for_id(this->ts->skill);
     this->training_spph = this->ts->get_current_spph();
+
+    if (this->training_skill == 0)
+    {
+      std::cout << "Warning: Skill in training (ID " << this->ts->skill
+          << ") was not found. Skill tree out of date?" << std::endl;
+    }
+
     if (!this->cs->valid)
       this->update_live_info();
   }
@@ -171,15 +178,23 @@ Character::process_api_data (void)
 
       /* Get the character skill in training. */
       this->training_cskill = this->cs->get_skill_for_id(this->ts->skill);
-
-      /* Cache the amount of SP in the active skill group. */
-      int group_id = this->training_cskill->details->group;
       this->char_group_base_sp = 0;
-      for (std::size_t i = 0; i < this->cs->skills.size(); ++i)
+
+      if (this->training_cskill != 0)
       {
-        ApiCharSheetSkill& cskill = this->cs->skills[i];
-        if (cskill.details->group == group_id)
-          this->char_group_base_sp += cskill.points;
+        /* Cache the amount of SP in the active skill group. */
+        int group_id = this->training_cskill->details->group;
+        for (std::size_t i = 0; i < this->cs->skills.size(); ++i)
+        {
+          ApiCharSheetSkill& cskill = this->cs->skills[i];
+          if (cskill.details->group == group_id)
+            this->char_group_base_sp += cskill.points;
+        }
+      }
+      else
+      {
+        std::cout << "Warning: Skill in training (ID " << this->ts->skill
+            << ") is unknown to " << this->cs->name << "!" << std::endl;
       }
 
       /* Update the live info. */
@@ -223,24 +238,37 @@ Character::update_live_info (void)
     return;
   }
 
+  /* Update easy values first to get useful results even in case of errors. */
+  unsigned int level_dest_sp = this->ts->dest_sp;
+  double spps = (double)this->training_spph / 3600.0;
+
+  this->training_remaining = diff;
+  this->training_skill_sp = level_dest_sp - (unsigned int)((double)diff * spps);
+
+  /* Check if the skill in training could be determined.
+   * This may be NULL if the skill was not available in the skill tree. */
+  if (this->training_skill == 0)
+    return;
+
   /* Update training live values. */
   unsigned int level_start_sp = ApiCharSheet::calc_start_sp
       (this->ts->to_level - 1, this->training_skill->rank);
-  unsigned int level_dest_sp = this->ts->dest_sp;
   unsigned int level_total_sp = level_dest_sp - level_start_sp;
-  double spps = (double)this->training_spph / 3600.0;
+
+  this->training_level_sp = this->training_skill_sp - level_start_sp;
+  this->training_level_done = (double)this->training_level_sp
+      / (double)level_total_sp;
 
   //std::cout << "** Start SP: " << level_start_sp << ", Dest SP: "
   //    << level_dest_sp << ", Level SP: " << level_total_sp << ", SP/s: "
   //    << spps << std::endl;
 
-  this->training_remaining = diff;
-  this->training_skill_sp = level_dest_sp - (unsigned int)((double)diff * spps);
-  this->training_level_sp = this->training_skill_sp - level_start_sp;
-  this->training_level_done = (double)this->training_level_sp
-      / (double)level_total_sp;
-
   if (!this->cs->valid)
+    return;
+
+  /* Check if the skill in training is available in the character.
+   * This may be NULL if the skill was not available in the skill tree. */
+  if (this->training_cskill == 0)
     return;
 
   /* Update character live values. */
@@ -293,8 +321,11 @@ Character::get_training_text (void) const
     std::string skill_str;
     try
     {
-      ApiSkillTreePtr skills = ApiSkillTree::request();
-      skill_str = skills->get_skill_for_id(this->ts->skill)->name;
+      ApiSkillTreePtr tree = ApiSkillTree::request();
+      ApiSkill const* skill = tree->get_skill_for_id(this->ts->skill);
+      if (skill == 0)
+        throw Exception();
+      skill_str = skill->name;
     }
     catch (Exception& e)
     {

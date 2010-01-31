@@ -91,27 +91,42 @@ GuiSkill::GuiSkill (void)
 void
 GuiSkill::set_skill (int skill_id)
 {
-  this->skill_name.set_text("---");
+  this->skill_id.set_text("ID " + Helpers::get_string_from_int(skill_id));
+  this->group_id.set_text("---");
   this->group_name.set_text("---");
+  this->skill_attribs.set_text("---");
 
+  ApiSkill const* skill = 0;
+  ApiSkillGroup const* group = 0;
   try
   {
     ApiSkillTreePtr tree = ApiSkillTree::request();
-    ApiSkill const* skill = tree->get_skill_for_id(skill_id);
-    int group_id = skill->group;
-    ApiSkillGroup const* group = tree->get_group_for_id(group_id);
-
-    this->skill_name.set_text(skill->name + " ("
-        + Helpers::get_string_from_int(skill->rank) + ")");
-    this->group_name.set_text(group->name);
-    this->skill_attribs.set_text(ApiSkillTree::get_attrib_name(skill->primary)
-        + std::string(" / ") + ApiSkillTree::get_attrib_name(skill->secondary));
-    this->skill_id.set_text("ID " + Helpers::get_string_from_int(skill->id));
-    this->group_id.set_text("ID " + Helpers::get_string_from_int(group->id));
-    this->desc_buffer->set_text(skill->desc);
+    skill = tree->get_skill_for_id(skill_id);
+    if (skill != 0)
+      group = tree->get_group_for_id(skill->group);
   }
   catch (...)
   {
-    this->skill_name.set_text(Helpers::get_string_from_int(skill_id));
   }
+
+  if (skill == 0)
+  {
+    this->skill_name.set_text("Unknown skill!");
+    return;
+  }
+
+  this->skill_name.set_text(skill->name + " ("
+      + Helpers::get_string_from_int(skill->rank) + ")");
+  this->skill_attribs.set_text(ApiSkillTree::get_attrib_name(skill->primary)
+      + std::string(" / ") + ApiSkillTree::get_attrib_name(skill->secondary));
+  this->desc_buffer->set_text(skill->desc);
+
+  int group_id = skill->group;
+  this->group_id.set_text("ID " + Helpers::get_string_from_int(group_id));
+  if (group == 0)
+  {
+    this->group_name.set_text("Unknown group!");
+    return;
+  }
+  this->group_name.set_text(group->name);
 }

@@ -41,7 +41,7 @@ Notifier::exec (CharacterPtr character)
   ApiSkill const* skill = tree->get_skill_for_id(training_id);
 
   if (skill == 0)
-    throw Exception("The skill in training is invalid. Please report this!");
+    throw Exception("The skill in training is invalid. Update data files?");
 
   /* Prepare some more information. */
   int start_sp = ApiCharSheet::calc_start_sp(to_level - 1, skill->rank);

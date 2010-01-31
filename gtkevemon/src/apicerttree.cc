@@ -67,7 +67,7 @@ ApiCertTree::refresh (void)
 
   std::cout << "Seeking XML: " << CERTTREE_FN
       << " not found. Shutdown!" << std::endl;
-  ::exit(EXIT_FAILURE);
+  std::exit(EXIT_FAILURE);
 }
 
 /* ---------------------------------------------------------------- */

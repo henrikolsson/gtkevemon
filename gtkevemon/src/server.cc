@@ -1,12 +1,6 @@
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <csignal>
-#include <cerrno>
-#include <cstring>
 #include <iostream>
 
+#include "os.h"
 #include "exception.h"
 #include "nettcpsocket.h"
 #include "server.h"
@@ -111,12 +105,11 @@ Server::refresh_intern (void)
   switch (buffer[19])
   {
     case 4:
-      this->players = (int)buffer[20] + ((int)buffer[21] << 8)
-          + ((int)buffer[22] << 16) + ((int)buffer[23] << 24);
+      this->players = OS::letoh(*(int*)&buffer[20]);
       //std::cout << "Player field is 32 bit: " << this->players << std::endl;
       break;
     case 5:
-      this->players = (int)buffer[20] + ((int)buffer[21] << 8);
+      this->players = OS::letoh(*(short*)&buffer[20]);
       //std::cout << "Player field is 16 bit: " << this->players << std::endl;
       break;
     case 6:

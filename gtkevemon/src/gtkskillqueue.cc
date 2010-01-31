@@ -136,12 +136,13 @@ GtkSkillQueue::on_apidata_available (void)
   for (std::size_t i = 0; i < sq->queue.size(); ++i)
   {
     ApiSkillQueueItem const& item = sq->queue[i];
-    ApiSkill const* skill = tree->get_skill_for_id(item.skill_id);
 
     time_t duration = item.end_time_t - item.start_time_t;
     training += duration;
 
-    std::string skill_name = skill->name;
+    ApiSkill const* skill = tree->get_skill_for_id(item.skill_id);
+    std::string skill_name = (skill == 0
+        ? Helpers::get_string_from_int(item.skill_id) : skill->name);
     skill_name += " ";
     skill_name += Helpers::get_roman_from_int(item.to_level);
 

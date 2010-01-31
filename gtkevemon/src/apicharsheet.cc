@@ -312,6 +312,13 @@ ApiCharSheet::add_char_skill (int skill_id, int level)
     ApiSkillTreePtr tree = ApiSkillTree::request();
     ApiSkill const* skill = tree->get_skill_for_id(skill_id);
 
+    if (skill == 0)
+    {
+      std::cout << "Warning: Cannot add skill (ID " << skill_id
+          << ") to " << this->name << ", skill not available!" << std::endl;
+      return;
+    }
+
     int skill_start_sp = ApiCharSheet::calc_start_sp(level, skill->rank);
     int skill_dest_sp = ApiCharSheet::calc_dest_sp(level, skill->rank);
 
@@ -414,6 +421,9 @@ ApiCharSheet::get_spph_for_skill (ApiSkill const* skill,
 {
   double pri;
   double sec;
+
+  if (skill == 0)
+    return 0;
 
   switch (skill->primary)
   {

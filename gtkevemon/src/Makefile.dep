@@ -14,8 +14,8 @@ guiuserdata.o: guiuserdata.cc config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h gtkdefines.h gtkhelpers.h \
   apiskilltree.h apibase.h eveapi.h xml.h apicharsheet.h apicerttree.h \
-  apicharlist.h characterlist.h character.h apiintraining.h \
-  apiskillqueue.h guiuserdata.h winbase.h
+  character.h apiintraining.h apiskillqueue.h apicharlist.h \
+  characterlist.h guiuserdata.h winbase.h
 guiconfiguration.o: guiconfiguration.cc defines.h helpers.h gtkdefines.h \
   imagestore.h guiconfiguration.h winbase.h gtkconfwidgets.h config.h \
   asynchttp.h http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h \
@@ -84,14 +84,14 @@ gtkcharpage.o: gtkcharpage.cc config.h asynchttp.h http.h ref_ptr.h \
   imagestore.h gtkdefines.h gtkhelpers.h guiskill.h winbase.h \
   guiskillqueue.h gtkskillqueue.h gtkcolumnsbase.h gtkcharpage.h \
   gtkportrait.h gtkinfodisplay.h
-gtkportrait.o: gtkportrait.cc http.h ref_ptr.h nettcpsocket.h \
+gtkportrait.o: gtkportrait.cc os.h http.h ref_ptr.h nettcpsocket.h \
   netdefines.h netsocket.h httpstatus.h config.h asynchttp.h thread.h \
   thread_posix.h exception.h conf.h imagestore.h gtkportrait.h
 gtkinfodisplay.o: gtkinfodisplay.cc evetime.h exception.h gtkdefines.h \
   gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h \
   http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
-  thread_posix.h xml.h apicharsheet.h apicerttree.h gtkinfodisplay.h \
-  winbase.h
+  thread_posix.h xml.h apicharsheet.h apicerttree.h character.h \
+  apiintraining.h apiskillqueue.h gtkinfodisplay.h winbase.h
 gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h gtkdefines.h \
   gtkplannerbase.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
   asynchttp.h http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
@@ -99,7 +99,8 @@ gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h gtkdefines.h \
 gtkhelpers.o: gtkhelpers.cc evetime.h imagestore.h helpers.h gtkhelpers.h \
   apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h http.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
-  thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h
+  thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h \
+  character.h apiintraining.h apiskillqueue.h
 gtkcolumnsbase.o: gtkcolumnsbase.cc exception.h helpers.h \
   gtkcolumnsbase.h
 gtkdownloader.o: gtkdownloader.cc http.h ref_ptr.h nettcpsocket.h \
@@ -110,26 +111,27 @@ gtkitemdetails.o: gtkitemdetails.cc imagestore.h helpers.h evetime.h \
   gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h \
   http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h \
-  gtkdefines.h gtkitemdetails.h character.h apiintraining.h \
-  apiskillqueue.h apiitemtree.h gtkplannerbase.h
+  character.h apiintraining.h apiskillqueue.h gtkdefines.h \
+  gtkitemdetails.h apiitemtree.h gtkplannerbase.h
 gtkitembrowser.o: gtkitembrowser.cc helpers.h gtkhelpers.h apiskilltree.h \
   ref_ptr.h apibase.h eveapi.h asynchttp.h http.h nettcpsocket.h \
   netdefines.h netsocket.h httpstatus.h thread.h thread_posix.h \
-  exception.h xml.h apicharsheet.h apicerttree.h gtkdefines.h \
-  imagestore.h gtkitembrowser.h gtkplannerbase.h
+  exception.h xml.h apicharsheet.h apicerttree.h character.h \
+  apiintraining.h apiskillqueue.h gtkdefines.h imagestore.h \
+  gtkitembrowser.h gtkplannerbase.h
 gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   xmltrainingplan.h xml.h ref_ptr.h apiskilltree.h apibase.h eveapi.h \
   asynchttp.h http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
   thread.h thread_posix.h exception.h gtkcolumnsbase.h gtkportrait.h \
-  gtkhelpers.h apicharsheet.h apicerttree.h gtkconfwidgets.h config.h \
-  conf.h gtkdefines.h imagestore.h gtktrainingplan.h character.h \
-  apiintraining.h apiskillqueue.h guiplanattribopt.h winbase.h
+  gtkhelpers.h apicharsheet.h apicerttree.h character.h apiintraining.h \
+  apiskillqueue.h gtkconfwidgets.h config.h conf.h gtkdefines.h \
+  imagestore.h gtktrainingplan.h guiplanattribopt.h winbase.h
 gtkskillqueue.o: gtkskillqueue.cc config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h evetime.h helpers.h imagestore.h \
   gtkhelpers.h apiskilltree.h apibase.h eveapi.h xml.h apicharsheet.h \
-  apicerttree.h gtkdefines.h apiskillqueue.h gtkskillqueue.h character.h \
-  apiintraining.h gtkcolumnsbase.h
+  apicerttree.h character.h apiintraining.h apiskillqueue.h gtkdefines.h \
+  gtkskillqueue.h gtkcolumnsbase.h
 imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/certificate.h images/img_certificate.h images/skillstatus.h \
   images/img_skillstatus_at0.xpm images/img_skillstatus_at1.xpm \
@@ -161,8 +163,8 @@ xmltrainingplan.o: xmltrainingplan.cc xmltrainingplan.h xml.h ref_ptr.h \
   apiskilltree.h apibase.h eveapi.h asynchttp.h http.h nettcpsocket.h \
   netdefines.h netsocket.h httpstatus.h thread.h thread_posix.h \
   exception.h
-server.o: server.cc exception.h nettcpsocket.h netdefines.h netsocket.h \
-  server.h
+server.o: server.cc os.h exception.h nettcpsocket.h netdefines.h \
+  netsocket.h server.h
 serverlist.o: serverlist.cc config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h serverlist.h server.h
@@ -176,11 +178,12 @@ characterlist.o: characterlist.cc helpers.h config.h asynchttp.h http.h \
   thread_posix.h exception.h conf.h characterlist.h character.h eveapi.h \
   apicharsheet.h apibase.h xml.h apiskilltree.h apicerttree.h \
   apiintraining.h apiskillqueue.h
+os.o: os.cc os_unix.cc os.h
 helpers.o: helpers.cc helpers.h
 conf.o: conf.cc exception.h conf.h ref_ptr.h
-config.o: config.cc argumentsettings.h defines.h config.h asynchttp.h \
-  http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
-  thread.h thread_posix.h exception.h conf.h
+config.o: config.cc os.h argumentsettings.h defines.h config.h \
+  asynchttp.h http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h \
+  httpstatus.h thread.h thread_posix.h exception.h conf.h
 xml.o: xml.cc exception.h helpers.h xml.h ref_ptr.h
 evetime.o: evetime.cc evetime.h config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
@@ -199,11 +202,11 @@ http.o: http.cc netdnslookup.h netdefines.h exception.h http.h ref_ptr.h \
 asynchttp.o: asynchttp.cc httpstatus.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h thread.h thread_posix.h \
   exception.h
-eveapi.o: eveapi.cc config.h asynchttp.h http.h ref_ptr.h nettcpsocket.h \
-  netdefines.h netsocket.h httpstatus.h thread.h thread_posix.h \
-  exception.h conf.h eveapi.h
-versionchecker.o: versionchecker.cc config.h asynchttp.h http.h ref_ptr.h \
+eveapi.o: eveapi.cc os.h config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
+  thread_posix.h exception.h conf.h eveapi.h
+versionchecker.o: versionchecker.cc os.h config.h asynchttp.h http.h \
+  ref_ptr.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h defines.h guiversionchecker.h \
   winbase.h gtkdownloader.h versionchecker.h gtkinfodisplay.h xml.h
 apibase.o: apibase.cc helpers.h evetime.h exception.h apibase.h eveapi.h \

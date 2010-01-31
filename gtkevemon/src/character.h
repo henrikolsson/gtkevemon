@@ -76,7 +76,7 @@ class Character
     double training_level_done; /* Live SP. */
     time_t training_remaining; /* Live SP. */
 
-    /* Information if both, charsheet AND training is available. */
+    /* Information if both, charsheet AND training are available. */
     ApiCharSheetSkill* training_cskill;
     unsigned int char_group_base_sp;
     unsigned int char_group_live_sp; /* Live SP. */

@@ -104,8 +104,6 @@ class GtkCharPage : public Gtk::VBox
     /* Request and process EVE API documents. */
     void request_documents (void);
     bool check_expired_sheets (void);
-    void on_charsheet_available (EveApiData data);
-    void on_intraining_available (EveApiData data);
 
     /* Error dialogs. */
     void on_skilltree_error (std::string const& e);

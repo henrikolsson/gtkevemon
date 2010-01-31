@@ -927,6 +927,13 @@ GtkTrainingPlan::load_current_plan (void)
     int is_objective = Helpers::get_int_from_string(objective);
 
     ApiSkill const* skill = tree->get_skill_for_id(skill_id);
+    if (skill == 0)
+    {
+      std::cout << "Error loading plan: Unknown skill ID "
+          << skill_id << std::endl;
+      continue;
+    }
+
     GtkSkillInfo info;
     info.skill = skill;
     info.plan_level = skill_level;

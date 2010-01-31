@@ -52,9 +52,11 @@ class ApiInTraining : public ApiBase
     int to_level;
 
   public:
+    /* Creates an invalid (uninitialized) training sheet. */
     static ApiInTrainingPtr create (void);
+    /* Initializes or updates the data from the EVE API. */
     void set_api_data (EveApiData const& data);
-
+    /* Returns the current SP/h for the skill in training. */
     unsigned int get_current_spph (void);
 };
 

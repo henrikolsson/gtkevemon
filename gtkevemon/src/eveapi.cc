@@ -1,11 +1,11 @@
-#include <sys/stat.h>
 #include <stdint.h>
-#include <sstream>
 #include <cerrno>
 #include <cstring>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 
+#include "os.h"
 #include "config.h"
 #include "eveapi.h"
 
@@ -156,10 +156,10 @@ EveApiFetcher::process_caching (EveApiData& data)
   {
     /* Cache successful request to file. */
     //std::cout << "Should cache to file: " << file << std::endl;
-    int dir_exists = ::access(path.c_str(), F_OK);
-    if (dir_exists < 0)
+    bool dir_exists = OS::dir_exists(path.c_str());
+    if (!dir_exists)
     {
-      int ret = ::mkdir(path.c_str(), S_IRWXU);
+      int ret = OS::mkdir(path.c_str());
       if (ret < 0)
       {
         std::cout << "Error: Couldn't create the cache directory: "
@@ -183,11 +183,10 @@ EveApiFetcher::process_caching (EveApiData& data)
   {
     /* Read unsuccessful requests from cache if available. */
     //std::cout << "Should read from cache: " << file << std::endl;
-    int file_exists = ::access(file.c_str(), F_OK);
-    if (file_exists < 0)
+    bool file_exists = OS::file_exists(file.c_str());
+    if (!file_exists)
     {
-      std::cout << "Warning: No cache file for "
-          << xmlname << std::endl;
+      std::cout << "Warning: No cache file for " << xmlname << std::endl;
       return;
     }
 

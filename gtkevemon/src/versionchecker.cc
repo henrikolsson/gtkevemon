@@ -1,9 +1,10 @@
-#include <sys/stat.h>
 #include <iostream>
+
 #include <glibmm.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/main.h>
 
+#include "os.h"
 #include "config.h"
 #include "defines.h"
 #include "guiversionchecker.h"
@@ -405,8 +406,7 @@ VersionChecker::check_data_files (void)
     }
     else
     {
-      struct stat statbuf;
-      if (::stat(filename.c_str(), &statbuf) < 0)
+      if (!OS::file_exists(filename.c_str()))
       {
         iter->second->get_string().clear();
         force_update = true;

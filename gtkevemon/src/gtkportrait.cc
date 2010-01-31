@@ -1,10 +1,9 @@
-#include <sys/stat.h>
-#include <unistd.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <gtkmm/messagedialog.h>
 
+#include "os.h"
 #include "http.h"
 #include "config.h"
 #include "imagestore.h"
@@ -151,12 +150,12 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
         ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
 
     this->cache_portrait(image);
-    ::unlink(jpg_name.str().c_str());
+    OS::unlink(jpg_name.str().c_str());
     this->fetch_from_gtkevemon_cache();
   }
   catch (...)
   {
-    ::unlink(jpg_name.str().c_str());
+    OS::unlink(jpg_name.str().c_str());
     std::cout << "Error saving portrait from EVE Online" << std::endl;
     return;
   }
@@ -170,11 +169,11 @@ GtkPortrait::cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait)
   std::string portraitdir = Config::get_conf_dir() + "/portraits";
 
   /* Create portrait directory if it does not exist. */
-  int dir_exists = ::access(portraitdir.c_str(), F_OK);
-  if (dir_exists < 0)
+  bool dir_exists = OS::dir_exists(portraitdir.c_str());
+  if (!dir_exists)
   {
     /* Ignore errors. We'll get them on creation. */
-    ::mkdir(portraitdir.c_str(), S_IRWXU);
+    OS::mkdir(portraitdir.c_str());
   }
 
   try

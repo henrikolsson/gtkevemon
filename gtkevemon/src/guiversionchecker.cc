@@ -1,6 +1,6 @@
-#include <unistd.h>
 #include <fstream>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <gtkmm/box.h>
@@ -107,10 +107,10 @@ GuiVersionChecker::~GuiVersionChecker (void)
     Gtk::Main::quit();
 
   if (this->startup_mode && !this->is_updated)
-    ::exit(EXIT_SUCCESS);
+    std::exit(EXIT_SUCCESS);
 
   if (!this->startup_mode && this->is_updated)
-    ::exit(EXIT_SUCCESS);
+    std::exit(EXIT_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -248,7 +248,7 @@ GuiVersionChecker::on_close_clicked (void)
   this->close();
 
   if (startup_mode)
-    ::exit(EXIT_SUCCESS);
+    std::exit(EXIT_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */

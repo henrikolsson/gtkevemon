@@ -526,7 +526,7 @@ GtkCharPage::update_skill_list (void)
   ApiSkill skill_training;
   skill_training.id = -1;
   skill_training.group = -1;
-  if (this->character->is_training())
+  if (this->character->is_training() && this->character->training_skill != 0)
     skill_training = *this->character->training_skill;
 
   /* Append all groups to the store. Save their iterators for the children.
@@ -728,6 +728,18 @@ GtkCharPage::check_expired_sheets (void)
 void
 GtkCharPage::api_info_changed (void)
 {
+  /* Detect some API issues. */
+  if (this->character->is_training() && this->character->training_skill == 0)
+  {
+    this->info_display.append(INFO_ERROR, "Skill in training is unknown!",
+        "The EVE API reported a skill in training that is unknown to "
+        "GtkEveMon. This typically happens if the data files are not "
+        "up-to-date. If you already have recent data files, "
+        "please report this issue! Thanks.\n\n"
+        "Error: Skill with ID " + Helpers::get_string_from_int
+        (this->character->ts->skill) + " did not resolve!");
+  }
+  
   /* Update the char sheet and training sheet info. */
   this->update_cached_duration();
   this->update_charsheet_details();
@@ -1010,10 +1022,14 @@ GtkCharPage::on_live_sp_value_update (void)
   this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
       (this->character->char_live_sp));
 
-  (*this->tree_skill_iter)[this->skill_cols.points]
-      = Helpers::get_dotted_str_from_uint(this->character->training_skill_sp);
-  (*this->tree_group_iter)[this->skill_cols.points]
-      = Helpers::get_dotted_str_from_uint(this->character->char_group_live_sp);
+  /* Don't update character list if skill in training is unknown to char. */
+  if (this->character->training_cskill == 0)
+    return true;
+
+  (*this->tree_skill_iter)[this->skill_cols.points] =
+      Helpers::get_dotted_str_from_uint(this->character->training_skill_sp);
+  (*this->tree_group_iter)[this->skill_cols.points] =
+      Helpers::get_dotted_str_from_uint(this->character->char_group_live_sp);
 
   return true;
 }
@@ -1024,6 +1040,10 @@ bool
 GtkCharPage::on_live_sp_image_update (void)
 {
   if (!this->character->cs->valid || !this->character->is_training())
+    return true;
+
+  /* Don't update graphics if skill in training is unknown to char. */
+  if (this->character->training_cskill == 0)
     return true;
 
   Glib::RefPtr<Gdk::Pixbuf> new_icon = ImageStore::skill_progress

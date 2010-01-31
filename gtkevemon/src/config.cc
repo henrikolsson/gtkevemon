@@ -1,10 +1,8 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <pwd.h>
+#include <stdint.h>
 #include <iostream>
 #include <string>
 
+#include "os.h"
 #include "argumentsettings.h"
 #include "defines.h"
 #include "config.h"
@@ -94,16 +92,23 @@ Config::init_config_path (void)
    * If there is no home directory or any other error occures,
    * the current directory or even worse, /tmp is used. */
   std::string user_conf_dir;
-  if (ArgumentSettings::config_dir.empty())
+  if (!ArgumentSettings::config_dir.empty())
   {
-    uid_t user_id = ::geteuid();
-    struct passwd* user_info = ::getpwuid(user_id);
-
-    if (user_info == 0 || user_info->pw_dir == 0)
+    user_conf_dir = ArgumentSettings::config_dir;
+  }
+  else
+  {
+    char const* homedir = OS::get_default_home_path();
+    if (homedir != 0)
+    {
+      user_conf_dir = homedir;
+      user_conf_dir += "/" CONF_HOME_DIR;
+    }
+    else
     {
       std::cout << "Warning: Couldn't determine home directry!" << std::endl;
       char buffer[512];
-      char* ret = ::getcwd(buffer, 512);
+      char const* ret = OS::getcwd(buffer, 512);
       if (ret != 0)
         user_conf_dir = buffer;
       else
@@ -112,27 +117,18 @@ Config::init_config_path (void)
         user_conf_dir = OS_TEMP_DIR;
       }
     }
-    else
-    {
-      user_conf_dir = user_info->pw_dir;
-      user_conf_dir += "/" CONF_HOME_DIR;
-    }
-  }
-  else
-  {
-    user_conf_dir = ArgumentSettings::config_dir;
   }
 
   //std::cout << "Resolved config directory to: " << user_conf_dir << std::endl;
 
   /* Check if the GtkEveMon directory exists in the home directry. */
-  int dir_exists = ::access(user_conf_dir.c_str(), F_OK);
-
-  if (dir_exists < 0)
+  //int dir_exists = ::access(user_conf_dir.c_str(), F_OK);
+  bool dir_exists = OS::dir_exists(user_conf_dir.c_str());
+  if (!dir_exists)
   {
     /* Directory does not exists. Create it. */
     std::cout << "Creating config directory: " << user_conf_dir << std::endl;
-    int ret = ::mkdir(user_conf_dir.c_str(), S_IRWXU);
+    int ret = OS::mkdir(user_conf_dir.c_str());
     if (ret < 0)
     {
       std::cout << "Error: Couldn't create the config directory!" << std::endl;
@@ -156,8 +152,9 @@ Config::init_user_config (void)
 
   /* Check if the config file is in-place. If not, dump the current
    * default configuration to file. */
-  int conf_exists = ::access(Config::filename.c_str(), F_OK);
-  if (conf_exists < 0)
+  //int conf_exists = ::access(Config::filename.c_str(), F_OK);
+  bool conf_exists = OS::file_exists(Config::filename.c_str());
+  if (!conf_exists)
   {
     std::cout << "Creating initial config file: gtkevemon.conf" << std::endl;
     Config::conf.add_from_string(initial_config);
@@ -165,7 +162,7 @@ Config::init_user_config (void)
   }
   else
   {
-    /* Now read the config file. If it's not there,
+    /* Now read the config file. If it's for some reason not there,
      * it will be created when GtkEveMon exits. */
     Config::conf.add_from_file(Config::filename);
   }
