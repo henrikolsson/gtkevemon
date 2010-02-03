@@ -73,10 +73,10 @@ inline long  OS::long_swap(long x)
 # define HOST_BYTEORDER_LE
 #endif
 
-#if defined(MACOS_X)
-# if defined(__ppc__)
+#if defined(__APPLE__)
+# if defined(__ppc__) || defined(__ppc64__)
 #   define HOST_BYTEORDER_BE
-# elif defined(__i386__) // XXX: What about __x86_64__?
+# elif defined(__i386__) || defined(__x86_64__)
 #   define HOST_BYTEORDER_LE
 # endif
 #endif

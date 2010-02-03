@@ -6,8 +6,8 @@ CERTTREE_ORIG = CertificateTree.xml.orig
 CERTTREE_NEW = CertificateTree.xml
 CERTTREE_GZIP = ${CERTTREE_NEW}.gz
 
-SKILLTREE_VERSION = 5
-CERTTREE_VERSION = 4
+SKILLTREE_VERSION = 6
+CERTTREE_VERSION = 5
 
 all:
 	${MAKE} skilltree
