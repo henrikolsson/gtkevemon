@@ -18,6 +18,7 @@
 #include "versionchecker.h"
 #include "imagestore.h"
 #include "serverlist.h"
+#include "networking.h"
 #include "evetime.h"
 #include "config.h"
 #include "server.h"
@@ -37,6 +38,7 @@ signal_received (int signum)
 int
 main (int argc, char* argv[])
 {
+  Net::init();
   Gtk::Main kit(&argc, &argv);
 
   ArgumentSettings::init(argc, argv);
@@ -65,6 +67,7 @@ main (int argc, char* argv[])
   ImageStore::unload();
 
   Config::unload();
+  Net::unload();
 
   return 0;
 }

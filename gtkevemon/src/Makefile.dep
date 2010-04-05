@@ -67,9 +67,9 @@ guiplanattribopt.o: guiplanattribopt.cc guiplanattribopt.h \
 gtkevemon.o: gtkevemon.cc argumentsettings.h versionchecker.h \
   gtkinfodisplay.h winbase.h exception.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
-  thread_posix.h xml.h imagestore.h serverlist.h server.h evetime.h \
-  config.h conf.h maingui.h character.h eveapi.h apicharsheet.h apibase.h \
-  apiskilltree.h apicerttree.h apiintraining.h apiskillqueue.h \
+  thread_posix.h xml.h imagestore.h serverlist.h server.h networking.h \
+  evetime.h config.h conf.h maingui.h character.h eveapi.h apicharsheet.h \
+  apibase.h apiskilltree.h apicerttree.h apiintraining.h apiskillqueue.h \
   characterlist.h gtkserver.h
 gtkserver.o: gtkserver.cc exception.h serverlist.h server.h helpers.h \
   thread.h thread_posix.h gtkserver.h
@@ -185,8 +185,8 @@ config.o: config.cc os.h argumentsettings.h defines.h config.h \
   asynchttp.h http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h
 xml.o: xml.cc exception.h helpers.h xml.h ref_ptr.h
-evetime.o: evetime.cc evetime.h config.h asynchttp.h http.h ref_ptr.h \
-  nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
+evetime.o: evetime.cc os.h evetime.h config.h asynchttp.h http.h \
+  ref_ptr.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h \
   thread_posix.h
@@ -237,7 +237,8 @@ apiitemtree.o: apiitemtree.cc xml.h ref_ptr.h config.h asynchttp.h http.h \
 apiskillqueue.o: apiskillqueue.cc xml.h ref_ptr.h helpers.h evetime.h \
   apiskillqueue.h eveapi.h asynchttp.h http.h nettcpsocket.h netdefines.h \
   netsocket.h httpstatus.h thread.h thread_posix.h exception.h apibase.h
-netsocket.o: netsocket.cc exception.h netsocket.h netdefines.h
-nettcpsocket.o: nettcpsocket.cc exception.h nettcpsocket.h netdefines.h \
+netsocket.o: netsocket.cc exception.h networking.h netdefines.h \
   netsocket.h
+nettcpsocket.o: nettcpsocket.cc exception.h networking.h netdefines.h \
+  nettcpsocket.h netsocket.h
 netdnslookup.o: netdnslookup.cc exception.h netdnslookup.h netdefines.h

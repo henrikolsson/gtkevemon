@@ -13,13 +13,12 @@
 #ifndef PIPED_EXEC_HEADER
 #define PIPED_EXEC_HEADER
 
-#include <vector>
-#include <string>
-
 #ifdef WIN32
-#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #endif
+
+#include <vector>
+#include <string>
 
 class PipedExec
 {

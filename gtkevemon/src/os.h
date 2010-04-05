@@ -24,6 +24,7 @@ private:
   static long  long_swap(long x);
 
 public:
+  /* File system interface. */
   static bool  dir_exists(char const* pathname);
   static bool  file_exists(char const* pathname);
   static char* get_default_home_path(void);
@@ -32,6 +33,14 @@ public:
   static bool  mkdir(char const* pathname/*, mode_t mode*/);
   static bool  unlink(char const* pathname);
 
+  /* Time interface. */
+  static char* strptime (const char *buf, const char *fmt, struct tm *tm);
+  static time_t timegm (struct tm *t);
+
+  /* Misc. */
+  static int   execv(char const* path, char* const argv[]);
+
+  /* Endian conversions. */
   static short letoh(short x);
   static int   letoh(int x);
   static long  letoh(long x);

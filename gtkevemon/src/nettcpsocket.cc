@@ -1,24 +1,23 @@
 #ifndef WIN32
-# include <unistd.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
-# include <sys/socket.h>
-# include <sys/types.h>
-# include <netdb.h>
+# include <sys/socket.h> // netdb.h, ::get{peer,sock}name
+# include <sys/types.h> // netdb.h, ::select
+# include <netdb.h> // getaddrinfo
 #else
-# define WIN32_LEAN_AND_MEAN
 # include <winsock2.h>
 # include <ws2tcpip.h>
 # include "wsa_strerror.h"
 typedef unsigned short uint16_t;
 #endif
-#include <fcntl.h>
+#include <fcntl.h> // ::fcntl
 #include <cerrno>
 #include <cstring>
 #include <string>
 #include <sstream>
 
 #include "exception.h"
+#include "networking.h"
 #include "nettcpsocket.h"
 
 NET_NAMESPACE_BEGIN
@@ -47,10 +46,10 @@ TCPSocket::TCPSocket (int sock_fd)
   socklen_t local_len = sizeof(struct sockaddr_in);
 
   if (::getpeername(sock_fd, (struct sockaddr*)&this->remote, &remote_len) < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 
   if (::getsockname(sock_fd, (struct sockaddr*)&this->local, &local_len) < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 }
 
 /* ---------------------------------------------------------------- */
@@ -96,7 +95,7 @@ TCPSocket::connect (in_addr_t host, int port)
 
   this->sock = ::socket(PF_INET, SOCK_STREAM, 0);
   if (this->sock < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 
   this->remote.sin_family = AF_INET;
   this->remote.sin_port = htons((uint16_t)port);
@@ -113,21 +112,21 @@ TCPSocket::connect (in_addr_t host, int port)
     if (flags < 0)
     {
       this->close();
-      throw Exception(::strerror(errno));
+      throw Exception(Net::strerror(errno));
     }
 
     flags |= O_NONBLOCK;
     if (::fcntl(this->sock, F_SETFL, flags) < 0)
     {
       this->close();
-      throw Exception(::strerror(errno));
+      throw Exception(Net::strerror(errno));
     }
 #else
     u_long flags = 1;
     if (::ioctlsocket(sock, FIONBIO, &flags) == SOCKET_ERROR)
     {
       this->close();
-      throw Exception(::wsa_strerror(::WSAGetLastError()));
+      throw Exception(Net::strerror(::WSAGetLastError()));
     }
 #endif
   }
@@ -161,7 +160,7 @@ TCPSocket::connect (in_addr_t host, int port)
       if (errno == EINPROGRESS)
         throw Exception("Connection timed out");
       else
-        throw Exception(::strerror(errno));
+        throw Exception(Net::strerror(errno));
     }
 #else
     if (connect_ret == SOCKET_ERROR)
@@ -170,7 +169,7 @@ TCPSocket::connect (in_addr_t host, int port)
       if (::WSAGetLastError() == WSAEINPROGRESS)
         throw Exception("Connection timed out");
       else
-        throw Exception(::wsa_strerror(::WSAGetLastError()));
+        throw Exception(Net::strerror(::WSAGetLastError()));
     }
 #endif
 
@@ -180,9 +179,9 @@ TCPSocket::connect (in_addr_t host, int port)
     /* This is clearly an error. */
     this->close();
 #ifndef WIN32
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 #else
-    throw Exception(::wsa_strerror(::WSAGetLastError()));
+    throw Exception(Net::strerror(::WSAGetLastError()));
 #endif
   }
 
@@ -194,20 +193,20 @@ TCPSocket::connect (in_addr_t host, int port)
     if (flags < 0)
     {
       this->close();
-      throw Exception(::strerror(errno));
+      throw Exception(Net::strerror(errno));
     }
     flags &= ~O_NONBLOCK;
     if (::fcntl(this->sock, F_SETFL, flags) < 0)
     {
       this->close();
-      throw Exception(::strerror(errno));
+      throw Exception(Net::strerror(errno));
     }
 #else
     u_long sockopt = 0;
     if (::ioctlsocket(sock, FIONBIO, &sockopt) == SOCKET_ERROR)
     {
       this->close();
-      throw Exception(::wsa_strerror(::WSAGetLastError()));
+      throw Exception(Net::strerror(::WSAGetLastError()));
     }
 #endif
   }

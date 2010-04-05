@@ -19,13 +19,13 @@
 
 #ifdef WIN32
 # define NET_INVALID_SOCKET INVALID_SOCKET;
-# define WIN32_LEAN_AND_MEAN
-# define NOMINMAX
 # include <ws2tcpip.h>
+  typedef int ssize_t;
   typedef ULONG in_addr_t;
   typedef SOCKET NetSocketFD;
 #else
 # define NET_INVALID_SOCKET -1
+# include <netinet/in.h>
   typedef int NetSocketFD;
 #endif
 

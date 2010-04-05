@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdlib>
 
+#include "os.h"
 #include "evetime.h"
 #include "config.h"
 
@@ -128,44 +129,18 @@ EveTime::get_local_time (void)
 
 /* ---------------------------------------------------------------- */
 
-#ifdef __SunOS
-/*
- * timegm() is a GNU extension which is not available on OpenSolaris.
- * The timegm() manpage suggests the following code as a portable alternative.
- */
-time_t
-timegm(struct tm *tm)
-{
-  time_t ret;
-  char *tz;
-
-  tz = ::getenv("TZ");
-  ::setenv("TZ", "", 1);
-  ::tzset();
-  ret = ::mktime(tm);
-  if (tz)
-    ::setenv("TZ", tz, 1);
-  else
-    ::unsetenv("TZ");
-  ::tzset();
-  return ret;
-}
-#endif
-
-/* ---------------------------------------------------------------- */
-
 time_t
 EveTime::get_time_for_string (std::string const& timestr)
 {
   struct tm tm;
   ::memset(&tm, '\0', sizeof(struct tm));
-  char* tmp = ::strptime(timestr.c_str(), EVE_TIME_FORMAT, &tm);
+  char* tmp = OS::strptime(timestr.c_str(), EVE_TIME_FORMAT, &tm);
   if (tmp == 0)
   {
     std::cout << "Warning: Unable to parse time string!" << std::endl;
     return (time_t)0;
   }
-  time_t ret = ::timegm(&tm);
+  time_t ret = OS::timegm(&tm);
   return ret;
 }
 

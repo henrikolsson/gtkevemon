@@ -5,12 +5,15 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <cstring>
+#include <ctime>
 
 #include "os.h"
 
 namespace {
   char  home_path[PATH_MAX] = { 0 };
 }
+
+/* ---------------------------------------------------------------- */
 
 bool
 OS::dir_exists(char const* pathname)
@@ -27,6 +30,8 @@ OS::dir_exists(char const* pathname)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
 bool
 OS::file_exists(char const* pathname)
 {
@@ -41,6 +46,8 @@ OS::file_exists(char const* pathname)
 
   return true;
 }
+
+/* ---------------------------------------------------------------- */
 
 char*
 OS::get_default_home_path(void)
@@ -62,11 +69,15 @@ OS::get_default_home_path(void)
   return home_path;
 }
 
+/* ---------------------------------------------------------------- */
+
 char*
 OS::getcwd(char* buf, size_t size)
 {
   return ::getcwd(buf, size);
 }
+
+/* ---------------------------------------------------------------- */
 
 bool
 OS::mkdir(char const* pathname/*, mode_t mode*/)
@@ -77,6 +88,8 @@ OS::mkdir(char const* pathname/*, mode_t mode*/)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
 bool
 OS::unlink(char const* pathname)
 {
@@ -86,3 +99,30 @@ OS::unlink(char const* pathname)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
+char*
+OS::strptime(const char *buf, const char *fmt, struct tm *tm)
+{
+  return ::strptime(buf, fmt, tm);
+}
+
+/* ---------------------------------------------------------------- */
+
+#if defined(__SunOS)
+# include "timegm.h"
+#endif
+
+time_t
+OS::timegm(struct tm *tm)
+{
+  return ::timegm(tm);
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+OS::execv (char const* path, char* const argv[])
+{
+	return ::execv(path, argv);
+}

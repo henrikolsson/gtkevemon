@@ -10,20 +10,10 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NET_DNS_LOOKUP_HEADER
-#define NET_DNS_LOOKUP_HEADER
+#ifndef STRPTIME_HEADER
+#define STRPTIME_HEADER
 
-#include "netdefines.h"
+char* strptime(const char *buf, const char *fmt, struct tm *tm);
 
-NET_NAMESPACE_BEGIN
+#endif /* STRPTIME_HEADER */
 
-class DNSLookup
-{
-  public:
-    static in_addr_t get_hostname (char const* dnsname);
-    static in_addr_t get_hostname (std::string const& dnsname);
-};
-
-NET_NAMESPACE_END
-
-#endif /* NET_DNS_LOOKUP_HEADER */

@@ -1,14 +1,14 @@
 #ifndef WIN32
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netdb.h>
+# include <sys/types.h> // for netdb.h
+# include <sys/socket.h> // for netdb.h
+# include <netinet/in.h> // sockaddr_in
+# include <netdb.h> // ::getaddrinfo, ::freeaddrinfo
 #else
-# define WIN32_LEAN_AND_MEAN
 # include <ws2tcpip.h>
 #endif
-#include <cstring>
-#include <cstdlib>
-#include <cerrno>
+
+#include <string>
+#include <cstring> // ::memset
 
 #include "exception.h"
 #include "netdnslookup.h"
@@ -20,7 +20,7 @@ DNSLookup::get_hostname (char const* dnsname)
 {
   struct addrinfo hints;
   struct addrinfo *res;
-  ::memset(&hints, 0, sizeof(hints));
+  std::memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = 0;
   hints.ai_flags = AI_ADDRCONFIG;

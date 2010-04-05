@@ -171,7 +171,7 @@ std::string
 Helpers::trunc_string (std::string const& str, int len)
 {
   if ((int)str.size() > len + 3)
-    return str.substr(0, 22).append("...");
+    return str.substr(0, len - 3).append("...");
 
   return str;
 }
@@ -187,10 +187,11 @@ Helpers::split_string (std::string const& str, char delim)
   unsigned int cur = 0;
   for (; cur < str.size(); ++cur)
     if (str[cur] == delim)
-      {
-        parts.push_back(str.substr(last, cur - last));
-	last = cur + 1;
-      }
+    {
+      parts.push_back(str.substr(last, cur - last));
+	  last = cur + 1;
+    }
+
   if (last < str.size())
     parts.push_back(str.substr(last));
 

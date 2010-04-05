@@ -14,6 +14,8 @@ require_once("phplib/versionxml.php");
 require_once("phplib/updater.php");
 require_once("phplib/userauth.php");
 
+ini_set('display_errors', TRUE);
+
 $auth = new UserAuth();
 
 $tpl = new Template("index.tpl", "Versioning Backend");

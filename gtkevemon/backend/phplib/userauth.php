@@ -18,8 +18,8 @@ class UserAuth
   public function __construct ()
   {
     $this->init_users();
-    $user = $_SERVER[PHP_AUTH_USER];
-    $pass = $_SERVER[PHP_AUTH_PW];
+    $user = $_SERVER['PHP_AUTH_USER'];
+    $pass = $_SERVER['PHP_AUTH_PW'];
 
     if (!$this->is_allowed($user, $pass))
       $this->request_auth();

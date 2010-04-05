@@ -2,15 +2,24 @@
 
 #include <direct.h>
 #include <io.h>
+#include <process.h>
 #include <shlobj.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "strptime.h"
+#include "strptime.cc"
+#include "timegm.h"
+#include "timegm.cc"
+
 #include "os.h"
+
 
 namespace {
   char  home_path[PATH_MAX] = { 0 };
 }
+
+/* ---------------------------------------------------------------- */
 
 bool
 OS::dir_exists(char const* pathname)
@@ -27,6 +36,8 @@ OS::dir_exists(char const* pathname)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
 bool
 OS::file_exists(char const* pathname)
 {
@@ -42,13 +53,15 @@ OS::file_exists(char const* pathname)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
 char*
 OS::get_default_home_path(void)
 {
   if (*home_path != 0)
     return home_path;
 
-  if (!SUCCEEDED(::SHGetFolderPath(0, CSIDL_APPDATA, 0, 0, homepath)))
+  if (!SUCCEEDED(::SHGetFolderPath(0, CSIDL_APPDATA, 0, 0, home_path)))
   {
     std::cout << "Warning: Couldn't determine home directry!" << std::endl;
     return 0;
@@ -57,11 +70,15 @@ OS::get_default_home_path(void)
   return home_path;
 }
 
+/* ---------------------------------------------------------------- */
+
 char*
 OS::getcwd(char* buf, size_t size)
 {
   return ::_getcwd(buf, size);
 }
+
+/* ---------------------------------------------------------------- */
 
 bool
 OS::mkdir(char const* pathname/*, mode_t mode*/)
@@ -72,6 +89,8 @@ OS::mkdir(char const* pathname/*, mode_t mode*/)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
 bool
 OS::unlink(char const* pathname)
 {
@@ -79,5 +98,29 @@ OS::unlink(char const* pathname)
     return false;
 
   return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+char*
+OS::strptime(const char *buf, const char *fmt, struct tm *tm)
+{
+  return ::strptime(buf, fmt, tm);
+}
+
+/* ---------------------------------------------------------------- */
+
+time_t
+OS::timegm(struct tm *t)
+{
+  return ::timegm(t);
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+OS::execv(char const* path, char* const argv[])
+{
+	return ::_execv(path, argv);
 }
 

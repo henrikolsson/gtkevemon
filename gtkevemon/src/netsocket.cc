@@ -1,11 +1,14 @@
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#ifndef WIN32
+# include <unistd.h> // ::close
+# include <sys/socket.h> // ::socket, ::send, ::recv, ::shutdown
+# include <sys/types.h> // ::select, ssize_t
+#endif
+
 #include <cerrno>
 #include <cstring>
 
 #include "exception.h"
+#include "networking.h"
 #include "netsocket.h"
 
 NET_NAMESPACE_BEGIN
@@ -48,10 +51,10 @@ Socket::shutdown_input (void)
 {
 #ifndef WIN32
   if (::shutdown(this->sock, SHUT_RD) < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 #else
   if (::shutdown(this->sock, SD_RECEIVE) == SOCKET_ERROR)
-    throw Exception(::wsa_strerror(::WSAGetLastError()));
+    throw Exception(Net::strerror(::WSAGetLastError()));
 #endif
 }
 
@@ -62,10 +65,10 @@ Socket::shutdown_output (void)
 {
 #ifndef WIN32
   if (::shutdown(this->sock, SHUT_WR) < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 #else
   if (::shutdown(this->sock, SD_SEND) == SOCKET_ERROR)
-    throw Exception(::wsa_strerror(::WSAGetLastError()));
+    throw Exception(Net::strerror(::WSAGetLastError()));
 #endif
 }
 
@@ -102,11 +105,11 @@ Socket::read (void* buffer, std::size_t size, std::size_t offset)
 #ifndef WIN32
   ssize_t ret = ::recv(this->sock, (char*)buffer + offset, size, 0);
   if (ret < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 #else
   int ret = ::recv(this->sock, (char*)buffer + offset, size, 0);
   if (ret == SOCKET_ERROR)
-    throw Exception(::wsa_strerror(::WSAGetLastError()));
+    throw Exception(Net::strerror(::WSAGetLastError()));
 #endif
 
   return ret;
@@ -162,11 +165,11 @@ Socket::write (void const* buffer, std::size_t size, std::size_t offset)
 #ifndef WIN32
   ssize_t ret = ::send(this->sock, buf + offset, size, 0);
   if (ret < 0)
-    throw Exception(::strerror(errno));
+    throw Exception(Net::strerror(errno));
 #else
   int ret = ::send(this->sock, buf + offset, size, 0);
   if (ret == SOCKET_ERROR)
-    throw Exception(::wsa_strerror(::WSAGetLastError()));
+    throw Exception(Net::strerror(::WSAGetLastError()));
 #endif
 
   return ret;
