@@ -10,8 +10,8 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <csignal>
-#include <iostream>
+#include <csignal> // for ::signal()
+#include <cstdlib> // for EXIT_SUCCESS
 #include <gtkmm/main.h>
 
 #include "argumentsettings.h"
@@ -27,9 +27,8 @@
 #include "apicharsheet.h"
 
 void
-signal_received (int signum)
+signal_received (int /*signum*/)
 {
-  signum = 0;
   Gtk::Main::quit();
 }
 
@@ -38,6 +37,11 @@ signal_received (int signum)
 int
 main (int argc, char* argv[])
 {
+#ifdef WIN32
+  if (!Glib::thread_supported())
+    Glib::thread_init();
+#endif
+
   Net::init();
   Gtk::Main kit(&argc, &argv);
 
@@ -51,11 +55,11 @@ main (int argc, char* argv[])
 
   VersionChecker::check_data_files();
 
-  std::signal(SIGINT, signal_received);
-  std::signal(SIGTERM, signal_received);
-
   ServerList::init_from_config();
   EveTime::init_from_config();
+
+  std::signal(SIGINT, signal_received);
+  std::signal(SIGTERM, signal_received);
 
   {
     MainGui gui;
@@ -69,5 +73,5 @@ main (int argc, char* argv[])
   Config::unload();
   Net::unload();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "images/skill.h"
 #include "images/certificate.h"
 #include "images/skillstatus.h"
@@ -16,6 +18,10 @@
 
 #include "exception.h"
 #include "imagestore.h"
+
+#ifdef WIN32
+# define round(x) ceil((x) - 0.5)
+#endif
 
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skill;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillqueue;
@@ -169,14 +175,14 @@ ImageStore::unload (void)
 Glib::RefPtr<Gdk::Pixbuf>
 ImageStore::create_from_inline (guint8 const* data)
 {
-  #ifdef GLIBMM_EXCEPTIONS_ENABLED
+#ifdef GLIBMM_EXCEPTIONS_ENABLED
   return Gdk::Pixbuf::create_from_inline(-1, data, false);
-  #else
+#else
   std::auto_ptr<Glib::Error> error;
   Glib::RefPtr<Gdk::Pixbuf> ret = Gdk::Pixbuf::create_from_inline
       (-1, data, false, error);
   if (error.get())
     throw error;
   return ret;
-  #endif
+#endif
 }

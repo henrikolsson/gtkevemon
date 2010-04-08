@@ -1,3 +1,5 @@
+pipedexec_posix.o: pipedexec_posix.cc helpers.h exception.h pipedexec.h
+os_unix.o: os_unix.cc os.h
 maingui.o: maingui.cc argumentsettings.h helpers.h evetime.h eveapi.h \
   asynchttp.h http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h \
   httpstatus.h thread.h thread_posix.h exception.h server.h serverlist.h \
@@ -178,7 +180,6 @@ characterlist.o: characterlist.cc helpers.h config.h asynchttp.h http.h \
   thread_posix.h exception.h conf.h characterlist.h character.h eveapi.h \
   apicharsheet.h apibase.h xml.h apiskilltree.h apicerttree.h \
   apiintraining.h apiskillqueue.h
-os.o: os.cc os_unix.cc os.h
 helpers.o: helpers.cc helpers.h
 conf.o: conf.cc exception.h conf.h ref_ptr.h
 config.o: config.cc os.h argumentsettings.h defines.h config.h \
@@ -190,8 +191,6 @@ evetime.o: evetime.cc os.h evetime.h config.h asynchttp.h http.h \
   thread_posix.h exception.h conf.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h \
   thread_posix.h
-pipedexec.o: pipedexec.cc pipedexec_posix.cc helpers.h exception.h \
-  pipedexec.h
 notifier.o: notifier.cc config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h evetime.h apiskilltree.h apibase.h \

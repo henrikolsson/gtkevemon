@@ -529,6 +529,10 @@ GtkTrainingPlan::GtkTrainingPlan (void)
     viewcols(&treeview, &cols)
 {
   /* Setup members. */
+#ifdef WIN32
+  // DELETE is defined in winnt.h and clashes with GTK
+# undef DELETE
+#endif
   this->delete_plan_but.set_image(*MK_IMG
       (Gtk::Stock::DELETE, Gtk::ICON_SIZE_MENU));
   this->create_plan_but.set_image(*MK_IMG

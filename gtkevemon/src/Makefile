@@ -7,7 +7,7 @@ else
 endif
 include Makefile.$(PLATFORM)
 
-SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
+SOURCES += maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc guiskillplanner.cc guixmlsource.cc guievelauncher.cc \
           guiversionchecker.cc guicharexport.cc guiskillqueue.cc \
           guiplanattribopt.cc \
@@ -17,8 +17,8 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           gtkitembrowser.cc gtktrainingplan.cc gtkskillqueue.cc \
           imagestore.cc argumentsettings.cc xmltrainingplan.cc \
           server.cc serverlist.cc character.cc characterlist.cc \
-          os.cc helpers.cc conf.cc config.cc \
-          xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
+          helpers.cc conf.cc config.cc \
+          xml.cc evetime.cc bgprocess.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
           apiskilltree.cc apicerttree.cc apiitemtree.cc apiskillqueue.cc \

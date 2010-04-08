@@ -29,11 +29,11 @@ strerror (int err_code)
       0,
       err_code,
       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-      &err_msg,
+      (LPSTR)&err_msg,
       1023,
       0);
   err_msg[ret] = 0;
-  return (LPSTR)&err_msg;
+  return &err_msg;
 #else
   return std::strerror(err_code);
 #endif
