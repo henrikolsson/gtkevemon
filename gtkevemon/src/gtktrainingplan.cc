@@ -1343,8 +1343,10 @@ GtkTrainingPlan::on_import_plan (void)
     if (plan[i].prerequisite)
       continue;
 
-    this->append_element(plan[i].skill, plan[i].level);
+    this->skills.append_skill(plan[i].skill, plan[i].level);
+    this->skills.back().user_notes = plan[i].user_notes;
   }
+  this->update_plan(true);
 }
 
 /* ---------------------------------------------------------------- */
@@ -1425,7 +1427,8 @@ GtkTrainingPlan::on_export_plan (void)
   for (std::size_t i = 0; i < this->skills.size(); ++i)
   {
     plan_export.append_training_item(XmlTrainingItem(this->skills[i].skill,
-        this->skills[i].plan_level, !this->skills[i].is_objective));
+        this->skills[i].plan_level, !this->skills[i].is_objective,
+        this->skills[i].user_notes));
   }
 
   try

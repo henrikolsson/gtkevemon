@@ -24,9 +24,11 @@ struct XmlTrainingItem
   ApiSkill const* skill;
   unsigned int level;
   bool prerequisite;
+  std::string user_notes;
 
   XmlTrainingItem (void);
-  XmlTrainingItem (ApiSkill const* skill, unsigned int level, bool prereq);
+  XmlTrainingItem (ApiSkill const* skill, unsigned int level,
+    bool prereq, std::string const& notes);
 };
 
 typedef std::vector<XmlTrainingItem> TrainingPlan;
@@ -73,8 +75,8 @@ XmlTrainingItem::XmlTrainingItem (void)
 
 inline
 XmlTrainingItem::XmlTrainingItem (ApiSkill const* skill,
-    unsigned int level, bool prereq)
-  : skill(skill), level(level), prerequisite(prereq)
+    unsigned int level, bool prereq, std::string const& notes)
+  : skill(skill), level(level), prerequisite(prereq), user_notes(notes)
 {
 }
 

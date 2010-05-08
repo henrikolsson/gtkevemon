@@ -82,8 +82,17 @@ XmlTrainingPlanImport::parse_xml (XmlDocumentPtr xmldoc)
       continue;
     }
 
+    /* Try to get user notes. */
+    std::string notes;
+    for (xmlNodePtr iter = node->children; iter != 0; iter = iter->next)
+    {
+      if (iter->type != XML_ELEMENT_NODE)
+        continue;
+      this->set_string_if_node_text(iter, "notes", notes);
+    }
+
     /* We got a valid skill description. Add it. */
-    this->plan.push_back(XmlTrainingItem(skill, skill_level, prereq));
+    this->plan.push_back(XmlTrainingItem(skill, skill_level, prereq, notes));
   }
 }
 
@@ -118,7 +127,8 @@ XmlTrainingPlanExport::write_to_file (std::string const& filename)
         << " level=\"" << item.level << "\""
         << " priority=\"1\" type=\""
         << (item.prerequisite ? "Prerequisite" : "Planned")
-        << "\"><notes></notes></entry>" << std::endl;
+        << "\"><notes>" << item.user_notes << "</notes></entry>"
+        << std::endl;
   }
 
   xmldata << "</plan>" << std::endl;
