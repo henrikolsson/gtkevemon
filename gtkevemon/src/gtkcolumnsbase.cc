@@ -97,10 +97,6 @@ GtkColumnsFormat::check_format (void)
   std::vector<bool> col_exist;
   col_exist.resize(this->size(), false);
 
-  /*FIXME Resize?*/
-  //for (unsigned int i = 0; i < this->size(); ++i)
-  //  col_exist.push_back(false);
-
   for (unsigned int i = 0; i < this->size(); ++i)
   {
     int col_pos = this->at(i).first;

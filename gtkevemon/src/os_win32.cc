@@ -8,12 +8,11 @@
 #include <sys/types.h>
 
 #include "strptime.h"
-#include "strptime.cc"
 #include "timegm.h"
-#include "timegm.cc"
 
 #include "os.h"
 
+#define PATH_MAX MAX_PATH
 
 namespace {
   char  home_path[PATH_MAX] = { 0 };

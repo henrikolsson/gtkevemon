@@ -7,7 +7,6 @@
 #else
 # include <winsock2.h>
 # include <ws2tcpip.h>
-# include "wsa_strerror.h"
 typedef unsigned short uint16_t;
 #endif
 #include <fcntl.h> // ::fcntl

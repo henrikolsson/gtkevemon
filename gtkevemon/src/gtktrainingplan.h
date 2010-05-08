@@ -44,6 +44,7 @@ struct GtkSkillInfo
   ApiSkill const* skill;
   bool is_objective;
   int plan_level;
+  std::string user_notes;
 
   int start_sp;
   int dest_sp;
@@ -120,8 +121,10 @@ class GtkTreeModelColumns : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<Glib::ustring> attributes;
     Gtk::TreeModelColumn<Glib::ustring> est_start;
     Gtk::TreeModelColumn<Glib::ustring> est_finish;
+    Gtk::TreeModelColumn<Glib::ustring> user_notes;
     Gtk::TreeModelColumn<int> spph;
 
+  public:
     GtkTreeModelColumns (void);
 };
 
@@ -129,6 +132,13 @@ class GtkTreeModelColumns : public Gtk::TreeModel::ColumnRecord
 
 class GtkTreeViewColumns : public GtkColumnsBase
 {
+  public:
+    typedef Glib::SignalProxy2<void, const Glib::ustring&,
+        const Glib::ustring&> CellEditedSignal;
+    typedef Glib::SignalProxy2<void, Gtk::CellEditable*,
+        const Glib::ustring&> CellStartEditingSignal;
+    typedef Glib::SignalProxy0<void> CellEditCanceledSignal;
+
   public:
     Gtk::TreeView::Column objective;
     Gtk::TreeView::Column skill_name;
@@ -138,9 +148,14 @@ class GtkTreeViewColumns : public GtkColumnsBase
     Gtk::TreeView::Column attributes;
     Gtk::TreeView::Column est_start;
     Gtk::TreeView::Column est_finish;
+    Gtk::TreeView::Column user_notes;
     Gtk::TreeView::Column spph;
 
+  public:
     GtkTreeViewColumns (Gtk::TreeView* view, GtkTreeModelColumns* cols);
+    CellEditedSignal signal_user_notes_changed (void);
+    CellStartEditingSignal signal_editing_started (void);
+    CellEditCanceledSignal signal_editing_canceled (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -171,6 +186,7 @@ class GtkTrainingPlan : public Gtk::VBox
     GtkTreeViewColumns viewcols;
     bool updating_liststore;
     int reorder_new_index;
+    unsigned int currently_editing;
 
     sigc::signal<void, ApiSkill const*> sig_skill_activated;
 
@@ -187,6 +203,11 @@ class GtkTrainingPlan : public Gtk::VBox
     void on_rename_skill_plan (void);
     void on_cleanup_skill_plan (void);
     void on_objective_toggled (Glib::ustring const& path);
+    void on_user_notes_edited (Glib::ustring const& path,
+        Glib::ustring const& value);
+    void on_user_notes_editing (Gtk::CellEditable* editable,
+        const Glib::ustring& path);
+    void on_user_notes_editing_canceled (void);
     void on_export_plan (void);
     void on_import_plan (void);
     void on_optimize_att (void);
@@ -235,6 +256,25 @@ inline unsigned int
 GtkSkillList::get_total_plan_sp (void) const
 {
   return this->total_plan_sp;
+}
+
+inline GtkTreeViewColumns::CellEditedSignal
+GtkTreeViewColumns::signal_user_notes_changed (void)
+{
+  return ((Gtk::CellRendererText*)this->user_notes
+      .get_first_cell_renderer())->signal_edited();
+}
+
+inline GtkTreeViewColumns::CellStartEditingSignal
+GtkTreeViewColumns::signal_editing_started (void)
+{
+  return this->user_notes.get_first_cell_renderer()->signal_editing_started();
+}
+
+inline GtkTreeViewColumns::CellEditCanceledSignal
+GtkTreeViewColumns::signal_editing_canceled (void)
+{
+  return this->user_notes.get_first_cell_renderer()->signal_editing_canceled();
 }
 
 inline sigc::signal<void, ApiSkill const*>&

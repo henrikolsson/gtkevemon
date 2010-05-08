@@ -34,7 +34,7 @@ GtkSkillList::append_skill (ApiSkill const* skill, int level, bool objective)
   ApiCharSheetSkill* cskill = this->character->cs->get_skill_for_id(skill->id);
   int char_level = cskill ? cskill->level : 0;
 
-  /* Also skip skill if already char has it. */
+  /* Also skip skill if char already has it. */
   if (!objective && char_level >= level)
     return;
 
@@ -460,6 +460,7 @@ GtkTreeModelColumns::GtkTreeModelColumns (void)
   this->add(this->attributes);
   this->add(this->est_start);
   this->add(this->est_finish);
+  this->add(this->user_notes);
   this->add(this->spph);
 }
 
@@ -476,6 +477,7 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
     attributes("Attribs", cols->attributes),
     est_start("Est. start", cols->est_start),
     est_finish("Est. finish", cols->est_finish),
+    user_notes("Notes", cols->user_notes),
     spph("SP/h", cols->spph)
 {
   this->skill_name.set_title("Name, level, rank");
@@ -486,6 +488,10 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
   Gtk::CellRendererToggle* objective_col = dynamic_cast
       <Gtk::CellRendererToggle*>(this->objective.get_first_cell_renderer());
   objective_col->set_property("activatable", true);
+
+  /* Make user notes editable. */
+  ((Gtk::CellRendererText*)this->user_notes
+      .get_first_cell_renderer())->property_editable() = true;
 
   this->append_column(&this->objective, GtkColumnOptions
       (false, true, false, ImageStore::columnconf[1]));
@@ -503,12 +509,15 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
       GtkColumnOptions(true, true, true));
   this->append_column(&this->est_finish,
       GtkColumnOptions(true, true, true));
+  this->append_column(&this->user_notes,
+      GtkColumnOptions(true, true, true));
   this->append_column(&this->spph,
       GtkColumnOptions(true, true, true));
 
   this->skill_name.set_sizing(Gtk::TREE_VIEW_COLUMN_FIXED);
   this->skill_name.set_fixed_width(75);
   this->skill_name.set_expand(true);
+  this->skill_name.set_resizable(true);
   this->train_duration.set_resizable(false);
   this->skill_duration.set_resizable(false);
   this->completed.set_resizable(false);
@@ -516,6 +525,7 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
   this->attributes.set_resizable(false);
   this->est_start.set_resizable(false);
   this->est_finish.set_resizable(false);
+  this->user_notes.set_resizable(true);
   this->spph.set_resizable(false);
   this->spph.get_first_cell_renderer()->set_property("xalign", 1.0);
 }
@@ -563,6 +573,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
 
   this->reorder_new_index = -1;
   //this->clean_plan_but.set_label("Clean up");
+  this->currently_editing = -1;
 
   /* Setup treeview. */
   //this->treeview.get_selection()->set_mode(Gtk::SELECTION_EXTENDED);
@@ -660,6 +671,12 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_row_activated));
   this->viewcols.objective.signal_clicked().connect(sigc::mem_fun
       (this->viewcols, &GtkColumnsBase::toggle_edit_context));
+  this->viewcols.signal_user_notes_changed().connect(sigc::mem_fun
+      (this, &GtkTrainingPlan::on_user_notes_edited));
+  this->viewcols.signal_editing_started().connect(sigc::mem_fun
+      (this, &GtkTrainingPlan::on_user_notes_editing));
+  this->viewcols.signal_editing_canceled().connect(sigc::mem_fun
+      (this, &GtkTrainingPlan::on_user_notes_editing_canceled));
   dynamic_cast<Gtk::CellRendererToggle*>(this->viewcols.objective
       .get_first_cell_renderer())->signal_toggled().connect(sigc::mem_fun
       (*this, &GtkTrainingPlan::on_objective_toggled));
@@ -779,6 +796,37 @@ GtkTrainingPlan::on_objective_toggled (Glib::ustring const& path)
 /* ---------------------------------------------------------------- */
 
 void
+GtkTrainingPlan::on_user_notes_edited (Glib::ustring const& path,
+    Glib::ustring const& value)
+{
+    //std::cout << "Path " << path << " edited to " << value << std::endl;
+    this->currently_editing = -1;
+    int skill_row = Helpers::get_int_from_string(path);
+    this->skills[skill_row].user_notes = value;
+    Gtk::TreeModel::iterator iter = this->liststore->get_iter(path);
+    (*iter)[this->cols.user_notes] = value;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::on_user_notes_editing (Gtk::CellEditable* /*editable*/,
+    Glib::ustring const& path)
+{
+    this->currently_editing = Helpers::get_int_from_string(path);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::on_user_notes_editing_canceled (void)
+{
+    this->currently_editing = -1;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GtkTrainingPlan::update_plan (bool rebuild)
 {
   if (this->character.get() == 0 || !this->character->cs->valid)
@@ -799,10 +847,18 @@ GtkTrainingPlan::update_plan (bool rebuild)
     iter = this->liststore->children().begin();
   }
 
+  //std::cout << "Running update with rebuild = " << rebuild << std::endl;
+
   for (unsigned int i = 0; i < this->skills.size(); ++i)
   {
     GtkSkillInfo& info = this->skills[i];
     ApiSkill const* skill = info.skill;
+
+    if (i == this->currently_editing && !rebuild)
+    {
+        iter++;
+        continue;
+    }
 
     /* In rebuild mode rows are created instread of iterated. */
     if (rebuild)
@@ -823,6 +879,7 @@ GtkTrainingPlan::update_plan (bool rebuild)
       (*iter)[this->cols.skill_name] = skillname;
       (*iter)[this->cols.objective] = info.is_objective;
       (*iter)[this->cols.attributes] = attribs;
+      (*iter)[this->cols.user_notes] = info.user_notes;
     }
 
     /* The following cells are always updated. */
@@ -833,7 +890,7 @@ GtkTrainingPlan::update_plan (bool rebuild)
     (*iter)[this->cols.completed] = completed;
     (*iter)[this->cols.spph] = info.spph;
     (*iter)[this->cols.train_duration]
-        = EveTime::get_string_for_timediff(info.train_duration, true);
+        = EveTime::get_string_for_timediff(info.train_duration, false/*true*/);
     (*iter)[this->cols.skill_duration]
         = EveTime::get_string_for_timediff(info.skill_duration, true);
     (*iter)[this->cols.est_start]
@@ -905,31 +962,40 @@ GtkTrainingPlan::load_current_plan (void)
       iter != this->plan_section->values_end(); iter++)
   {
     ConfValuePtr value = iter->second;
+
+    /* Retrieve the entry string, which is in format:
+     * "SKILLID,LEVEL,OBJECTIVE[,NOTES]". */
     std::string val = **value;
-    size_t delim_pos = val.find_first_of(',');
-    if (delim_pos == std::string::npos)
+
+    int skill_id;
+    int skill_level;
+    int is_objective;
+    std::string user_notes;
     {
-      std::cout << "Error loading plan: Invalid skill plan entry" << std::endl;
-      continue;
+      /* Entry is tokenized. */
+      StringVector tokens = Helpers::split_string(val, ',');
+      if (tokens.size() < 3)
+      {
+        std::cout << "Error in plan: Invalid skill plan entry" << std::endl;
+        continue;
+      }
+
+      if (tokens.size() >= 3)
+      {
+        skill_id = Helpers::get_int_from_string(tokens[0]);
+        skill_level = Helpers::get_int_from_string(tokens[1]);
+        is_objective = Helpers::get_int_from_string(tokens[2]);
+      }
+
+      if (tokens.size() > 3)
+        for (std::size_t i = 3; i < tokens.size(); ++i)
+        {
+            if (i != 3) user_notes += ",";
+            user_notes += tokens[i];
+        }
     }
-    std::string id = val.substr(0, delim_pos);
-    val = val.substr(delim_pos + 1);
 
-    delim_pos = val.find_first_of(',');
-    if (delim_pos == std::string::npos)
-    {
-      std::cout << "Error loading plan: Invalid skill plan entry" << std::endl;
-      continue;
-    }
-    std::string level = val.substr(0, delim_pos);
-    val = val.substr(delim_pos + 1);
-
-    std::string objective = val;
-
-    int skill_id = Helpers::get_int_from_string(id);
-    int skill_level = Helpers::get_int_from_string(level);
-    int is_objective = Helpers::get_int_from_string(objective);
-
+    /* Entry is added to the list. */
     ApiSkill const* skill = tree->get_skill_for_id(skill_id);
     if (skill == 0)
     {
@@ -942,6 +1008,7 @@ GtkTrainingPlan::load_current_plan (void)
     info.skill = skill;
     info.plan_level = skill_level;
     info.is_objective = (bool)is_objective;
+    info.user_notes = user_notes;
     this->skills.push_back(info);
   }
 
@@ -964,6 +1031,8 @@ GtkTrainingPlan::save_current_plan (void)
     std::string value = Helpers::get_string_from_int(info.skill->id);
     value += "," + Helpers::get_string_from_int(info.plan_level);
     value += "," + Helpers::get_string_from_int((int)info.is_objective);
+    if (!info.user_notes.empty())
+        value += "," + info.user_notes;
     this->plan_section->add(key, ConfValue::create(value));
   }
 }
@@ -1167,7 +1236,6 @@ GtkTrainingPlan::on_query_skillview_tooltip (int x, int y,
 void
 GtkTrainingPlan::on_import_plan (void)
 {
-  // TODO Ask if import to current plan or to new plan
   Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
 
   Gtk::MessageDialog dialog(*toplevel, "How to import the skill plan?",
@@ -1270,7 +1338,6 @@ GtkTrainingPlan::on_import_plan (void)
   }
 
   TrainingPlan const& plan = plan_import.get_training_plan();
-  std::cout << "Plan size: " << plan.size() << std::endl;
   for (std::size_t i = 0; i < plan.size(); ++i)
   {
     if (plan[i].prerequisite)
@@ -1357,11 +1424,8 @@ GtkTrainingPlan::on_export_plan (void)
   XmlTrainingPlanExport plan_export;
   for (std::size_t i = 0; i < this->skills.size(); ++i)
   {
-    if (!this->skills[i].is_objective)
-      continue;
-
-    plan_export.append_training_item(XmlTrainingItem
-        (this->skills[i].skill, this->skills[i].plan_level, false));
+    plan_export.append_training_item(XmlTrainingItem(this->skills[i].skill,
+        this->skills[i].plan_level, !this->skills[i].is_objective));
   }
 
   try

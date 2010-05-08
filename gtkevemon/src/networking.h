@@ -33,7 +33,7 @@ strerror (int err_code)
       1023,
       0);
   err_msg[ret] = 0;
-  return &err_msg;
+  return (char const*)&err_msg;
 #else
   return std::strerror(err_code);
 #endif

@@ -24,8 +24,6 @@
 #include "server.h"
 #include "maingui.h"
 
-#include "apicharsheet.h"
-
 void
 signal_received (int /*signum*/)
 {
