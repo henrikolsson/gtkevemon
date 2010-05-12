@@ -113,7 +113,7 @@ XmlTrainingPlanExport::write_to_file (std::string const& filename)
   xmldata << "<plan xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
       << " xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
       << " name=\"GtkEveMon exported\""
-      << " owner=\"unknown\""
+      << " owner=\"00000000-0000-0000-0000-000000000000\""
       << " revision=\"2186\">" << std::endl;
   xmldata << "  <sorting criteria=\"None\" order=\"None\""
       << " optimizeLearning=\"false\""
