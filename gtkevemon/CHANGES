@@ -1,5 +1,11 @@
-[b]Revision 1.7-112[/b]
+[b]Revision 1.7-112 to Revision 1.7-116[/b]
 [list]
+[li]Removed endian conversion for 64 bit integers.[/li]
+[li]Makefile fixes (always link with zlib).[/li]
+[li]Fixed skill plan export issue (to work with EveMon).[/li]
+[li]Support for per-entry user notes in the training plan.[/li]
+[li]Partially fixed EveMon skill plan import/export.[/li]
+[li]Import/Export of user notes in skill plans.[/li]
 [li]Minor build system changes, win32 fixes (by Andre Schulz).[/li]
 [/list]
 

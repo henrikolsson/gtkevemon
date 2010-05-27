@@ -15,13 +15,11 @@
 
 #include <climits>
 
-// XXX: namespace might be more fitting?
 class OS
 {
 private:
   static short short_swap(short x);
   static int   int_swap(int x);
-  static long  long_swap(long x);
 
 public:
   /* File system interface. */
@@ -43,10 +41,8 @@ public:
   /* Endian conversions. */
   static short letoh(short x);
   static int   letoh(int x);
-  static long  letoh(long x);
   static short betoh(short x);
   static int   betoh(int x);
-  static long  betoh(long x);
 };
 
 inline short OS::short_swap(short x)
@@ -60,18 +56,6 @@ inline int   OS::int_swap(int x)
        | ((x & 0x0000ff00) <<  8)
        | ((x & 0x00ff0000) >>  8)
        | ((x & 0xff000000) >> 24);
-}
-
-inline long  OS::long_swap(long x)
-{
-  return ((x & 0x00000000000000ffULL) << 56)
-       | ((x & 0x000000000000ff00ULL) << 40)
-       | ((x & 0x0000000000ff0000ULL) << 24)
-       | ((x & 0x00000000ff000000ULL) <<  8)
-       | ((x & 0x000000ff00000000ULL) >>  8)
-       | ((x & 0x0000ff0000000000ULL) >> 24)
-       | ((x & 0x00ff000000000000ULL) >> 40)
-       | ((x & 0xff00000000000000ULL) >> 56);
 }
 
 /* Determine host byte-order. */
@@ -122,19 +106,15 @@ inline long  OS::long_swap(long x)
 #elif defined(HOST_BYTEORDER_LE)
 inline short OS::letoh(short x) { return x; }
 inline int   OS::letoh(int x)   { return x; }
-inline long  OS::letoh(long x)  { return x; }
 
 inline short OS::betoh(short x) { return short_swap(x); }
 inline int   OS::betoh(int x)   { return int_swap(x); }
-inline long  OS::betoh(long x)  { return long_swap(x); }
 #elif defined(HOST_BYTEORDER_BE)
 inline short OS::letoh(short x) { return short_swap(x); }
 inline int   OS::letoh(int x)   { return int_swap(x); }
-inline long  OS::letoh(long x)  { return long_swap(x); }
 
 inline short OS::betoh(short x) { return x; }
 inline int   OS::betoh(int x)   { return x; }
-inline long  OS::betoh(long x)  { return x; }
 #else
 # error "Couldn't determine host endianess!"
 #endif
