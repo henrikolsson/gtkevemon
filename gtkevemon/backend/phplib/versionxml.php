@@ -275,7 +275,7 @@ class VersionXML
   {
     $res = strptime($date, "%Y-%m-%d");
     return mktime(0, 0, 0, $res['tm_mon'] + 1,
-        $res['tm_mday'], $res['tm_year']);
+        $res['tm_mday'], 1900 + $res['tm_year']);
   }
 }
 

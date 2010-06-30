@@ -1,3 +1,14 @@
+[b]Revision 1.8-117 to Revision 1.8-119[/b]
+[list]
+[li]Changed desktop file and replaced xpm with png icon.[/li]
+[li]Disabled update button while updating in version checker.[/li]
+[li]Fixed a few backend time and date issues.[/li]
+[/list]
+
+[hr]
+[center][b]Release of Version 1.8[/b][/center]
+[hr]
+
 [b]Revision 1.7-112 to Revision 1.7-116[/b]
 [list]
 [li]Removed endian conversion for 64 bit integers.[/li]

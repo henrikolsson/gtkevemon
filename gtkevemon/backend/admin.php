@@ -9,12 +9,13 @@
  * (at your option) any later version.
  */
 
+ini_set('display_errors', TRUE);
+date_default_timezone_set("GMT");
+
 require_once("phplib/template.php");
 require_once("phplib/versionxml.php");
 require_once("phplib/updater.php");
 require_once("phplib/userauth.php");
-
-ini_set('display_errors', TRUE);
 
 $auth = new UserAuth();
 

@@ -256,6 +256,7 @@ GuiVersionChecker::on_close_clicked (void)
 void
 GuiVersionChecker::on_update_clicked (void)
 {
+  this->update_but->set_sensitive(false);
   if (!is_updated)
   {
     for (unsigned int i = 0; i < this->update_list.size(); ++i)
@@ -296,6 +297,7 @@ GuiVersionChecker::on_update_done (void)
 
   if (this->startup_mode)
   {
+    this->update_but->set_sensitive(true);
     this->update_but->set_image(*MK_IMG(Gtk::Stock::MEDIA_PLAY,
         Gtk::ICON_SIZE_BUTTON));
     this->update_but->set_label("Continue");
@@ -303,6 +305,7 @@ GuiVersionChecker::on_update_done (void)
   else
   {
     this->close_but->set_sensitive(false);
+    this->update_but->set_sensitive(true);
     this->update_but->set_image(*MK_IMG(Gtk::Stock::QUIT,
          Gtk::ICON_SIZE_BUTTON));
     this->update_but->set_label("Quit");

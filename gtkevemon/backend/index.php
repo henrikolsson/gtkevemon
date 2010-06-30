@@ -9,10 +9,11 @@
  * (at your option) any later version.
  */
 
+ini_set('display_errors', TRUE);
+date_default_timezone_set("GMT");
+
 require_once("phplib/template.php");
 require_once("phplib/versionxml.php");
-
-ini_set('display_errors', TRUE);
 
 $tpl = new Template("index.tpl", "Versioning Backend");
 $tpl->printHeader();

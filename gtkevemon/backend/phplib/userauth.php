@@ -18,8 +18,8 @@ class UserAuth
   public function __construct ()
   {
     $this->init_users();
-    $user = $_SERVER['PHP_AUTH_USER'];
-    $pass = $_SERVER['PHP_AUTH_PW'];
+    $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : "";
+    $pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : "";
 
     if (!$this->is_allowed($user, $pass))
       $this->request_auth();
@@ -39,6 +39,9 @@ class UserAuth
 
   private function is_allowed ($user, $pass)
   {
+    if (!isset($user) || $user == "")
+      return false;
+
     foreach ($this->users as $up)
       if ($up[0] == $user && $up[1] == md5($pass))
         return true;

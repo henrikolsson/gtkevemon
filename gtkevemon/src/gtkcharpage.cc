@@ -40,6 +40,8 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->refresh_but.set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_MENU)));
   this->refresh_but.set_relief(Gtk::RELIEF_NONE);
+  this->refresh_but.set_focus_on_click(false);
+
   this->info_but.set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::INFO, Gtk::ICON_SIZE_MENU)));
   this->info_but.set_relief(Gtk::RELIEF_NONE);
@@ -190,6 +192,7 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   skillqueue_but->add(*MK_IMG_PB(ImageStore::skillqueue));
   skillqueue_but->set_relief(Gtk::RELIEF_NONE);
   skillqueue_but->set_tooltip_text("Show training queue");
+  skillqueue_but->set_focus_on_click(false);
 
   Gtk::Table* train_sub_tbl = MK_TABLE(2, 2);
   train_sub_tbl->set_col_spacings(5);
