@@ -284,7 +284,7 @@ GuiPlanAttribOpt::create_breakdown_page (void)
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   scwin->add(this->treeview);
 
-  this->viewcols.set_format("-0 +1 -2 +3 -4 -5 -6 -7 -8 +9");
+  this->viewcols.set_format("-0 +1 -2 +3 -4 -5 -6 -7 -8 -9");
   this->viewcols.setup_columns_normal();
   this->treeview.set_rules_hint(true);
 

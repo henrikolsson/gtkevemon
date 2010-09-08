@@ -67,10 +67,11 @@ GuiConfiguration::GuiConfiguration (void)
   page_misc->pack_start(*misc_cb_box, false, false, 0);
 
   /* The LAUNCHER notebook tab. */
-  Gtk::Label* launch_info_label = MK_LABEL("You can define up to "
-      "five EVE commands to launch EVE online. If you specify more than "
-      "one command, GtkEveMon will prompt for the command to execute.\n"
-      "Note that \"~\" will not work as home directory.");
+  Gtk::Label* launch_info_label = MK_LABEL("You can specify up to "
+      "five commands to launch EVE online (or any other app). If you "
+      "specify more than one command, GtkEveMon will prompt which command "
+      "to execute.\n"
+      "Note that \"~\" does not work as home directory.");
   launch_info_label->set_alignment(Gtk::ALIGN_LEFT);
   launch_info_label->set_line_wrap(true);
 
@@ -111,8 +112,8 @@ GuiConfiguration::GuiConfiguration (void)
   page_launch->pack_start(*launch_table, false, false, 0);
 
   /* The NETWORK notebook tab. */
-  Gtk::Label* net_info_label = MK_LABEL("EVE API requests are done "
-      "over the HTTP protocol. If you're behind a restricting firewall, "
+  Gtk::Label* net_info_label = MK_LABEL("EVE API requests are sent "
+      "over the HTTP protocol. If you're behind a restricting firewall "
       "or just want to stay anonymous, you can use a HTTP proxy server. "
       "Note that the server monitor doesn't use the proxy.");
   net_info_label->set_alignment(Gtk::ALIGN_LEFT);
@@ -142,9 +143,8 @@ GuiConfiguration::GuiConfiguration (void)
   page_network->pack_start(*net_proxy_entry_box, false, false, 0);
 
   /* The NOTIFICATIONS notebook tab. */
-  Gtk::Label* notify_info_label = MK_LABEL("Check the notification "
-      "options in order to choose how GtkEveMon will notify you "
-      "if the skill training is complete.");
+  Gtk::Label* notify_info_label = MK_LABEL("Specify how you want "
+      "GtkEveMon to notify you if the skill training is complete.");
   notify_info_label->set_alignment(Gtk::ALIGN_LEFT);
   notify_info_label->set_line_wrap(true);
 
@@ -155,7 +155,7 @@ GuiConfiguration::GuiConfiguration (void)
       (new GtkConfCheckButton("Show tray icon", false,
       "notifications.show_tray_icon"));
   GtkConfCheckButton* notify_with_info_bar = Gtk::manage
-      (new GtkConfCheckButton("Show information bar", false,
+      (new GtkConfCheckButton("Show information bar (in GtkEveMon)", false,
       "notifications.show_info_bar"));
 
   Gtk::VBox* notify_cb_box = MK_VBOX0;

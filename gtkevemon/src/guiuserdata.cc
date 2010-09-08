@@ -50,7 +50,7 @@ GuiUserData::GuiUserData (void)
       (Gtk::Stock::DIALOG_INFO, Gtk::ICON_SIZE_DIALOG)), false, false, 0);
 
   Gtk::Label* info1_label = MK_LABEL(
-      "First, you need to enter your user id and your LIMITED API key. "
+      "First, you need to enter your user ID and your LIMITED API key. "
       "This information depends on your account. "
       "You can get the information at:");
   info1_label->set_width_chars(50);

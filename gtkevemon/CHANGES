@@ -1,5 +1,7 @@
-[b]Revision 1.8-117 to Revision 1.8-119[/b]
+[b]Revision 1.8-117 to Revision 1.8-120[/b]
 [list]
+[li]Removed unused column in attribute optimizer.[/li]
+[li]Minor changes in GUI descriptions for clarity.[/li]
 [li]Changed desktop file and replaced xpm with png icon.[/li]
 [li]Disabled update button while updating in version checker.[/li]
 [li]Fixed a few backend time and date issues.[/li]

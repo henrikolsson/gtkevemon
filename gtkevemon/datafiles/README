@@ -16,6 +16,9 @@ be uploaded to be available for clients:
 Data files are managed via the GtEveMon Versioning Backend, located:
 http://gtkevemon.battleclinic.com/updates/
 
+ItemTree.xml.gz
+-------------------------------------------------------------------------
+
 Currently, there is no convenient way to create ItemTree.xml.
 The item_tree_xml_export.php script can be used to create a XML file
 from a local MySQL database with the EVE dumps.
@@ -30,6 +33,9 @@ Makefile targets explained
 -------------------------------------------------------------------------
 
 The Makefile has several targets to ease the progress.
+
+make all (or simply "make")
+- makes skilltree and certtree
 
 make skilltree
 - Creates SkillTree.xml.gz with version information
