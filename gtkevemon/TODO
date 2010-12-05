@@ -6,6 +6,10 @@ User interface
  - Fix caching to detect error documents
  - Create .bak files before cache files are overwritten
  - Reload skill in training after training finishes
+ - Display skill queue / account information in GUI !!!
+ - Tray icon when skill queue below some time (24h?) !!!
+
+ - Permanently remove ItemTree.xml
 
 
 Skill Browser / Planner
@@ -51,6 +55,8 @@ Remove SkillInTraining.xml
 Notifications
 -------------
  - Notification a few miniutes before actual finish
+ - Notification before skill queue finishes !!!
+ - Notification when subscription ends?
 
 
 Skill / Certificate Browser

@@ -438,8 +438,12 @@ GuiPlanAttribOpt::optimize_plan (void)
       + (int)cur_base_atts.mem + (int)cur_base_atts.per
       + (int)cur_base_atts.wil - (MINIMUM_VALUE_PER_ATTRIB * 5);
 
-  /* Go through all combinations and compare the runtime. This algorithm has
-   * been found in EVEMon. */
+
+  /* Go through all combinations and compare the runtime.
+   * This algorithm has been found in EVEMon.
+   *
+   * This is O(scary), but seems quick enough in practice.
+   */
   for (int intl = 0; intl <= max_points_per_att; intl++)
   {
     int max_mem = total_base_atts - intl;

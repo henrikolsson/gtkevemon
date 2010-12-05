@@ -159,7 +159,7 @@ GtkDependencyList::set_cert (ApiCert const* cert)
 
 void
 GtkDependencyList::recurse_append_skill_req (ApiSkill const* skill,
-    Gtk::TreeModel::iterator slot, int level)
+    Gtk::TreeModel::iterator slot, int level, bool recurse)
 {
   (*slot)[this->deps_cols.name] = skill->name + " "
       + Helpers::get_roman_from_int(level);
@@ -176,14 +176,23 @@ GtkDependencyList::recurse_append_skill_req (ApiSkill const* skill,
   (*slot)[this->deps_cols.icon] = skill_icon;
   (*slot)[this->deps_cols.elem_icon] = ImageStore::skillicons[1];
 
+  if (!recurse)
+    return;
+
   ApiSkillTreePtr tree = ApiSkillTree::request();
   for (unsigned int i = 0; i < skill->deps.size(); ++i)
   {
     int skill_id = skill->deps[i].first;
     int newlevel = skill->deps[i].second;
+
+    // Prevent endless recursion
+    bool recurse_this = true;
+    if (skill_id == skill->id)
+        recurse_this = false;
+
     ApiSkill const* newskill = tree->get_skill_for_id(skill_id);
     this->recurse_append_skill_req(newskill,
-        this->deps_store->append(slot->children()), newlevel);
+        this->deps_store->append(slot->children()), newlevel, recurse_this);
   }
 }
 

@@ -106,8 +106,10 @@ GtkPortrait::request_from_eve_online (void)
       << " ..." << std::endl;
 
   AsyncHttp* http = AsyncHttp::create();;
-  http->set_host("img.eve.is");
-  http->set_path("/serv.asp?s=256&c=" + this->char_id);
+  //http->set_host("img.eve.is");
+  //http->set_path("/serv.asp?s=256&c=" + this->char_id);
+  http->set_host("image.eveonline.com");
+  http->set_path("/Character/" + this->char_id + "_256.jpg");
   Config::setup_http(http);
 
   this->http_request.disconnect();

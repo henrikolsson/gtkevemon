@@ -99,7 +99,7 @@ class GtkDependencyList : public GtkItemDetailsBase, public Gtk::ScrolledWindow
 
   protected:
     void recurse_append_skill_req (ApiSkill const* skill,
-        Gtk::TreeModel::iterator slot, int level);
+        Gtk::TreeModel::iterator slot, int level, bool recurse = true);
     void recurse_append_cert_req (ApiCert const* cert,
         Gtk::TreeModel::iterator slot);
     void on_row_activated (Gtk::TreeModel::Path const& path,
