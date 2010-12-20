@@ -193,6 +193,7 @@ GuiVersionChecker::rebuild_files_box (void)
       info_version = info->second.version;
       info_size = Helpers::get_string_from_float
           (Helpers::get_float_from_string(info->second.size) / 1024.0f, 0);
+      info_size = "Size: " + info_size + " KB";
       if (info_version == version)
         status_image = MK_IMG(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);
       else
@@ -204,7 +205,7 @@ GuiVersionChecker::rebuild_files_box (void)
     else
     {
       info_version = "n/a";
-      info_size = "n/a";
+      info_size = "No version information available";
       status_image = MK_IMG(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
     }
 
@@ -215,7 +216,7 @@ GuiVersionChecker::rebuild_files_box (void)
     local_version->set_alignment(Gtk::ALIGN_RIGHT);
     Gtk::Label* current_version = MK_LABEL("Current version: " + info_version);
     current_version->set_alignment(Gtk::ALIGN_RIGHT);
-    Gtk::Label* current_size = MK_LABEL("Size: " + info_size + " KB");
+    Gtk::Label* current_size = MK_LABEL(info_size);
     current_size->set_alignment(Gtk::ALIGN_LEFT);
 
     Gtk::Label* filename_label = MK_LABEL("<b>" + name + "</b>");

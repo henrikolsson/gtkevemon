@@ -64,8 +64,7 @@ ApiSkillTree::refresh (void)
     }
   }
 
-  std::cout << "Seeking XML: " << SKILLTREE_FN
-      << " not found. Shutdown!" << std::endl;
+  std::cout << "Seeking XML: " SKILLTREE_FN " not found. EXIT!" << std::endl;
   std::exit(EXIT_FAILURE);
 }
 
@@ -78,8 +77,7 @@ ApiSkillTree::parse_xml (std::string const& filename)
   XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
   xmlNodePtr root = xml->get_root_element();
 
-  std::cout << "Parsing XML: " SKILLTREE_FN " ...";
-  std::cout.flush();
+  std::cout << "Parsing XML: " SKILLTREE_FN " ..." << std::flush;
 
   /* Document was parsed. Reset information. */
   this->skills.clear();
@@ -197,6 +195,9 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
       skill.name = this->get_property(node, "typeName");
       skill.group = this->get_property_int(node, "groupID");
       skill.id = this->get_property_int(node, "typeID");
+      skill.rank = 0;
+      skill.primary = API_ATTRIB_UNKNOWN;
+      skill.secondary = API_ATTRIB_UNKNOWN;
 
       this->parse_skills_row(skill, node->children);
 
@@ -265,12 +266,6 @@ ApiSkillTree::parse_skill_attribs (ApiSkill& skill, xmlNodePtr node)
     }
   }
 
-  if (primary.empty() || secondary.empty())
-  {
-    std::cout << "Error determining attributes" << std::endl;
-    return;
-  }
-
   this->set_attribute(skill.primary, primary);
   this->set_attribute(skill.secondary, secondary);
 }
@@ -291,7 +286,7 @@ ApiSkillTree::set_attribute (ApiAttrib& var, std::string const& str)
   else if (str == "willpower")
     var = API_ATTRIB_WILLPOWER;
   else
-    throw Exception("Error finding attribute for " + str);
+    var = API_ATTRIB_UNKNOWN;
 }
 
 /* ---------------------------------------------------------------- */

@@ -452,7 +452,6 @@ GtkItemDetails::on_element_changed (ApiElement const* elem)
       break;
     }
 
-    case API_ELEM_ITEM:
     default:
       break;
   }

@@ -22,7 +22,6 @@
 #include "character.h"
 #include "apiskilltree.h"
 #include "apicerttree.h"
-#include "apiitemtree.h"
 #include "gtkplannerbase.h"
 
 /* The maximum history size. */

@@ -49,7 +49,7 @@ class Updater
       $name = $_POST['name'];
       $message = $_POST['message'];
       $source = $_POST['source'];
-      $version = implode(file($source));
+      $version = chop(implode(file($source)));
       $this->vxml->add_application($name, $version, $message, $source);
       $this->vxml->save_versionfile();
       print("<p>Successfully added <b>$name</b>!</p>\n");
@@ -66,7 +66,7 @@ class Updater
       }
 
       $old_version = $app->version;
-      $new_version = implode(file($app->url));
+      $new_version = chop(implode(file($app->url)));
 
       if ($old_version == $new_version)
       {

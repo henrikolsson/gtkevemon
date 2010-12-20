@@ -105,25 +105,6 @@ ApiInTraining::parse_result_tag (xmlNodePtr node)
 
 /* ---------------------------------------------------------------- */
 
-#if 0
-unsigned int
-ApiInTraining::get_current_level_sp (void)
-{
-  time_t evetime = EveTime::get_eve_time();
-  if (evetime > this->end_time_t)
-    return this->dest_sp;
-  if (evetime < this->start_time_t)
-    return this->start_sp;
-
-  double fraction = ((double)evetime - (double)this->start_time_t)
-      / ((double)this->end_time_t - (double)this->start_time_t);
-  return (unsigned int)(fraction * ((double)this->dest_sp
-      - (double)this->start_sp));
-}
-#endif
-
-/* ---------------------------------------------------------------- */
-
 unsigned int
 ApiInTraining::get_current_spph (void)
 {

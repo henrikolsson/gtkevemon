@@ -105,11 +105,11 @@ Server::refresh_intern (void)
   switch (buffer[19])
   {
     case 4:
-      this->players = OS::letoh(*(int*)&buffer[20]);
+      this->players = OS::letoh(*(int*)(buffer + 20));
       //std::cout << "Player field is 32 bit: " << this->players << std::endl;
       break;
     case 5:
-      this->players = OS::letoh(*(short*)&buffer[20]);
+      this->players = OS::letoh(*(short*)(buffer + 20));
       //std::cout << "Player field is 16 bit: " << this->players << std::endl;
       break;
     case 6:

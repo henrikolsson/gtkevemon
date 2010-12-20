@@ -115,7 +115,6 @@ class ApiCharSheet : public ApiBase
     /* Attribute values for the character. */
     ApiCharAttribs base;
     ApiCharAttribs implant;
-    ApiCharAttribs skill;
     ApiCharAttribs total;
 
     /* The vector of all known skills and certs. */
@@ -147,11 +146,6 @@ class ApiCharSheet : public ApiBase
     unsigned int get_spph_for_skill (ApiSkill const* skill);
     unsigned int get_spph_for_skill (ApiSkill const* skill,
         ApiCharAttribs const& attribs);
-
-    /* Attribute information for attribute boosting skills.
-     * The skill attributes are without the learning skill bonus. */
-    ApiCharAttribs get_skill_attributes (void) const;
-    int get_learning_skill_level (void) const;
 
     /* Generic calculation of skill start and destination SP.
      * This is character independent. */

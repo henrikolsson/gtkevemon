@@ -30,12 +30,7 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   this->enforce_cache_time(API_CHAR_SHEET_MIN_CACHE_TIME);
 
   /* Find bonus attributes for skills. */
-  this->skill = this->get_skill_attributes();
-  int learning = this->get_learning_skill_level();
-  double factor = (double)learning * 0.02f;
-
-  this->skill += (this->base + this->skill + this->implant) * factor;
-  this->total = this->base + this->implant + this->skill;
+  this->total = this->base + this->implant;
 
   /* Calculate start SP, destination SP and completed. */
   ApiSkillTreePtr stree = ApiSkillTree::request();
@@ -447,48 +442,6 @@ ApiCharSheet::get_spph_for_skill (ApiSkill const* skill,
 
   double sppm = (pri + sec / 2.0);
   return (unsigned int)(sppm * 60.0 + 0.5);
-}
-
-/* ---------------------------------------------------------------- */
-
-ApiCharAttribs
-ApiCharSheet::get_skill_attributes (void) const
-{
-  /*
-   * Analytical Mind (int): 3377      Logic (int): 12376
-   * Spatial Awareness (per): 3379    Clarity (per): 12387
-   * Empathy (cha): 3376              Presence (cha): 12383
-   * Instant Recall (mem): 3378       Eidetic Memory (mem): 12385
-   * Iron Will (wil): 3375            Focus (wil): 12386
-   *
-   * Learning (2% to all): 3374
-   */
-  ApiCharAttribs attribs;
-
-  attribs.intl = this->get_level_for_skill(API_SKILL_ID_ANALYTICAL_MIND);
-  attribs.intl += this->get_level_for_skill(API_SKILL_ID_LOGIC);
-
-  attribs.per = this->get_level_for_skill(API_SKILL_ID_AWARENESS);
-  attribs.per += this->get_level_for_skill(API_SKILL_ID_CLARITY);
-
-  attribs.cha = this->get_level_for_skill(API_SKILL_ID_EMPATHY);
-  attribs.cha += this->get_level_for_skill(API_SKILL_ID_PRESENCE);
-
-  attribs.mem = this->get_level_for_skill(API_SKILL_ID_INSTANT_RECALL);
-  attribs.mem += this->get_level_for_skill(API_SKILL_ID_EIDETIC_MEMORY);
-
-  attribs.wil = this->get_level_for_skill(API_SKILL_ID_IRON_WILL);
-  attribs.wil += this->get_level_for_skill(API_SKILL_ID_FOCUS);
-
-  return attribs;
-}
-
-/* ---------------------------------------------------------------- */
-
-int
-ApiCharSheet::get_learning_skill_level (void) const
-{
-  return this->get_level_for_skill(API_SKILL_ID_LEARNING);
 }
 
 /* ---------------------------------------------------------------- */

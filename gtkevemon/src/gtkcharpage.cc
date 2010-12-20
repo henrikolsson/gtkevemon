@@ -378,40 +378,30 @@ GtkCharPage::update_charsheet_details (void)
     attr_cha_tt += Helpers::get_string_from_double(cs->base.cha, 2);
     attr_cha_tt += "\nImplants: ";
     attr_cha_tt += Helpers::get_string_from_double(cs->implant.cha, 2);
-    attr_cha_tt += "\nSkills: ";
-    attr_cha_tt += Helpers::get_string_from_double(cs->skill.cha, 2);
 
     Glib::ustring attr_int_tt;
     attr_int_tt = "<u><b>Attribute: Intelligence</b></u>\nBase: ";
     attr_int_tt += Helpers::get_string_from_double(cs->base.intl, 2);
     attr_int_tt += "\nImplants: ";
     attr_int_tt += Helpers::get_string_from_double(cs->implant.intl,2);
-    attr_int_tt += "\nSkills: ";
-    attr_int_tt += Helpers::get_string_from_double(cs->skill.intl, 2);
 
     Glib::ustring attr_per_tt;
     attr_per_tt = "<u><b>Attribute: Perception</b></u>\nBase: ";
     attr_per_tt += Helpers::get_string_from_double(cs->base.per, 2);
     attr_per_tt += "\nImplants: ";
     attr_per_tt += Helpers::get_string_from_double(cs->implant.per, 2);
-    attr_per_tt += "\nSkills: ";
-    attr_per_tt += Helpers::get_string_from_double(cs->skill.per, 2);
 
     Glib::ustring attr_mem_tt;
     attr_mem_tt = "<u><b>Attribute: Memory</b></u>\nBase: ";
     attr_mem_tt += Helpers::get_string_from_double(cs->base.mem, 2);
     attr_mem_tt += "\nImplants: ";
     attr_mem_tt += Helpers::get_string_from_double(cs->implant.mem, 2);
-    attr_mem_tt += "\nSkills: ";
-    attr_mem_tt += Helpers::get_string_from_double(cs->skill.mem, 2);
 
     Glib::ustring attr_wil_tt;
     attr_wil_tt = "<u><b>Attribute: Willpower</b></u>\nBase: ";
     attr_wil_tt += Helpers::get_string_from_double(cs->base.wil, 2);
     attr_wil_tt += "\nImplants: ";
     attr_wil_tt += Helpers::get_string_from_double(cs->implant.wil, 2);
-    attr_wil_tt += "\nSkills: ";
-    attr_wil_tt += Helpers::get_string_from_double(cs->skill.wil, 2);
 
     /* Update some character sheet related skills. */
     this->known_skills_label.set_tooltip_markup(skills_at_tt);
@@ -907,20 +897,6 @@ GtkCharPage::on_skill_completed (void)
     md->show_all();
     md->signal_response().connect(sigc::bind(sigc::mem_fun
         (*this, &GtkCharPage::delete_skill_completed_dialog), md));
-
-    #if 0
-    Gtk::MessageDialog md("Skill training completed!",
-        false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
-    md.set_secondary_text("Congratulations. <b>" + this->get_char_name()
-        + "</b> has just completed the skill training for <b>"
-        + this->training_label.get_text() + "</b>.", true);
-    md.set_title("Skill training completed!");
-    md.set_transient_for(*this->parent_window);
-    //md.set_type_hint(Gdk::WINDOW_TYPE_HINT_DIALOG);
-    //md.set_position(Gtk::WIN_POS_CENTER_ON_PARENT);
-    md.run();
-    this->remove_tray_notify();
-    #endif
   }
 }
 

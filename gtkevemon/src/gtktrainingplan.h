@@ -67,8 +67,6 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
 
   protected:
     void append_skill (ApiSkill const* skill, int level, bool objective);
-    void apply_attributes (ApiSkill const* skill, ApiCharAttribs& attribs,
-        int& learning_level);
 
   public:
     GtkSkillList (void);
@@ -100,8 +98,7 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
      * of the character ones. "use_active_spph" specifies if the SP/h
      * for the skill in training is taken from the training sheet. */
     void calc_details (bool use_active_spph = true);
-    void calc_details (ApiCharAttribs& attribs, int learning_level,
-        bool use_active_spph = true);
+    void calc_details (ApiCharAttribs& attribs, bool use_active_spph = true);
     //void simulate_select (unsigned int index);
 };
 

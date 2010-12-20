@@ -23,8 +23,7 @@
 enum ApiElementType
 {
   API_ELEM_SKILL,
-  API_ELEM_CERT,
-  API_ELEM_ITEM
+  API_ELEM_CERT
 };
 
 class ApiElement

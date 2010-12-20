@@ -91,20 +91,13 @@ GuiPlanAttribOpt::create_config_page (void)
   Gtk::RadioButtonGroup rbg;
   this->rb_whole_plan.set_group(rbg);
   this->rb_partial_plan.set_group(rbg);
-  this->consider_learning_cb.set_label("Consider learning skills");
-  this->consider_learning_cb.set_tooltip_text("Check this if you want the "
-      "attributes gained by the learning skills, which are skipped by your "
-      "current selection, to be "
-      "taken into consideration for the optimization.");
   this->set_selection_sensitivity(false);
-  this->consider_learning_cb.set_active(true);
 
   /* Create a table and add the widgets to it. */
-  Gtk::Table* dialog_tbl = MK_TABLE(3, 2);
-  dialog_tbl->attach(this->rb_whole_plan, 1, 2, 0, 1, Gtk::FILL);
-  dialog_tbl->attach(this->rb_partial_plan, 1, 2, 1, 2, Gtk::FILL);
-  dialog_tbl->attach(this->skill_selection, 1, 2, 2, 3, Gtk::FILL);
-  dialog_tbl->attach(this->consider_learning_cb, 2, 3, 2, 3, Gtk::FILL);
+  Gtk::VBox* dialog_vbox = MK_VBOX;
+  dialog_vbox->pack_start(this->rb_whole_plan, false, false, 0);
+  dialog_vbox->pack_start(this->rb_partial_plan, false, false, 0);
+  dialog_vbox->pack_start(this->skill_selection, false, false, 0);
 
   /* Create the button for the next page. */
   Gtk::Button* calculate_but = MK_BUT0;
@@ -121,7 +114,7 @@ GuiPlanAttribOpt::create_config_page (void)
   main_box->set_border_width(5);
   main_box->pack_start(*info_box, false, false, 0);
   main_box->pack_start(*MK_HSEP, false, false, 0);
-  main_box->pack_start(*dialog_tbl, false, false, 0);
+  main_box->pack_start(*dialog_vbox, false, false, 0);
   main_box->pack_end(*button_box, false, false, 0);
 
   /* Add signal handlers to the radio buttons. */
@@ -332,7 +325,6 @@ void
 GuiPlanAttribOpt::set_selection_sensitivity (bool sensitive)
 {
   this->skill_selection.set_sensitive(sensitive);
-  this->consider_learning_cb.set_sensitive(sensitive);
 }
 
 /* ---------------------------------------------------------------- */
@@ -346,69 +338,13 @@ GuiPlanAttribOpt::optimize_plan (void)
   /* Fetch the character from the plan. */
   ApiCharSheetPtr charsheet = this->plan.get_character()->cs;
 
-  /* Fetch the base, the implant, the skill attribute points and the level of
-   * the learning factor. */
+  /* Fetch base and implant attribute points. */
   ApiCharAttribs base_atts = charsheet->base;
   ApiCharAttribs implant_atts = charsheet->implant;
   ApiCharAttribs total_atts = charsheet->total;
-  ApiCharAttribs skill_atts = charsheet->get_skill_attributes();
-  int learning_level = charsheet->get_learning_skill_level();
-  double learning_factor = learning_level * 0.02;
 
   if (this->plan_offset > 0)
-  {
-    /* If the user wants the learning skills in the list trained before
-     * to be taken into consideration, do so. */
-    if (consider_learning_cb.get_active()) {
-      ApiCharSheetSkill* cskill = 0;
-
-      /* Go through the skills that are to be erased and check whether they are
-       * learning skills. If so apply their impact on the total_atts. */
-      for (unsigned int i = 0; i < plan_offset; i++)
-      {
-        GtkSkillInfo& info = plan_part[i];
-        ApiSkill const* skill = info.skill;
-
-        if (cskill == 0 || skill->id != cskill->id)
-          cskill = charsheet->get_skill_for_id(skill->id);
-
-        if (cskill == 0 || cskill->level < info.plan_level)
-        {
-          switch (skill->id)
-          {
-            case API_SKILL_ID_ANALYTICAL_MIND:
-            case API_SKILL_ID_LOGIC:
-              skill_atts.intl += 1; break;
-
-            case API_SKILL_ID_AWARENESS:
-            case API_SKILL_ID_CLARITY:
-              skill_atts.per += 1; break;
-
-            case API_SKILL_ID_EMPATHY:
-            case API_SKILL_ID_PRESENCE:
-              skill_atts.cha += 1; break;
-
-            case API_SKILL_ID_INSTANT_RECALL:
-            case API_SKILL_ID_EIDETIC_MEMORY:
-              skill_atts.mem += 1; break;
-
-            case API_SKILL_ID_IRON_WILL:
-            case API_SKILL_ID_FOCUS:
-              skill_atts.wil += 1; break;
-
-            case API_SKILL_ID_LEARNING:
-              learning_level += 1; break;
-
-            default: break;
-          }
-        }
-      }
-      learning_factor = learning_level * 0.02;
-      total_atts = (implant_atts + skill_atts + base_atts)
-          * (learning_factor + 1.0f);
-    }
     plan_part.erase(plan_part.begin(), plan_part.begin() + this->plan_offset);
-  }
 
   /* Copy the possibly cleaned plan to have an original one for comparison. */
   GtkSkillList plan_orig = plan_part;
@@ -420,7 +356,7 @@ GuiPlanAttribOpt::optimize_plan (void)
   ApiCharAttribs best_total_atts = total_atts;
 
   /* Calculate the original plan with the original attribues. */
-  plan_orig.calc_details(cur_total_atts, learning_level, false);
+  plan_orig.calc_details(cur_total_atts, false);
   cur_total_atts = total_atts;
 
   time_t orig_total_time = plan_orig.back().train_duration;
@@ -469,11 +405,10 @@ GuiPlanAttribOpt::optimize_plan (void)
             /* Calculate the total attributes based on the
              * current base attributes and the fetched learning skills
              * and implants. */
-            cur_total_atts = (cur_base_atts + implant_atts + skill_atts)
-                * (learning_factor + 1.0f);
+            cur_total_atts = cur_base_atts + implant_atts;
 
             ApiCharAttribs cur_total_atts_copy = cur_total_atts;
-            plan_part.calc_details(cur_total_atts_copy, learning_level, false);
+            plan_part.calc_details(cur_total_atts_copy, false);
             cur_total_time = plan_part.back().train_duration;
 
             if (cur_total_time < best_total_time)
@@ -491,7 +426,7 @@ GuiPlanAttribOpt::optimize_plan (void)
   /* Calculate the details for the new list with the best attributes. */
   {
     ApiCharAttribs best_total_atts_copy = best_total_atts;
-    plan_part.calc_details(best_total_atts_copy, learning_level, false);
+    plan_part.calc_details(best_total_atts_copy, false);
   }
 
   /* Warn the user if the optimized time is below one year. */

@@ -21,7 +21,7 @@ SOURCES += maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           xml.cc evetime.cc bgprocess.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
-          apiskilltree.cc apicerttree.cc apiitemtree.cc apiskillqueue.cc \
+          apiskilltree.cc apicerttree.cc apiskillqueue.cc \
           netsocket.cc nettcpsocket.cc netdnslookup.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))

@@ -56,7 +56,6 @@ char const* default_config =
     "  raise_updater = true\n"
     "[versionchecker.datafiles]\n"
     "  CertificateTree.xml.gz = \n"
-    "  ItemTree.xml.gz = \n"
     "  SkillTree.xml.gz = \n"
     "[versionchecker.last_seen]\n";
 

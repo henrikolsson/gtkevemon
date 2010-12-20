@@ -149,18 +149,18 @@ GtkSkillList::release_skill (unsigned int index)
 void
 GtkSkillList::calc_details (bool use_active_spph)
 {
-  /* Get attribute values for the character and delegate work. We _really_
-   * need a copy of the attribs here, otherwise the character is modified! */
-  unsigned int learning_level = this->character->cs->get_learning_skill_level();
+  /*
+   * Get attribute values for the character and delegate work. We _really_
+   * need a copy of the attribs here, otherwise the character gets modified!
+   */
   ApiCharAttribs attribs = this->character->cs->total;
-  this->calc_details(attribs, learning_level, use_active_spph);
+  this->calc_details(attribs, use_active_spph);
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
-    bool use_active_spph)
+GtkSkillList::calc_details (ApiCharAttribs& attribs, bool use_active_spph)
 {
   ApiInTrainingPtr ts = this->character->ts;
   ApiCharSheetPtr cs = this->character->cs;
@@ -257,13 +257,6 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
 
     duration += timediff;
     this->total_plan_sp += info.dest_sp - info.start_sp;
-
-    /* If the current skill is a training skill not already known,
-     * it has impact on the SP/h. Apply this impact. */
-    if (cskill == 0 || cskill->level < info.plan_level)
-    {
-      this->apply_attributes(skill, attribs, learning_level);
-    }
   }
 }
 
@@ -397,52 +390,6 @@ GtkSkillList::is_dependency (unsigned int index)
   }
 
   return false;
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkSkillList::apply_attributes (ApiSkill const* skill,
-    ApiCharAttribs& attribs, int& learning_level)
-{
-  double factor = 1.0 + learning_level * 0.02;
-
-  switch (skill->id)
-  {
-    case API_SKILL_ID_ANALYTICAL_MIND:
-    case API_SKILL_ID_LOGIC:
-      attribs.intl += factor; break;
-
-    case API_SKILL_ID_AWARENESS:
-    case API_SKILL_ID_CLARITY:
-      attribs.per += factor; break;
-
-    case API_SKILL_ID_EMPATHY:
-    case API_SKILL_ID_PRESENCE:
-      attribs.cha += factor; break;
-
-    case API_SKILL_ID_INSTANT_RECALL:
-    case API_SKILL_ID_EIDETIC_MEMORY:
-      attribs.mem += factor; break;
-
-    case API_SKILL_ID_IRON_WILL:
-    case API_SKILL_ID_FOCUS:
-      attribs.wil += factor; break;
-
-    case API_SKILL_ID_LEARNING:
-    {
-      double rescale = (1.0 + (learning_level + 1) * 0.02) / factor;
-      attribs.intl *= rescale;
-      attribs.per *= rescale;
-      attribs.cha *= rescale;
-      attribs.mem *= rescale;
-      attribs.wil *= rescale;
-      learning_level += 1;
-      break;
-    }
-
-    default: break;
-  }
 }
 
 /* ================================================================ */

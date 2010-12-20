@@ -23,12 +23,10 @@
 #include "gtktrainingplan.h"
 #include "winbase.h"
 
-/* The sum of all base attributes. */
-#define TOTAL_ATTRIBS 39
 /* The minimum number of points that have to be assigned to each attribute. */
-#define MINIMUM_VALUE_PER_ATTRIB 5
+#define MINIMUM_VALUE_PER_ATTRIB 17
 /* The maximum number of points that can be assigned to each attribute. */
-#define MAXIMUM_VALUE_PER_ATTRIB 15
+#define MAXIMUM_VALUE_PER_ATTRIB 27
 
 class GtkTreeModelColumnsOptimizer : public GtkTreeModelColumns
 {
@@ -61,7 +59,6 @@ class GuiPlanAttribOpt : public WinBase
     Gtk::RadioButton rb_whole_plan;
     Gtk::RadioButton rb_partial_plan;
     Gtk::ComboBoxText skill_selection;
-    Gtk::CheckButton consider_learning_cb;
 
     Gtk::Label base_cha_label;
     Gtk::Label base_intl_label;
