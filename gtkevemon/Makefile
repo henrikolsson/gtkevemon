@@ -3,9 +3,6 @@ INSTALL_BIN = /usr/local/bin
 all:
 	$(MAKE) -C src
 
-multicore:
-	$(MAKE) -C src multicore
-
 clean:
 	$(MAKE) -C src clean
 

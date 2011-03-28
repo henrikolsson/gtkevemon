@@ -14,15 +14,15 @@
 #include <cstdlib> // for EXIT_SUCCESS
 #include <gtkmm/main.h>
 
-#include "argumentsettings.h"
-#include "versionchecker.h"
-#include "imagestore.h"
-#include "serverlist.h"
-#include "networking.h"
-#include "evetime.h"
-#include "config.h"
-#include "server.h"
-#include "maingui.h"
+#include "net/networking.h"
+#include "api/evetime.h"
+#include "bits/argumentsettings.h"
+#include "bits/versionchecker.h"
+#include "bits/serverlist.h"
+#include "bits/config.h"
+#include "bits/server.h"
+#include "gui/imagestore.h"
+#include "gui/maingui.h"
 
 void
 signal_received (int /*signum*/)
