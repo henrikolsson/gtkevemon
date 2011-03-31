@@ -1,5 +1,7 @@
 #include <iostream>
+#include <openssl/err.h>
 
+#include "certificates.h"
 #include "networking.h"
 
 NET_NAMESPACE_BEGIN
@@ -27,6 +29,7 @@ strerror (int err_code)
 bool
 init (void)
 {
+  /* Init winsock. */
   int retval;
   WSADATA wsaData;
   if ((retval = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0)
@@ -35,6 +38,10 @@ init (void)
           << std::endl;
     return false;
   }
+
+  /* Init SSL. */
+  ssl_context();
+
   return true;
 }
 
@@ -45,5 +52,70 @@ unload (void)
 }
 
 #endif
+
+/* ---------------------------------------------------------------- */
+
+SSL_CTX*
+ssl_context (void)
+{
+    static SSL_CTX* ssl_ctx = 0;
+    if (ssl_ctx)
+        return ssl_ctx;
+
+    std::cout << "Initializing SSL subsystem..." << std::endl;
+
+    /* Init library and error handler. */
+    SSL_library_init();
+    SSL_load_error_strings();
+    ERR_load_crypto_strings();
+
+    //BIO* bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
+
+    /* Create SSL Context. */
+    SSL_CTX* ctx = SSL_CTX_new(SSLv3_client_method());
+
+    /* Load CAs we trust. */
+
+    /* Read certificates from memory. */
+    BIO* cert_bio = BIO_new_mem_buf((void*)cert_geotrust, -1);
+    X509* x509_geotrust = PEM_read_bio_X509_AUX(cert_bio, 0, 0, 0);
+    BIO_free(cert_bio);
+
+    cert_bio = BIO_new_mem_buf((void*)cert_entrust, -1);
+    X509* x509_entrust = PEM_read_bio_X509_AUX(cert_bio, 0, 0, 0);
+    BIO_free(cert_bio);
+
+    /* Add certificate to store. */
+    X509_STORE* store = SSL_CTX_get_cert_store(ctx);
+    X509_STORE_add_cert(store, x509_geotrust);
+    X509_STORE_add_cert(store, x509_entrust);
+
+#if 0
+    /* Read certificate from file. */
+    #define CERTFILE "/tmp/certs/root.pem"
+    std::cout << "Loading CA Cert " CERTFILE << "..." << std::endl;
+    if (!SSL_CTX_load_verify_locations(ctx, CERTFILE, 0))
+    {
+        std::cout << "Error loading SSL CA certificates!" << std::endl;
+        throw Exception("Error loading CA certificates");
+    }
+#endif
+
+    /* Set verify and trust depth. */
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
+    SSL_CTX_set_verify_depth(ctx, 2);
+
+    ssl_ctx = ctx;
+    return ssl_ctx;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+ssl_unload (void)
+{
+    ERR_free_strings();
+    SSL_CTX_free(ssl_context());
+}
 
 NET_NAMESPACE_END

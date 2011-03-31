@@ -9,13 +9,14 @@ endif
 #include Makefile.$(PLATFORM)
 
 # Compiler options, flags, and libraries
-GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic -g #-O2
+GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic -Os #-g
 GCC_INCL = -I.
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
 
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 XML_LIBS = $(shell pkg-config --libs libxml-2.0)
+SSL_LIBS = $(shell pkg-config --libs openssl)
 PTH_LIBS = -lpthread
 ZLIB_LIBS = -lz
 
@@ -23,7 +24,7 @@ ZLIB_LIBS = -lz
 # Platform specific configuration
 ifeq (${PLATFORM},darwin)
   CXX ?= g++
-  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS}
+  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS} ${SSL_LIBS}
 
   CORES_LINE = $(shell system_profiler SPHardwareDataType | grep Cores)
   CORES = $(lastword $(CORES_LINE))
@@ -34,7 +35,7 @@ endif
 ifeq (${PLATFORM},freebsd)
   CXX ?= g++
   PTH_LIBS = -pthread
-  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS}
+  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS} ${SSL_LIBS}
 
   CORES = $(shell sysctl -n hw.ncpu)
   SOURCES = util/pipedexec_posix.cc util/os_unix.cc
@@ -43,7 +44,7 @@ endif
 
 ifeq (${PLATFORM},linux)
   CXX ?= g++
-  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS}
+  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${ZLIB_LIBS} ${SSL_LIBS}
 
   CORES = $(shell grep processor /proc/cpuinfo | wc -l)
   SOURCES = util/pipedexec_posix.cc util/os_unix.cc
@@ -54,7 +55,7 @@ ifeq (${PLATFORM},sunos)
   CXX ?= sunCC
   GCC_FLAGS = +w +w2 -g
   SOLARIS_LIBS = -lnsl -lresolv -lsocket
-  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${SOLARIS_LIBS} ${XML_LIBS} ${ZLIB_LIBS}
+  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${SOLARIS_LIBS} ${XML_LIBS} ${ZLIB_LIBS} ${SSL_LIBS}
 
   CORES = $(shell psrinfo -p)
   SOURCES = util/pipedexec_posix.cc util/os_unix.cc util/timegm.cc
@@ -63,7 +64,7 @@ endif
 
 ifeq (${PLATFORM},win32)
   CXX ?= i586-mingw32msvc-g++
-  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS}
+  LDFLAGS = ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS} ${SSL_LIBS}
   CORES = 1
 
   SOURCES = util/pipedexec_win32.cc util/os_win32.cc util/strptime.cc util/timegm.cc
@@ -99,8 +100,8 @@ gemcache:
 %.o: %.cc
 	${CXX} -c -o $@ $< ${CXXFLAGS}
 
-test: ${OBJECTS}
-	${CXX} -o _test_ssl _test_ssl.cc net/*.o util/helpers.o ${LDFLAGS} ${GCC_INCL}
+#test: ${OBJECTS}
+#	${CXX} -o _test_ssl _test_ssl.cc net/*.o util/helpers.o ${LDFLAGS} ${GCC_INCL}
 
 clean: FORCE
 	${RM} ${BINARY} ${OBJECTS}

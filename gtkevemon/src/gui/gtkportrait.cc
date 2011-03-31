@@ -110,7 +110,7 @@ GtkPortrait::request_from_eve_online (void)
   //http->set_path("/serv.asp?s=256&c=" + this->char_id);
   http->set_host("image.eveonline.com");
   http->set_path("/Character/" + this->char_id + "_256.jpg");
-  Config::setup_http(http);
+  Config::setup_http(http, true);
 
   this->http_request.disconnect();
   this->http_request = http->signal_done().connect(sigc::mem_fun
@@ -210,7 +210,7 @@ GtkPortrait::on_button_press_myevent (GdkEventButton* event)
       "If you can see a \"!\" and the text \"GtkEveMon fallback\", the "
       "portrait couldn't be requested and a local fallback is used.\n\n"
       "Image URL:\n"
-      "http://image.eveonline.com/Character/" + this->char_id + "_256.jpg");
+      "https://image.eveonline.com/Character/" + this->char_id + "_256.jpg");
   md.set_title("Portrait re-request - GtkEveMon");
   md.set_transient_for(*toplevel);
   md.run();

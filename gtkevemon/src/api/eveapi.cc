@@ -21,7 +21,7 @@ EveApiFetcher::setup_fetcher (void)
 {
   /* Setup HTTP fetcher. */
   AsyncHttp* fetcher = AsyncHttp::create();
-  Config::setup_http(fetcher);
+  Config::setup_http(fetcher, true);
   fetcher->set_host("api.eveonline.com");
 
   /* Setup HTTP post data. */

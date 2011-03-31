@@ -790,7 +790,7 @@ GtkTrainingPlan::update_plan (bool rebuild)
     GtkSkillInfo& info = this->skills[i];
     ApiSkill const* skill = info.skill;
 
-    if (i == this->currently_editing && !rebuild)
+    if ((int)i == this->currently_editing && !rebuild)
     {
         iter++;
         continue;

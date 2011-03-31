@@ -28,7 +28,7 @@ NET_NAMESPACE_BEGIN
 
 class TCPSocket : public Socket
 {
-  private:
+  protected:
     struct sockaddr_in remote;
     struct sockaddr_in local;
     std::size_t timeout;
@@ -55,6 +55,8 @@ class TCPSocket : public Socket
      * TCPServerSocket for newly accepted connections.
      */
     TCPSocket (int sock_fd);
+
+    virtual ~TCPSocket (void);
 
     /**
      * The `connect' function initiates a connection to the socket whose

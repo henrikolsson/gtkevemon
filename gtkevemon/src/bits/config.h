@@ -38,7 +38,7 @@ class Config
     static std::string const& get_filename (void);
 
     /* Helper function to setup HTTP requests. */
-    static void setup_http (AsyncHttp* fetcher);
+    static void setup_http (AsyncHttp* fetcher, bool is_api_call = false);
 };
 
 /* ---------------------------------------------------------------- */

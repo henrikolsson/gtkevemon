@@ -183,7 +183,7 @@ class GtkTrainingPlan : public Gtk::VBox
     GtkTreeViewColumns viewcols;
     bool updating_liststore;
     int reorder_new_index;
-    unsigned int currently_editing;
+    int currently_editing;
 
     sigc::signal<void, ApiSkill const*> sig_skill_activated;
 

@@ -172,7 +172,7 @@ Config::init_user_config (void)
 /* ---------------------------------------------------------------- */
 
 void
-Config::setup_http (AsyncHttp* fetcher)
+Config::setup_http (AsyncHttp* fetcher, bool is_api_call)
 {
   fetcher->set_agent("GtkEveMon");
 
@@ -187,9 +187,9 @@ Config::setup_http (AsyncHttp* fetcher)
     fetcher->set_proxy(proxy_host, (uint16_t)proxy_port);
   }
 
-  if (use_ssl)
+  if (is_api_call && use_ssl)
   {
-    //fetcher->set_use_ssl(true);
-    //fetcher->set_port(443);
+    fetcher->set_use_ssl(true);
+    fetcher->set_port(443);
   }
 }

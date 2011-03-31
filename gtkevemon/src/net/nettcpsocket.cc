@@ -53,6 +53,12 @@ TCPSocket::TCPSocket (int sock_fd)
 
 /* ---------------------------------------------------------------- */
 
+TCPSocket::~TCPSocket (void)
+{
+}
+
+/* ---------------------------------------------------------------- */
+
 void
 TCPSocket::set_connect_timeout (std::size_t timeout_ms)
 {

@@ -112,16 +112,19 @@ GuiConfiguration::GuiConfiguration (void)
   page_launch->pack_start(*launch_table, false, false, 0);
 
   /* The NETWORK notebook tab. */
-  Gtk::Label* net_info_label = MK_LABEL("EVE API requests are sent "
-      "over the HTTP protocol. If you're behind a restricting firewall "
-      "or just want to stay anonymous, you can use a HTTP proxy server. "
+  Gtk::Label* net_info_label = MK_LABEL(
+      "EVE API requests are done over the HTTP protocol. "
+      "SSL (HTTPS) should be enabled for secure communication. "
+      "You can optionally use a proxy server that is used for both "
+      "HTTP and HTTPS connections. "
       "Note that the server monitor doesn't use the proxy.");
   net_info_label->set_alignment(Gtk::ALIGN_LEFT);
   net_info_label->set_line_wrap(true);
 
+  GtkConfCheckButton* use_api_ssl_cb = Gtk::manage(new GtkConfCheckButton
+      ("Use SSL for all API calls", false, "network.api_ssl"));
   GtkConfCheckButton* use_proxy_cb = Gtk::manage(new GtkConfCheckButton
       ("Use the following HTTP proxy", false, "network.use_proxy"));
-
   Gtk::Label* net_proxy_label = MK_LABEL("Proxy IP:");
   GtkConfTextEntry* proxy_entry = Gtk::manage(new GtkConfTextEntry
       ("network.proxy_address"));
@@ -139,6 +142,7 @@ GuiConfiguration::GuiConfiguration (void)
   Gtk::VBox* page_network = MK_VBOX;
   page_network->set_border_width(5);
   page_network->pack_start(*net_info_label, false, false, 0);
+  page_network->pack_start(*use_api_ssl_cb, false, false, 0);
   page_network->pack_start(*use_proxy_cb, false, false, 0);
   page_network->pack_start(*net_proxy_entry_box, false, false, 0);
 

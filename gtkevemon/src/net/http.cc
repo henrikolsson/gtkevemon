@@ -5,6 +5,7 @@
 
 #include "util/exception.h"
 #include "netdnslookup.h"
+#include "netssltcpsocket.h"
 #include "http.h"
 
 void
@@ -58,6 +59,8 @@ Http::initialize_defaults (void)
   this->port = 80;
   this->agent = "GtkEveMon HTTP Requester";
   this->proxy_port = 80;
+  this->use_ssl = false;
+
   this->http_state = HTTP_STATE_READY;
   this->bytes_read = 0;
   this->bytes_total = 0;
@@ -98,12 +101,29 @@ Http::request (void)
   this->bytes_read = 0;
   this->bytes_total = 0;
 
-  Net::TCPSocket sock;
+  Net::TCPSocket* sock;
+  if (this->use_ssl)
+    sock = new Net::SSLTCPSocket();
+  else
+    sock = new Net::TCPSocket();
+
   try
   {
     /* Initialize a valid HTTP connection. */
     this->http_state = HTTP_STATE_CONNECTING;
-    sock = this->initialize_connection();
+    this->initialize_connection(sock);
+
+    /* If we use SSL and have a proxy, send CONNECT command. */
+    if (this->use_ssl && !this->proxy.empty())
+       this->send_proxy_connect(sock);
+
+    /* If we use SSL, do the handshake now. */
+    if (this->use_ssl)
+    {
+      this->http_state = HTTP_STATE_SSL_HANDSHAKE;
+      dynamic_cast<Net::SSLTCPSocket*>(sock)->check_hostname(this->host);
+      dynamic_cast<Net::SSLTCPSocket*>(sock)->ssl_handshake();
+    }
 
     /* Successful connect. Start building the request. */
     this->http_state = HTTP_STATE_REQUESTING;
@@ -114,7 +134,7 @@ Http::request (void)
     HttpDataPtr result = this->read_http_reply(sock);
 
     /* Close socket. */
-    sock.close();
+    sock->close();
 
     /* Done reading the reply. */
     this->http_state = HTTP_STATE_DONE;
@@ -123,8 +143,9 @@ Http::request (void)
   catch (Exception& e)
   {
     this->http_state = HTTP_STATE_ERROR;
-    if (sock.is_connected())
-      sock.close();
+    if (sock->is_connected())
+      sock->close();
+    delete sock;
     throw e;
   }
 }
@@ -132,8 +153,8 @@ Http::request (void)
 /* ---------------------------------------------------------------- */
 
 /* Initializes a valid HTTP connection or throws an exception. */
-Net::TCPSocket
-Http::initialize_connection (void)
+void
+Http::initialize_connection (Net::TCPSocket* sock)
 {
   /* Some error checking. */
   if (this->host.size() == 0)
@@ -142,45 +163,29 @@ Http::initialize_connection (void)
   if (this->path.size() == 0)
     throw Exception("Internal: Path not set");
 
-  Net::TCPSocket sock;
-
   if (this->proxy.empty())
   {
     in_addr_t host_addr = Net::DNSLookup::get_hostname(this->host);
-    sock.connect(host_addr, this->port);
+    sock->connect(host_addr, this->port);
   }
   else
   {
-    sock.connect(this->proxy, this->proxy_port);
+    sock->connect(this->proxy, this->proxy_port);
   }
-
-  return sock;
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-Http::send_http_headers (Net::TCPSocket& sock)
+Http::send_http_headers (Net::TCPSocket* sock)
 {
-  std::string request_path;
-  if (this->proxy.empty())
-  {
-    /* Simply use the path. */
-    request_path = this->path;
-  }
-  else
-  {
-    /* Prefix the host in the proxy case. */
-    request_path = "http://" + this->host + this->path;
-#if 0
-CONNECT bankingportal.sparkasse-bensheim.de:443 HTTP/1.1
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:2.0) Gecko/20100101 Firefox/4.0
-Proxy-Connection: keep-alive
-Host: bankingportal.sparkasse-bensheim.de
-#endif
-  }
+  std::string request_path(this->path);
 
-  /* We are connected. Create the headers. */
+  /* Prefix "http://" in case of proxy use (non-SSL only). */
+  if (!this->proxy.empty() && !this->use_ssl)
+      request_path = "http://" + this->host + this->path;
+
+  /* Create the headers. */
   std::stringstream headers;
   if (this->method == HTTP_METHOD_POST)
     headers << "POST " << request_path << " HTTP/1.1\n";
@@ -215,13 +220,39 @@ Host: bankingportal.sparkasse-bensheim.de
   //std::cout << "Sending: " << header_str << std::endl;
 
   /* Send the headers. */
-  sock.full_write(header_str.c_str(), header_str.size());
+  sock->full_write(header_str.c_str(), header_str.size());
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Http::send_proxy_connect (Net::TCPSocket* sock)
+{
+    std::stringstream ss;
+    ss << "CONNECT " << this->host << ":"
+        << this->port << " HTTP/1.1" << std::endl;
+    ss << "User-Agent: " << this->agent << std::endl;
+    ss << "Proxy-Connection: close" << std::endl;
+    ss << "Host: " << this->host << std::endl;
+    ss << std::endl;
+
+    //FIXME: Does not send in plain
+    std::cout << "Sending CONNECT headers..." << std::endl;
+    std::string headers(ss.str());
+    sock->full_write(headers.c_str(), headers.size());
+
+#if 0
+CONNECT api.eveonline.com:443 HTTP/1.1
+User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:2.0) Gecko/20100101 Firefox/4.0
+Proxy-Connection: keep-alive
+Host: bankingportal.sparkasse-bensheim.de
+#endif
 }
 
 /* ---------------------------------------------------------------- */
 
 HttpDataPtr
-Http::read_http_reply (Net::TCPSocket& sock)
+Http::read_http_reply (Net::TCPSocket* sock)
 {
   HttpDataPtr result = HttpData::create();
   bool chunked_read = false;
@@ -230,7 +261,7 @@ Http::read_http_reply (Net::TCPSocket& sock)
   while (true)
   {
     std::string line;
-    sock.read_line(line, 1024);
+    sock->read_line(line, 1024);
 
     /* Exit loop if we read an empty line. */
     if (line.empty())
@@ -261,7 +292,7 @@ Http::read_http_reply (Net::TCPSocket& sock)
     {
       /* Read line with chunk size information. */
       std::string line;
-      sock.read_line(line, 32);
+      sock->read_line(line, 32);
       if (line.empty())
         break;
 
@@ -397,12 +428,12 @@ Http::get_uint_from_str (std::string const& str)
 /* ---------------------------------------------------------------- */
 
 std::size_t
-Http::http_data_read (Net::TCPSocket& sock, char* buf, std::size_t size)
+Http::http_data_read (Net::TCPSocket* sock, char* buf, std::size_t size)
 {
   std::size_t ret = 0;
   while (ret < size)
   {
-    ssize_t new_read = sock.read(buf + ret, size - ret);
+    ssize_t new_read = sock->read(buf + ret, size - ret);
     if (new_read == 0)
       break;
 

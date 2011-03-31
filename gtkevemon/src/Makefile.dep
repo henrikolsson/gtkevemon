@@ -53,8 +53,8 @@ asynchttp.o: net/asynchttp.cc net/httpstatus.h net/asynchttp.h \
  util/thread.h util/thread_posix.h util/exception.h net/http.h \
  util/ref_ptr.h net/nettcpsocket.h net/netdefines.h net/netsocket.h
 http.o: net/http.cc util/exception.h net/netdnslookup.h net/netdefines.h \
- net/http.h util/ref_ptr.h net/nettcpsocket.h net/netsocket.h \
- net/httpstatus.h
+ net/netssltcpsocket.h net/nettcpsocket.h net/netsocket.h net/http.h \
+ util/ref_ptr.h net/httpstatus.h
 netdnslookup.o: net/netdnslookup.cc util/exception.h net/netdnslookup.h \
  net/netdefines.h
 netsocket.o: net/netsocket.cc util/exception.h net/networking.h \
@@ -64,7 +64,8 @@ netssltcpsocket.o: net/netssltcpsocket.cc util/helpers.h util/exception.h \
  net/nettcpsocket.h net/netsocket.h
 nettcpsocket.o: net/nettcpsocket.cc util/exception.h net/networking.h \
  net/netdefines.h net/nettcpsocket.h net/netsocket.h
-networking.o: net/networking.cc net/networking.h net/netdefines.h
+networking.o: net/networking.cc net/certificates.h net/netdefines.h \
+ net/networking.h
 gtkcharpage.o: gui/gtkcharpage.cc util/helpers.h util/exception.h \
  api/evetime.h api/apiintraining.h util/ref_ptr.h api/eveapi.h \
  net/asynchttp.h util/thread.h util/thread_posix.h net/http.h \

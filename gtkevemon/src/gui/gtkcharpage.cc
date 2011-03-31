@@ -1074,9 +1074,10 @@ GtkCharPage::on_api_error (EveApiDocType dt, std::string msg, bool cached)
   }
 
   this->info_display.append(info_type, heading,
-      "There was an error while requesting " + doc + " from the EVE API."
-      "The EVE API is either offline, or the requested document is "
-      "not understood by GtkEveMon. The error message is:\n\n" + msg);
+      "There was an error while requesting " + doc + " from the EVE API. "
+      "The EVE API is either offline, a network error occurred, or the "
+      "requested document is not understood by GtkEveMon. "
+      "The error message is:\n\n" + msg);
 }
 
 /* ---------------------------------------------------------------- */

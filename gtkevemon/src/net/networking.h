@@ -14,6 +14,7 @@
 #define NET_NETWORKING_HEADER
 
 #include <cstring>
+#include <openssl/ssl.h>
 
 #include "netdefines.h"
 
@@ -28,6 +29,9 @@ bool init (void);
 /* Unloads the socket subsystem. */
 void unload (void);
 
+/* Requests OpenSSL context, initializes on first call. */
+SSL_CTX* ssl_context (void);
+
 /* -------------------------- Implementation ---------------------- */
 
 #if !defined(WIN32)
@@ -41,6 +45,7 @@ strerror (int err_code)
 inline bool
 init (void)
 {
+    ssl_context();
     return true;
 }
 

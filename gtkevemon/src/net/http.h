@@ -33,6 +33,7 @@ enum HttpState
 {
   HTTP_STATE_READY,
   HTTP_STATE_CONNECTING,
+  HTTP_STATE_SSL_HANDSHAKE,
   HTTP_STATE_REQUESTING,
   HTTP_STATE_RECEIVING,
   HTTP_STATE_DONE,
@@ -89,15 +90,16 @@ class Http
     void initialize_defaults (void);
 
     /* Stages of the HTTP request. */
-    Net::TCPSocket initialize_connection (void);
-    void send_http_headers (Net::TCPSocket& sock);
-    HttpDataPtr read_http_reply (Net::TCPSocket& sock);
+    void initialize_connection (Net::TCPSocket* sock);
+    void send_http_headers (Net::TCPSocket* sock);
+    void send_proxy_connect (Net::TCPSocket* sock);
+    HttpDataPtr read_http_reply (Net::TCPSocket* sock);
 
     /* Helpers. */
     unsigned int get_uint_from_hex (std::string const& str);
     unsigned int get_uint_from_str (std::string const& str);
     //ssize_t socket_read_line (int sock, std::string& line);
-    std::size_t http_data_read (Net::TCPSocket& sock, char* buf,
+    std::size_t http_data_read (Net::TCPSocket* sock, char* buf,
         std::size_t size);
     HttpStatusCode get_http_status_code (std::string const& header);
 
@@ -124,6 +126,9 @@ class Http
     void set_proxy (std::string const& address, uint16_t port);
     /* Specifies if SSL should be used. */
     void set_use_ssl (bool use_ssl = true);
+
+    /* Returns the path. */
+    std::string const& get_path (void) const;
 
     /* Information about the progress. */
     size_t get_bytes_read (void) const;
@@ -195,6 +200,12 @@ inline void
 Http::set_use_ssl (bool use_ssl)
 {
     this->use_ssl = use_ssl;
+}
+
+inline std::string const&
+Http::get_path (void) const
+{
+    return this->path;
 }
 
 inline size_t
