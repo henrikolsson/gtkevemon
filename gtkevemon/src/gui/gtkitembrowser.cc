@@ -3,6 +3,7 @@
 #include <gtkmm/scrolledwindow.h>
 
 #include "util/helpers.h"
+#include "bits/config.h"
 #include "imagestore.h"
 #include "gtkhelpers.h"
 #include "gtkdefines.h"
@@ -218,12 +219,18 @@ GtkSkillBrowser::fill_store (void)
   bool only_partial = (active_row_num == CB_FILTER_SKILL_PARTIAL);
   bool only_enabled = (active_row_num == CB_FILTER_SKILL_ENABLED);
   bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN);
+  std::string unpublished_cfg("planner.show_unpublished_skills");
+  bool only_published = !Config::conf.get_value(unpublished_cfg)->get_bool();
 
   /* Append all skills to the skill groups. */
   for (ApiSkillMap::iterator iter = skills.begin();
       iter != skills.end(); iter++)
   {
     ApiSkill& skill = iter->second;
+
+    /* Filter non-public skills if so requested */
+    if (only_published && !skill.published)
+      continue;
 
     /* Apply string filter. */
     if (Glib::ustring(skill.name).casefold()

@@ -46,6 +46,7 @@ class ApiSkill : public ApiElement
     int id;
     int group;
     int rank;
+    int published;
     std::string name;
     std::string desc;
     ApiAttrib primary;

@@ -195,6 +195,7 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
       skill.name = this->get_property(node, "typeName");
       skill.group = this->get_property_int(node, "groupID");
       skill.id = this->get_property_int(node, "typeID");
+      skill.published = this->get_property_int(node, "published");
       skill.rank = 0;
       skill.primary = API_ATTRIB_UNKNOWN;
       skill.secondary = API_ATTRIB_UNKNOWN;
@@ -203,7 +204,6 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
 
       //std::cout << "Inserting skill:   " << skill.name << std::endl;
       this->skills.insert(std::make_pair(skill.id, skill));
-
     }
   }
 }

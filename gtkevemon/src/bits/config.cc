@@ -37,6 +37,7 @@ char const* default_config =
     "  current_plan = \n"
     "  gui_dimension = 800x550\n"
     "  pane_position = 250\n"
+    "  show_unpublished_skills = false\n"
     "[servermonitor]\n"
     "[settings]\n"
     "  auto_update_sheets = true\n"
