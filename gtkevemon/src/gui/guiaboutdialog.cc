@@ -61,9 +61,7 @@ GuiAboutDialog::GuiAboutDialog (void)
       "You will never miss to train your next skill!\n"
       "\n"
       "Homepage: http://gtkevemon.battleclinic.com\n"
-      "Forum: http://www.battleclinic.com/forum/index.php#c43\n"
-      "\n"
-      "<i>Simon Fuhrmann &lt;SimonFuhrmann@gmx.de&gt;</i>");
+      "Forum: http://www.battleclinic.com/forum/index.php#c43");
   info_label->set_use_markup(true);
 
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
@@ -113,8 +111,8 @@ void
 GuiAboutDialog::request_version_label (void)
 {
   AsyncHttp* http = AsyncHttp::create();
-  http->set_host("gtkevemon.battleclinic.com");
-  http->set_path("/svn_version.txt");
+  http->set_host(SVN_VERSION_HOST);
+  http->set_path(SVN_VERSION_PATH);
   Config::setup_http(http);
   this->request = http->signal_done().connect(sigc::mem_fun
       (*this, &GuiAboutDialog::set_version_label));

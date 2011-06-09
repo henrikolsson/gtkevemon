@@ -1,4 +1,7 @@
 #include <iostream>
+#ifdef WIN32
+# include <winsock2.h>
+#endif
 #include <openssl/err.h>
 
 #include "util/helpers.h"

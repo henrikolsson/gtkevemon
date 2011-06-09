@@ -13,6 +13,9 @@
 #ifndef NET_SSLTCPSOCKET_HEADER
 #define NET_SSLTCPSOCKET_HEADER
 
+#ifdef WIN32
+# include <winsock2.h>
+#endif
 #include <openssl/ssl.h>
 
 #include "netdefines.h"

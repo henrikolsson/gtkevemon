@@ -14,6 +14,9 @@
 #define NET_NETWORKING_HEADER
 
 #include <cstring>
+#ifdef WIN32
+# include <winsock2.h>
+#endif
 #include <openssl/ssl.h>
 
 #include "netdefines.h"

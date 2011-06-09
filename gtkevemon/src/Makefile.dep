@@ -105,14 +105,15 @@ gtkinfodisplay.o: gui/gtkinfodisplay.cc api/evetime.h util/exception.h \
  api/apicharsheet.h api/apiskilltree.h api/apicerttree.h bits/character.h \
  api/eveapi.h api/apiintraining.h api/apiskillqueue.h \
  gui/gtkinfodisplay.h gui/winbase.h
-gtkitembrowser.o: gui/gtkitembrowser.cc util/helpers.h gui/imagestore.h \
- gui/gtkhelpers.h api/apiskilltree.h util/ref_ptr.h api/apibase.h \
- net/http.h net/nettcpsocket.h net/netdefines.h net/netsocket.h \
- net/httpstatus.h api/eveapi.h net/asynchttp.h util/thread.h \
- util/thread_posix.h util/exception.h net/http.h api/xml.h \
- api/apicharsheet.h api/apiskilltree.h api/apicerttree.h bits/character.h \
- api/eveapi.h api/apiintraining.h api/apiskillqueue.h gui/gtkdefines.h \
- gui/gtkitembrowser.h gui/gtkplannerbase.h api/apicerttree.h
+gtkitembrowser.o: gui/gtkitembrowser.cc util/helpers.h bits/config.h \
+ util/conf.h util/ref_ptr.h net/asynchttp.h util/thread.h \
+ util/thread_posix.h util/exception.h net/http.h util/ref_ptr.h \
+ net/nettcpsocket.h net/netdefines.h net/netsocket.h net/httpstatus.h \
+ gui/imagestore.h gui/gtkhelpers.h api/apiskilltree.h api/apibase.h \
+ net/http.h api/eveapi.h api/xml.h api/apicharsheet.h api/apiskilltree.h \
+ api/apicerttree.h bits/character.h api/eveapi.h api/apiintraining.h \
+ api/apiskillqueue.h gui/gtkdefines.h gui/gtkitembrowser.h \
+ gui/gtkplannerbase.h api/apicerttree.h
 gtkitemdetails.o: gui/gtkitemdetails.cc util/helpers.h api/evetime.h \
  gui/imagestore.h gui/gtkhelpers.h api/apiskilltree.h util/ref_ptr.h \
  api/apibase.h net/http.h net/nettcpsocket.h net/netdefines.h \

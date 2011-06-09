@@ -2,6 +2,8 @@
 # include <unistd.h> // ::close
 # include <sys/socket.h> // ::socket, ::send, ::recv, ::shutdown
 # include <sys/types.h> // ::select, ssize_t
+#else
+# include <winsock2.h>
 #endif
 
 #include <cerrno>
