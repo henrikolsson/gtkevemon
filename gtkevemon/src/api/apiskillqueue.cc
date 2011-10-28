@@ -9,7 +9,6 @@ void
 ApiSkillQueue::set_api_data (EveApiData const& data)
 {
   this->valid = false;
-
   this->queue.clear();
 
   this->ApiBase::set_api_data(data);
@@ -103,12 +102,15 @@ ApiSkillQueue::parse_queue_rowset (xmlNodePtr node)
       item.to_level = Helpers::get_int_from_string(level);
       item.start_sp = Helpers::get_int_from_string(startsp);
       item.end_sp = Helpers::get_int_from_string(endsp);
+      /* Paused queue results in empty start/end-time. This yields -1 here. */
       item.start_time_t = EveTime::get_time_for_string(item.start_time);
       item.end_time_t = EveTime::get_time_for_string(item.end_time);
 
       this->queue.push_back(item);
     }
   }
+
+  this->debug_dump();
 }
 
 /* ---------------------------------------------------------------- */
@@ -116,13 +118,36 @@ ApiSkillQueue::parse_queue_rowset (xmlNodePtr node)
 bool
 ApiSkillQueue::in_training (void) const
 {
-  if (this->queue.empty())
-    return false;
+    if (this->queue.empty())
+        return false;
+    /* Returns false if queue is paused (end_time_t == -1 then). */
+    if (this->queue.back().end_time_t < EveTime::get_eve_time())
+        return false;
+    return true;
+}
 
-  if (this->queue.back().end_time_t < EveTime::get_eve_time())
-    return false;
+/* ---------------------------------------------------------------- */
 
-  return true;
+bool
+ApiSkillQueue::holds_completed (void) const
+{
+    if (this->queue.empty())
+        return false;
+    /* Returns false if queue is paused. */
+    time_t end_time_t = this->queue.front().end_time_t;
+    if (end_time_t != -1 && end_time_t < EveTime::get_eve_time())
+        return true;
+    return false;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+ApiSkillQueue::is_paused (void) const
+{
+    if (this->queue.empty())
+        return false;
+    return this->queue.front().end_time_t == -1;
 }
 
 /* ---------------------------------------------------------------- */

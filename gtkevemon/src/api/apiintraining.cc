@@ -30,9 +30,6 @@ ApiInTraining::set_api_data (EveApiData const& data)
   // This is to test notifications! NEVER PUT THIS IN A REVISION
   //this->end_time_t = ::time(0);
 
-  // This was to test unknown skills in the training sheet
-  //this->skill = 32339; // Fighter Bombers
-
   this->valid = true;
 }
 

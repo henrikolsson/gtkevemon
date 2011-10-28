@@ -21,6 +21,22 @@ Skill Browser / Planner
    - Enabled skills through training
 
 
+Replace SkillInTraining.xml with SkillQueue.xml
+-----------------------------------------------
+
+ - Get both documents all of the following cases
+   - Skill queue populated, skill is in training
+   - Skill queue populated, training is paused
+   - Skill queue is empty, no skill in training
+     Documents are similar, SIT has <skillInTraining>0</skillInTraining>
+     where SQ has an empty rowset.
+
+ - What is "holds_completed" in ApiInTraining good for?
+   - If SIT holds a completed skill, character is updated (skill and SP added)
+   - If training finishes, holds_completed = true and reprocess API data
+
+
+
 Remove SkillInTraining.xml
 --------------------------
  - Requires to update a lot of stuff

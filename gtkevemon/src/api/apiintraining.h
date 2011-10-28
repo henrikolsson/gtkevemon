@@ -68,8 +68,6 @@ ApiInTraining::ApiInTraining (void)
 {
 }
 
-/* ---------------------------------------------------------------- */
-
 inline ApiInTrainingPtr
 ApiInTraining::create (void)
 {

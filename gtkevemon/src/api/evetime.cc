@@ -132,6 +132,9 @@ EveTime::get_local_time (void)
 time_t
 EveTime::get_time_for_string (std::string const& timestr)
 {
+  if (timestr.empty())
+    return -1;
+
   struct tm tm;
   ::memset(&tm, '\0', sizeof(struct tm));
   char* tmp = OS::strptime(timestr.c_str(), EVE_TIME_FORMAT, &tm);

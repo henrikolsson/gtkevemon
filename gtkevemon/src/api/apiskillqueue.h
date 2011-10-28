@@ -44,11 +44,8 @@ typedef std::vector<ApiSkillQueueItem> ApiSkillQueueList;
 
 class ApiSkillQueue : public ApiBase
 {
-  public:
-    bool valid;
-    std::vector<ApiSkillQueueItem> queue;
-
   protected:
+    /* Some internal stuff. */
     ApiSkillQueue (void);
 
     void parse_xml (void);
@@ -56,13 +53,25 @@ class ApiSkillQueue : public ApiBase
     void parse_result_tag (xmlNodePtr node);
     void parse_queue_rowset (xmlNodePtr node);
 
+  /* Publicly available collection of gathered data. */
   public:
+    bool valid;
+    std::vector<ApiSkillQueueItem> queue;
+
+  public:
+    /* Creates an invalid training sheet. */
     static ApiSkillQueuePtr create (void);
+    /* Initializes or updates the data from the EVE API. */
     void set_api_data (EveApiData const& data);
-    void debug_dump (void);
 
     /* Returns true if a skill is currently in training. */
     bool in_training (void) const;
+
+    /* Returns true if the queue contains a finished skill. */
+    bool holds_completed (void) const;
+
+    /* Returns true if the skill queue is paused. */
+    bool is_paused (void) const;
 
     /* Returns the queue item currently in training. */
     ApiSkillQueueItem const* get_training_skill (void) const;
@@ -70,12 +79,16 @@ class ApiSkillQueue : public ApiBase
     /* Returns the SP/h of the skill currently in training,
      * or 0 if there is no skill in training. */
     unsigned int get_spph_for_current (void) const;
+
+    /* Debugging. */
+    void debug_dump (void);
 };
 
 /* ---------------------------------------------------------------- */
 
 inline
 ApiSkillQueue::ApiSkillQueue (void)
+  : valid(false)
 {
 }
 
