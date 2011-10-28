@@ -423,59 +423,54 @@ GtkCharPage::update_charsheet_details (void)
 void
 GtkCharPage::update_training_details (void)
 {
-  ApiInTrainingPtr ts = this->character->ts;
-
-  /* Set training information. */
-  if (!ts->valid)
-  {
-    this->training_label.set_text("---");
-    this->remaining_label.set_text("---");
-    this->finish_eve_label.set_text("---");
-    this->finish_local_label.set_text("---");
-    this->spph_label.set_text("---");
-    this->spph_label.set_has_tooltip(false);
-    this->live_sp_label.set_text("---");
-  }
-  else
-  {
-    if (ts->in_training)
+    if (this->character->is_training())
     {
-      this->training_label.set_text(this->character->get_training_text());
+        ApiInTrainingPtr ts = this->character->ts;
+        this->training_label.set_text(this->character->get_training_text());
 
-      std::string downtime_str;
-      if (EveTime::is_in_eve_downtime(ts->end_time_t))
-        downtime_str = " <i>(in DT!)</i>";
-      this->finish_eve_label.set_markup(EveTime::get_gm_time_string
-          (ts->end_time_t, false) + downtime_str);
-      this->finish_local_label.set_markup(EveTime::get_local_time_string
-          (EveTime::adjust_local_time(ts->end_time_t), false) + downtime_str);
-      this->spph_label.set_text(Helpers::get_string_from_uint
-          (this->character->training_spph) + " SP per hour");
+        std::string downtime_str;
+        if (EveTime::is_in_eve_downtime(ts->end_time_t))
+            downtime_str = " <i>(in DT!)</i>";
+        this->finish_eve_label.set_markup(EveTime::get_gm_time_string
+            (ts->end_time_t, false) + downtime_str);
+        this->finish_local_label.set_markup(EveTime::get_local_time_string
+            (EveTime::adjust_local_time(ts->end_time_t), false) + downtime_str);
+        this->spph_label.set_text(Helpers::get_string_from_uint
+            (this->character->training_spph) + " SP per hour");
 
-      /* Set SP/h tooltip. */
-      std::stringstream spph_tooltip;
-      spph_tooltip << "<b><u>Training based</u></b>\n"
-          << this->character->training_spph << " SP/h";
-      if (this->character->cs->valid)
-      {
-        spph_tooltip << "\n<b><u>Attribute based</u></b>\n"
-            << this->character->cs->get_spph_for_skill
-            (this->character->training_skill) << " SP/h";
-      }
-      this->spph_label.set_has_tooltip(true);
-      this->spph_label.set_tooltip_markup(spph_tooltip.str());
+        /* Set SP/h tooltip. */
+        std::stringstream spph_tooltip;
+        spph_tooltip << "<b><u>Training based</u></b>\n"
+            << this->character->training_spph << " SP/h";
+        if (this->character->cs->valid)
+        {
+            spph_tooltip << "\n<b><u>Attribute based</u></b>\n"
+                << this->character->cs->get_spph_for_skill
+                (this->character->training_skill) << " SP/h";
+        }
+        this->spph_label.set_has_tooltip(true);
+        this->spph_label.set_tooltip_markup(spph_tooltip.str());
+    }
+    else if (this->character->valid_training_sheet())
+    {
+        this->training_label.set_text("No skill in training!");
+        this->remaining_label.set_text("---");
+        this->finish_eve_label.set_text("---");
+        this->finish_local_label.set_text("---");
+        this->spph_label.set_text("0 SP per hour");
+        this->spph_label.set_has_tooltip(false);
+        this->live_sp_label.set_text("---");
     }
     else
     {
-      this->training_label.set_text("No skill in training!");
-      this->remaining_label.set_text("---");
-      this->finish_eve_label.set_text("---");
-      this->finish_local_label.set_text("---");
-      this->spph_label.set_text("0 SP per hour");
-      this->spph_label.set_has_tooltip(false);
-      this->live_sp_label.set_text("---");
+        this->training_label.set_text("---");
+        this->remaining_label.set_text("---");
+        this->finish_eve_label.set_text("---");
+        this->finish_local_label.set_text("---");
+        this->spph_label.set_text("---");
+        this->spph_label.set_has_tooltip(false);
+        this->live_sp_label.set_text("---");
     }
-  }
 }
 
 /* ---------------------------------------------------------------- */
@@ -820,7 +815,7 @@ GtkCharPage::popup_error_dialog (std::string const& title,
 void
 GtkCharPage::exec_notification_handler (void)
 {
-  if (!this->character->ts->valid)
+  if (!this->character->valid_training_sheet())
     return;
 
   ConfValuePtr active = Config::conf.get_value("notifications.exec_handler");
@@ -1111,7 +1106,7 @@ GtkCharPage::on_info_clicked (void)
     char_cached = EveTime::get_gm_time_string
         (this->character->cs->get_cached_until_t(), false);
 
-  if (this->character->ts->valid)
+  if (this->character->valid_training_sheet())
     train_cached = EveTime::get_gm_time_string
         (this->character->ts->get_cached_until_t(), false);
 

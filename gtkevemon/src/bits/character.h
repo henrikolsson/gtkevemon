@@ -26,6 +26,12 @@
  * Change char sheet to have the clone SP as int
  * Emit signal if clone runs out of SP?
  * Move caching to this class? This enables to read API errors
+ *
+ * Interface requirements
+ * - [DONE] training sheet / skill queue valid? (labels in main gui)
+ * - [DONE] currently training (in_training())
+ * - Per sheet cache information (gtkcharpage.cc)
+ * - Skill in training: current ID, dest_level, end_time,
  */
 
 class Character;
@@ -114,8 +120,8 @@ class Character
     std::string get_summary_text (bool detailed);
     bool is_training (void) const;
 
-    /* Misc. */
-    void print_debug (void) const;
+    bool valid_training_sheet (void);
+    bool valid_character_sheet (void);
 
     /* Signals. */
     SignalRequestError& signal_request_error (void);
@@ -173,6 +179,18 @@ inline bool
 Character::is_training (void) const
 {
   return this->ts->valid && this->ts->in_training;
+}
+
+inline bool
+Character::valid_character_sheet (void)
+{
+    return this->cs.get() && this->cs->valid;
+}
+
+inline bool
+Character::valid_training_sheet (void)
+{
+    return this->ts.get() && this->ts->valid;
 }
 
 inline Character::SignalRequestError&

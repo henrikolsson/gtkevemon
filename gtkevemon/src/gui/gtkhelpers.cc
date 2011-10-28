@@ -38,8 +38,7 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
     if (character.get() != 0 && character->cs->valid)
     {
       /* Insert live information if the current skill is in training. */
-      if (character->ts->valid  && character->ts->in_training
-          && character->training_skill == skill)
+      if (character->is_training() && character->training_skill == skill)
       {
         /* Fill live information. */
         current_sp = character->training_skill_sp;

@@ -209,7 +209,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, bool use_active_spph)
     /* SP per second and per hour. */
     unsigned int spph;
     if (active && use_active_spph)
-      spph = ts->get_current_spph();
+      spph = this->character->training_spph;
     else
       spph = cs->get_spph_for_skill(skill, attribs);
     double spps = spph / 3600.0;
@@ -222,7 +222,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, bool use_active_spph)
     /* Set current SP only if in training or previous char level available. */
     if (active)
     {
-      double live_spps = ts->get_current_spph() / 3600.0;
+      double live_spps = this->character->training_spph / 3600.0;
       time_t diff_time = ts->end_time_t - now_eve;
       csp = dsp - (int)((double)diff_time * live_spps);
     }

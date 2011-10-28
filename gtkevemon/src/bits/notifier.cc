@@ -63,7 +63,7 @@ Notifier::exec (CharacterPtr character)
   }
 
   /* Prepare even more informations. */
-  unsigned int spph = ts->get_current_spph();
+  unsigned int spph = character->training_spph;
   double spps = (double)spph / 3600.0;
 
   std::string to_level_str = Helpers::get_roman_from_int(to_level);

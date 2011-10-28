@@ -680,7 +680,7 @@ MainGui::create_skillplan (void)
     return;
   CharacterPtr character = CharacterList::request()->chars[current];
 
-  if (!character->cs->valid || !character->ts->valid)
+  if (!character->valid_character_sheet() || !character->valid_training_sheet())
   {
     this->info_display.append(INFO_WARNING, "Cannot open the skill "
         "planner without valid character sheets!");
