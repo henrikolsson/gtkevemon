@@ -145,16 +145,25 @@ Character::process_api_data (void)
   }
 
   /* Update information related to the training sheet. */
-  if (this->ts->valid && this->ts->in_training)
+  if (this->is_training())
   {
     ApiSkillTreePtr tree = ApiSkillTree::request();
     this->training_skill = tree->get_skill_for_id(this->ts->skill);
     this->training_spph = this->ts->get_current_spph();
+    this->training_info.queue_pos = 0;
+    this->training_info.skill_id = this->ts->skill;
+    this->training_info.to_level = this->ts->to_level;
+    this->training_info.start_sp = this->ts->start_sp;
+    this->training_info.end_sp = this->ts->dest_sp;
+    this->training_info.start_time = this->ts->start_time;
+    this->training_info.start_time_t = this->ts->start_time_t;
+    this->training_info.end_time = this->ts->end_time;
+    this->training_info.end_time_t = this->ts->end_time_t;
 
     if (this->training_skill == 0)
     {
       std::cout << "Warning: Skill in training (ID " << this->ts->skill
-          << ") was not found. Skill tree out of date?" << std::endl;
+          << ") not found. Skill tree out of date?" << std::endl;
     }
 
     if (!this->cs->valid)
@@ -169,16 +178,18 @@ Character::process_api_data (void)
   /* Update information related to both sheets. */
   if (this->cs->valid && this->ts->valid)
   {
-    if (this->ts->in_training)
+    if (this->is_training())
     {
-      /* Both, char sheet and training sheet is available and there is
+      /* Both, char sheet and training sheet are available and there is
        * a skill in training. We make sure the character sheet is up
        * to date by adding the previous level of the skill in training. */
-      this->cs->add_char_skill(this->ts->skill, this->ts->to_level - 1);
+      this->cs->add_char_skill(this->training_info.skill_id,
+          this->training_info.to_level - 1);
       this->char_base_sp = this->cs->total_sp;
 
       /* Get the character skill in training. */
-      this->training_cskill = this->cs->get_skill_for_id(this->ts->skill);
+      this->training_cskill = this->cs->get_skill_for_id
+          (this->training_info.skill_id);
       this->char_group_base_sp = 0;
 
       if (this->training_cskill != 0)
@@ -194,7 +205,8 @@ Character::process_api_data (void)
       }
       else
       {
-        std::cout << "Warning: Skill in training (ID " << this->ts->skill
+        std::cout << "Warning: Skill in training (ID "
+            << this->training_info.skill_id
             << ") is unknown to " << this->cs->name << "!" << std::endl;
       }
 
@@ -206,7 +218,8 @@ Character::process_api_data (void)
       /* The training sheet holds a skill that is already completed.
        * We can use this information to update the character sheet if
        * it does not yet have the new skill level. */
-      this->cs->add_char_skill(this->ts->skill, this->ts->to_level);
+      this->cs->add_char_skill(this->training_info.skill_id,
+          this->training_info.to_level);
       this->char_base_sp = this->cs->total_sp;
       this->training_cskill = 0;
     }
@@ -226,7 +239,7 @@ Character::update_live_info (void)
     return;
 
   time_t evetime = EveTime::get_eve_time();
-  time_t finish = this->ts->end_time_t;
+  time_t finish = this->training_info.end_time_t;
   time_t diff = finish - evetime;
 
   //std::cout << "** Evetime: " << evetime << ", Finish: " << finish
@@ -240,7 +253,7 @@ Character::update_live_info (void)
   }
 
   /* Update easy values first to get useful results even in case of errors. */
-  unsigned int level_dest_sp = this->ts->dest_sp;
+  unsigned int level_dest_sp = this->training_info.end_sp;
   double spps = (double)this->training_spph / 3600.0;
 
   this->training_remaining = diff;
@@ -253,7 +266,7 @@ Character::update_live_info (void)
 
   /* Update training live values. */
   unsigned int level_start_sp = ApiCharSheet::calc_start_sp
-      (this->ts->to_level - 1, this->training_skill->rank);
+      (this->training_info.to_level - 1, this->training_skill->rank);
   unsigned int level_total_sp = level_dest_sp - level_start_sp;
 
   this->training_level_sp = this->training_skill_sp - level_start_sp;
@@ -290,6 +303,8 @@ Character::skill_completed (void)
   this->process_api_data();
 
   /* At this point, the pointers to the skills are cleared. */
+  //this->training_cskill = 0; // Activate?
+  //this->training_skill = 0; // Activate?
   this->training_spph = 0;
   this->training_level_sp = 0;
   this->training_skill_sp = 0;

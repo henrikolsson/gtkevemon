@@ -13,14 +13,10 @@ int
 Notifier::exec (CharacterPtr character)
 {
   ApiCharSheetPtr cs = character->cs;
-  ApiInTrainingPtr ts = character->ts;
 
   /* Check if the sheets are valid. */
   if (!cs->valid)
     throw Exception("Character sheet is invalid. Please report this issue!");
-
-  if (!ts->valid)
-    throw Exception("Training sheet is invalid. Please report this issue!");
 
   /* Receive configuration values. */
   std::string command = **Config::conf.get_value("notifications.exec_command");
@@ -36,8 +32,8 @@ Notifier::exec (CharacterPtr character)
     minsp = Helpers::get_int_from_string(minspstr);
 
   /* Collect some required information. */
-  int training_id = ts->skill;
-  int to_level = ts->to_level;
+  int training_id = character->training_info.skill_id;
+  int to_level = character->training_info.to_level;
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkill const* skill = tree->get_skill_for_id(training_id);
 

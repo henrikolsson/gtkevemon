@@ -57,6 +57,8 @@ class XmlBase
         std::string& target);
     void set_int_if_node_text (xmlNodePtr node, char const* node_name,
         int& target);
+    void set_uint_if_node_text (xmlNodePtr node, char const* node_name,
+        unsigned int& target);
     void set_double_if_node_text (xmlNodePtr node, char const* node_name,
         double& target);
     void set_bool_if_node_text (xmlNodePtr node, char const* node_name,

@@ -162,15 +162,14 @@ GtkSkillList::calc_details (bool use_active_spph)
 void
 GtkSkillList::calc_details (ApiCharAttribs& attribs, bool use_active_spph)
 {
-  ApiInTrainingPtr ts = this->character->ts;
   ApiCharSheetPtr cs = this->character->cs;
 
   int train_skill = -1;
   int train_level = -1;
   if (this->character->is_training())
   {
-    train_skill = ts->skill;
-    train_level = ts->to_level;
+    train_skill = this->character->training_info.skill_id;
+    train_level = this->character->training_info.to_level;
   }
 
   /* Cached values for time calculations. */
@@ -223,7 +222,7 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, bool use_active_spph)
     if (active)
     {
       double live_spps = this->character->training_spph / 3600.0;
-      time_t diff_time = ts->end_time_t - now_eve;
+      time_t diff_time = this->character->training_info.end_time_t - now_eve;
       csp = dsp - (int)((double)diff_time * live_spps);
     }
     else if (cskill != 0)

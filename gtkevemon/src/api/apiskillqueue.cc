@@ -110,7 +110,7 @@ ApiSkillQueue::parse_queue_rowset (xmlNodePtr node)
     }
   }
 
-  this->debug_dump();
+  //this->debug_dump();
 }
 
 /* ---------------------------------------------------------------- */

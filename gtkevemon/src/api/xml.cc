@@ -137,6 +137,16 @@ XmlBase::set_int_if_node_text (xmlNodePtr node, char const* node_name,
 /* ---------------------------------------------------------------- */
 
 void
+XmlBase::set_uint_if_node_text (xmlNodePtr node, char const* node_name,
+    unsigned int& target)
+{
+  if (!xmlStrcmp(node->name, (xmlChar const*)node_name))
+    target = Helpers::get_uint_from_string(this->get_node_text(node));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 XmlBase::set_double_if_node_text (xmlNodePtr node, char const* node_name,
     double& target)
 {

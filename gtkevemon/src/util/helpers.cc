@@ -67,6 +67,17 @@ Helpers::get_int_from_string (std::string const& value)
 
 /* ---------------------------------------------------------------- */
 
+unsigned int
+Helpers::get_uint_from_string (std::string const& value)
+{
+  std::stringstream ss(value);
+  unsigned int ret;
+  ss >> ret;
+  return ret;
+}
+
+/* ---------------------------------------------------------------- */
+
 double
 Helpers::get_double_from_string (std::string const& value)
 {

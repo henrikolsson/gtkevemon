@@ -359,11 +359,10 @@ GtkCharPage::update_charsheet_details (void)
     Glib::ustring clone_tt;
     clone_tt = "<u><b>Character clone information</b></u>\nName: ";
     clone_tt += cs->clone_name + "\nKeeps: ";
-    clone_tt += Helpers::get_dotted_str_from_str(cs->clone_sp);
+    clone_tt += Helpers::get_dotted_str_from_uint(cs->clone_sp);
     clone_tt += " SP";
 
-    unsigned int clone_sp = Helpers::get_int_from_string(cs->clone_sp);
-    if (cs->total_sp > clone_sp)
+    if (this->character->char_base_sp > cs->clone_sp)
     {
       clone_tt += "\n\n<b>Warning:</b> Your clone is outdated!";
       this->clone_warning_label.set_markup("<b>(outdated)</b>");
@@ -425,16 +424,16 @@ GtkCharPage::update_training_details (void)
 {
     if (this->character->is_training())
     {
-        ApiInTrainingPtr ts = this->character->ts;
+        time_t end_time_t = this->character->training_info.end_time_t;
         this->training_label.set_text(this->character->get_training_text());
 
         std::string downtime_str;
-        if (EveTime::is_in_eve_downtime(ts->end_time_t))
+        if (EveTime::is_in_eve_downtime(end_time_t))
             downtime_str = " <i>(in DT!)</i>";
         this->finish_eve_label.set_markup(EveTime::get_gm_time_string
-            (ts->end_time_t, false) + downtime_str);
+            (end_time_t, false) + downtime_str);
         this->finish_local_label.set_markup(EveTime::get_local_time_string
-            (EveTime::adjust_local_time(ts->end_time_t), false) + downtime_str);
+            (EveTime::adjust_local_time(end_time_t), false) + downtime_str);
         this->spph_label.set_text(Helpers::get_string_from_uint
             (this->character->training_spph) + " SP per hour");
 
@@ -726,7 +725,7 @@ GtkCharPage::api_info_changed (void)
         "up-to-date. If you already have recent data files, "
         "please report this issue! Thanks.\n\n"
         "Error: Skill with ID " + Helpers::get_string_from_int
-        (this->character->ts->skill) + " did not resolve!");
+        (this->character->training_info.skill_id) + " did not resolve!");
   }
   
   /* Update the char sheet and training sheet info. */

@@ -23,15 +23,8 @@
 #include "api/apiskillqueue.h"
 
 /* TODO
- * Change char sheet to have the clone SP as int
  * Emit signal if clone runs out of SP?
  * Move caching to this class? This enables to read API errors
- *
- * Interface requirements
- * - [DONE] training sheet / skill queue valid? (labels in main gui)
- * - [DONE] currently training (in_training())
- * - Per sheet cache information (gtkcharpage.cc)
- * - Skill in training: current ID, dest_level, end_time,
  */
 
 class Character;
@@ -76,6 +69,7 @@ class Character
 
     /* Information if the training sheet is available. */
     ApiSkill const* training_skill;
+    ApiSkillQueueItem training_info;
     unsigned int training_spph;
     unsigned int training_level_sp; /* Live SP. */
     unsigned int training_skill_sp; /* Live SP. */
