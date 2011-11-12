@@ -19,7 +19,6 @@
 #include "util/ref_ptr.h"
 #include "api/eveapi.h"
 #include "api/apicharsheet.h"
-#include "api/apiintraining.h"
 #include "api/apiskillqueue.h"
 
 /* TODO
@@ -38,14 +37,13 @@ class Character
     typedef sigc::signal<void, std::string> SignalNameAvailable;
     typedef sigc::signal<void> SignalApiInfoChanged;
     typedef sigc::signal<void> SignalCharSheetUpdated;
-    typedef sigc::signal<void> SignalInTrainingUpdated;
     typedef sigc::signal<void> SignalSkillQueueUpdated;
     typedef sigc::signal<void> SignalSkillCompleted;
+    typedef sigc::signal<void> SignalTrainingChanged;
 
   protected:
     EveApiAuth auth;
     EveApiFetcher cs_fetcher;
-    EveApiFetcher ts_fetcher;
     EveApiFetcher sq_fetcher;
 
     SignalRequestError sig_request_error;
@@ -53,14 +51,13 @@ class Character
     SignalNameAvailable sig_name_available;
     SignalApiInfoChanged sig_api_info_changed;
     SignalCharSheetUpdated sig_char_sheet_updated;
-    SignalInTrainingUpdated sig_intraining_updated;
     SignalSkillQueueUpdated sig_skill_queue_updated;
     SignalSkillCompleted sig_skill_completed;
+    SignalTrainingChanged sig_training_changed;
 
   public:
     /* API sheets. The sheets do not contain any live information. */
     ApiCharSheetPtr cs;
-    ApiInTrainingPtr ts;
     ApiSkillQueuePtr sq;
 
     /* Information if the charsheet is available. */
@@ -85,7 +82,6 @@ class Character
     Character (EveApiAuth const& auth);
 
     void on_cs_available (EveApiData data);
-    void on_ts_available (EveApiData data);
     void on_sq_available (EveApiData data);
 
     void process_api_data (void);
@@ -99,11 +95,12 @@ class Character
 
     /* API requests. Callers should obey the cache timers. */
     void request_charsheet (void);
-    void request_trainingsheet (void);
     void request_skillqueue (void);
 
     /* Updates the live information, typically called every second. */
     void update_live_info (void);
+    /* Updates the character with completed skills from the queue. */
+    void update_from_queue (void);
 
     /* Getters and worked-up information. */
     std::string get_char_name (void) const;
@@ -123,9 +120,9 @@ class Character
     SignalNameAvailable& signal_name_available (void);
     SignalApiInfoChanged& signal_api_info_changed (void);
     SignalCharSheetUpdated& signal_char_sheet_updated (void);
-    SignalInTrainingUpdated& signal_intraining_updated (void);
     SignalSkillQueueUpdated& signal_skill_queue_updated (void);
     SignalSkillCompleted& signal_skill_completed (void);
+    SignalTrainingChanged& signal_training_changed (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -156,13 +153,6 @@ Character::request_charsheet (void)
 }
 
 inline void
-Character::request_trainingsheet (void)
-{
-  if (!this->ts_fetcher.is_busy())
-    this->ts_fetcher.async_request();
-}
-
-inline void
 Character::request_skillqueue (void)
 {
   if (!this->sq_fetcher.is_busy())
@@ -172,7 +162,7 @@ Character::request_skillqueue (void)
 inline bool
 Character::is_training (void) const
 {
-  return this->ts->valid && this->ts->in_training;
+  return this->sq->valid && this->sq->in_training();
 }
 
 inline bool
@@ -184,7 +174,7 @@ Character::valid_character_sheet (void)
 inline bool
 Character::valid_training_sheet (void)
 {
-    return this->ts.get() && this->ts->valid;
+    return this->sq.get() && this->sq->valid;
 }
 
 inline Character::SignalRequestError&
@@ -217,12 +207,6 @@ Character::signal_char_sheet_updated (void)
   return this->sig_char_sheet_updated;
 }
 
-inline Character::SignalInTrainingUpdated&
-Character::signal_intraining_updated (void)
-{
-  return this->sig_intraining_updated;
-}
-
 inline Character::SignalSkillQueueUpdated&
 Character::signal_skill_queue_updated (void)
 {
@@ -233,6 +217,12 @@ inline Character::SignalSkillCompleted&
 Character::signal_skill_completed (void)
 {
   return this->sig_skill_completed;
+}
+
+inline Character::SignalTrainingChanged&
+Character::signal_training_changed (void)
+{
+    return this->sig_training_changed;
 }
 
 #endif /* CHARACTER_HEADER */

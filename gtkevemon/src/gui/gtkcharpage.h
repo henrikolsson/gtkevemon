@@ -81,7 +81,7 @@ class GtkCharPage : public Gtk::VBox
     Gtk::Label spph_label;
     Gtk::Label live_sp_label;
     Gtk::Label charsheet_info_label;
-    Gtk::Label trainsheet_info_label;
+    Gtk::Label skillqueue_info_label;
     Gtk::Button refresh_but;
     Gtk::Button info_but;
     GtkPortrait char_image;

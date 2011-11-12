@@ -12,11 +12,9 @@ GuiSkillQueue::GuiSkillQueue (CharacterPtr character)
   Gtk::Frame* main_frame = MK_FRAME0;
   main_frame->add(this->queue);
 
-  Gtk::Button* refresh_but = MK_BUT(Gtk::Stock::REFRESH);
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
 
   Gtk::HBox* button_box = MK_HBOX;
-  button_box->pack_start(*refresh_but, false, false, 0);
   button_box->pack_start(*MK_HSEP, true, true, 0);
   button_box->pack_start(*close_but, false, false, 0);
 
@@ -27,8 +25,6 @@ GuiSkillQueue::GuiSkillQueue (CharacterPtr character)
 
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &WinBase::close));
-  refresh_but->signal_clicked().connect(sigc::mem_fun
-      (this->queue, &GtkSkillQueue::refresh));
 
   this->add(*main_box);
   this->set_default_size(450, 300);

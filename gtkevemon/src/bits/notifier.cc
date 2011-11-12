@@ -58,7 +58,7 @@ Notifier::exec (CharacterPtr character)
         << ", executing handler!" << std::endl;
   }
 
-  /* Prepare even more informations. */
+  /* Prepare even more information. */
   unsigned int spph = character->training_spph;
   double spps = (double)spph / 3600.0;
 

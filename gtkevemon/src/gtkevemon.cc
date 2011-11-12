@@ -40,11 +40,9 @@ main (int argc, char* argv[])
     Glib::thread_init();
 #endif
 
-  Net::init();
   Gtk::Main kit(&argc, &argv);
-
   ArgumentSettings::init(argc, argv);
-
+  Net::init();
   Config::init_defaults();
   Config::init_config_path();
   Config::init_user_config();

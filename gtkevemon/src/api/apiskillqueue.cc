@@ -17,6 +17,35 @@ ApiSkillQueue::set_api_data (EveApiData const& data)
   /* Force the skill queue to have a minimum cache time. */
   this->enforce_cache_time(API_SKILL_QUEUE_MIN_CACHE_TIME);
 
+#if 0
+    /* Test skill queue. */
+    ApiSkillQueueItem item;
+    item.queue_pos = 1;
+    item.skill_id = 3323;
+    item.to_level = 3;
+    item.start_sp = 16000;
+    item.end_sp = 16500;
+    item.start_time = "2011-11-05 20:00:00";
+    item.start_time_t = EveTime::get_time_for_string(item.start_time);
+    item.end_time = "2011-11-05 20:00:30";
+    item.end_time_t = EveTime::get_time_for_string(item.end_time);
+
+    this->queue.clear();
+    this->queue.push_back(item);
+
+    item.queue_pos = 2;
+    item.skill_id = 3323;
+    item.to_level = 4;
+    item.start_sp = 16500;
+    item.end_sp = 17000;
+    item.start_time = "2011-11-05 20:00:30";
+    item.start_time_t = EveTime::get_time_for_string(item.start_time);
+    item.end_time = "2011-11-05 20:00:59";
+    item.end_time_t = EveTime::get_time_for_string(item.end_time);
+
+    this->queue.push_back(item);
+#endif
+
   this->valid = true;
 }
 
@@ -120,24 +149,11 @@ ApiSkillQueue::in_training (void) const
 {
     if (this->queue.empty())
         return false;
-    /* Returns false if queue is paused (end_time_t == -1 then). */
+    /* If end time of last skill lies in the past, or is -1 (paused),
+     * we return false and indicate that no skill is in training. */
     if (this->queue.back().end_time_t < EveTime::get_eve_time())
         return false;
     return true;
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-ApiSkillQueue::holds_completed (void) const
-{
-    if (this->queue.empty())
-        return false;
-    /* Returns false if queue is paused. */
-    time_t end_time_t = this->queue.front().end_time_t;
-    if (end_time_t != -1 && end_time_t < EveTime::get_eve_time())
-        return true;
-    return false;
 }
 
 /* ---------------------------------------------------------------- */
@@ -155,15 +171,15 @@ ApiSkillQueue::is_paused (void) const
 ApiSkillQueueItem const*
 ApiSkillQueue::get_training_skill (void) const
 {
-  if (this->queue.empty())
+    if (this->queue.empty())
+        return 0;
+
+    time_t eve_time = EveTime::get_eve_time();
+    for (std::size_t i = 0; i < this->queue.size(); ++i)
+        if (this->queue[i].end_time_t >= eve_time)
+            return &this->queue[i];
+
     return 0;
-
-  time_t eve_time = EveTime::get_eve_time();
-  for (std::size_t i = 0; i < this->queue.size(); ++i)
-    if (this->queue[i].end_time_t >= eve_time)
-      return &this->queue[i];
-
-  return 0;
 }
 
 /* ---------------------------------------------------------------- */

@@ -16,7 +16,6 @@
 #include "util/helpers.h"
 #include "util/exception.h"
 #include "api/evetime.h"
-#include "api/apiintraining.h"
 #include "api/apicharsheet.h"
 #include "api/apiskilltree.h"
 #include "bits/config.h"
@@ -67,7 +66,7 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->live_sp_label.set_alignment(Gtk::ALIGN_RIGHT);
 
   this->charsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
-  this->trainsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
+  this->skillqueue_info_label.set_alignment(Gtk::ALIGN_RIGHT);
 
   /* Setup skill list. */
   Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
@@ -180,12 +179,12 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   finish_local_desc->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Label* charsheet_info_desc = MK_LABEL("Character sheet:");
-  Gtk::Label* trainsheet_info_desc = MK_LABEL("Training sheet:");
+  Gtk::Label* trainsheet_info_desc = MK_LABEL("Skill queue:");
   Gtk::HBox* charsheet_info_hbox = MK_HBOX;
   charsheet_info_hbox->pack_end(this->charsheet_info_label, false, false, 0);
   charsheet_info_hbox->pack_end(*charsheet_info_desc, false, false, 0);
   Gtk::HBox* trainsheet_info_hbox = MK_HBOX;
-  trainsheet_info_hbox->pack_end(this->trainsheet_info_label, false, false, 0);
+  trainsheet_info_hbox->pack_end(this->skillqueue_info_label, false, false, 0);
   trainsheet_info_hbox->pack_end(*trainsheet_info_desc, false, false, 0);
 
   /* Setup training table. */
@@ -254,6 +253,8 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
       (sigc::mem_fun(*this, &GtkCharPage::on_api_error), false));
   this->character->signal_cached_warning().connect(sigc::bind
       (sigc::mem_fun(*this, &GtkCharPage::on_api_error), true));
+  this->character->signal_training_changed().connect
+      (sigc::mem_fun(*this, &GtkCharPage::update_training_details));
 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::on_live_sp_value_update), CHARPAGE_LIVE_SP_LABEL_UPDATE);
@@ -321,7 +322,6 @@ GtkCharPage::update_charsheet_details (void)
     }
     else
       this->corp_label.set_text(cs->corp);
-
 
     this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
         (cs->total_sp));
@@ -632,9 +632,9 @@ GtkCharPage::request_documents (void)
       update_char = false;
   }
 
-  if (this->character->ts->valid && !this->character->ts->is_locally_cached())
+  if (this->character->sq->valid && !this->character->sq->is_locally_cached())
   {
-    time_t train_cached_t = this->character->ts->get_cached_until_t();
+    time_t train_cached_t = this->character->sq->get_cached_until_t();
     train_cached = EveTime::get_gm_time_string(train_cached_t, false);
     if (evetime < train_cached_t)
       update_training = false;
@@ -648,7 +648,7 @@ GtkCharPage::request_documents (void)
     md.set_secondary_text("The data you are about to refresh is already "
         "up-to-date.\n\n"
         "Character sheet expires at " + char_cached + "\n"
-        "Training sheet expires at " + train_cached + "\n\n"
+        "Skill queue sheet expires at " + train_cached + "\n\n"
         "You can continue and rerequest the data, but it will most "
         "likely don't change a thing.");
     md.set_title("Cache Status - GtkEveMon");
@@ -677,8 +677,8 @@ GtkCharPage::request_documents (void)
 
   if (update_training)
   {
-    this->trainsheet_info_label.set_text("Requesting...");
-    this->character->request_trainingsheet();
+    this->skillqueue_info_label.set_text("Requesting...");
+    this->character->request_skillqueue();
   }
 }
 
@@ -693,10 +693,10 @@ GtkCharPage::check_expired_sheets (void)
     return true;
 
   ApiCharSheetPtr cs = this->character->cs;
-  ApiInTrainingPtr ts = this->character->ts;
+  ApiSkillQueuePtr sq = this->character->sq;
 
   /* Skip automatic update if both sheets are cached. */
-  if (ts->is_locally_cached() && cs->is_locally_cached())
+  if (sq->is_locally_cached() && cs->is_locally_cached())
     return true;
 
   //std::cout << "Checking for expired sheets..." << std::endl;
@@ -704,7 +704,7 @@ GtkCharPage::check_expired_sheets (void)
   time_t evetime = EveTime::get_eve_time();
 
   /* Check which docs to re-request. */
-  if (!ts->valid || evetime >= ts->get_cached_until_t()
+  if (!sq->valid || evetime >= sq->get_cached_until_t()
       || !cs->valid || evetime >= cs->get_cached_until_t())
     this->request_documents();
 
@@ -743,19 +743,19 @@ GtkCharPage::update_cached_duration (void)
 {
   time_t current = EveTime::get_eve_time();
   ApiCharSheetPtr cs = this->character->cs;
-  ApiInTrainingPtr ts = this->character->ts;
+  ApiSkillQueuePtr sq = this->character->sq;
 
-  if (ts->valid)
+  if (sq->valid)
   {
-    time_t cached_until = ts->get_cached_until_t();
+    time_t cached_until = sq->get_cached_until_t();
 
-    if (ts->is_locally_cached())
-      this->trainsheet_info_label.set_text("Locally cached!");
+    if (sq->is_locally_cached())
+      this->skillqueue_info_label.set_text("Locally cached!");
     else if (cached_until > current)
-      this->trainsheet_info_label.set_text(EveTime::get_minute_str_for_diff
+      this->skillqueue_info_label.set_text(EveTime::get_minute_str_for_diff
           (cached_until - current) + " cached");
     else
-      this->trainsheet_info_label.set_text("Ready for update!");
+      this->skillqueue_info_label.set_text("Ready for update!");
   }
 
   if (cs->valid)
@@ -1040,12 +1040,9 @@ GtkCharPage::on_api_error (EveApiDocType dt, std::string msg, bool cached)
       doc = "CharacterSheet.xml";
       this->charsheet_info_label.set_text("Error requesting!");
       break;
-    case API_DOCTYPE_INTRAINING:
-      doc = "SkillInTraining.xml";
-      this->trainsheet_info_label.set_text("Error requesting!");
-      break;
     case API_DOCTYPE_SKILLQUEUE:
       doc = "SkillQueue.xml";
+      this->skillqueue_info_label.set_text("Error requesting!");
       break;
     default:
       std::cout << "Warning: Received API error for unknown DT!" << std::endl;
@@ -1107,13 +1104,13 @@ GtkCharPage::on_info_clicked (void)
 
   if (this->character->valid_training_sheet())
     train_cached = EveTime::get_gm_time_string
-        (this->character->ts->get_cached_until_t(), false);
+        (this->character->sq->get_cached_until_t(), false);
 
   Gtk::MessageDialog md("Information about cached sheets",
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
   md.set_secondary_text(
       "Character sheet expires at " + char_cached + "\n"
-      "Training sheet expires at " + train_cached);
+      "Skill queue sheet expires at " + train_cached);
   md.set_title("Cache Status - GtkEveMon");
   md.set_transient_for(*this->parent_window);
   md.run();

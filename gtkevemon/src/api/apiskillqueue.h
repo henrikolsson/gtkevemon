@@ -67,9 +67,6 @@ class ApiSkillQueue : public ApiBase
     /* Returns true if a skill is currently in training. */
     bool in_training (void) const;
 
-    /* Returns true if the queue contains a finished skill. */
-    bool holds_completed (void) const;
-
     /* Returns true if the skill queue is paused. */
     bool is_paused (void) const;
 

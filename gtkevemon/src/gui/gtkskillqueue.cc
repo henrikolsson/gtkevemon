@@ -93,7 +93,10 @@ GtkSkillQueue::set_character (CharacterPtr character)
 void
 GtkSkillQueue::refresh (void)
 {
-  this->character->request_skillqueue();
+    if (this->character->valid_training_sheet())
+        this->on_apidata_available();
+    else
+        this->character->request_skillqueue();
 }
 
 /* ---------------------------------------------------------------- */

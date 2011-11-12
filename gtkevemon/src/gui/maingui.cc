@@ -702,10 +702,9 @@ MainGui::view_xml_source (void)
   CharacterPtr character = CharacterList::request()->chars[current];
 
   ApiCharSheetPtr cs = character->cs;
-  ApiInTrainingPtr ts = character->ts;
   ApiSkillQueuePtr sq = character->sq;
 
-  if (!cs->valid && !ts->valid && !sq->valid)
+  if (!cs->valid && !sq->valid)
   {
     this->info_display.append(INFO_WARNING, "Cannot open the source "
         "viewer without a valid sheet!");
@@ -716,8 +715,6 @@ MainGui::view_xml_source (void)
 
   if (cs->valid)
     window->append(cs->get_http_data(), "CharacterSheet.xml");
-  if (ts->valid)
-    window->append(ts->get_http_data(), "SkillInTraining.xml");
   if (sq->valid)
     window->append(sq->get_http_data(), "SkillQueue.xml");
 }

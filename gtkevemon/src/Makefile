@@ -110,4 +110,4 @@ FORCE:
 
 #### Compile dependency information ####
 
-include Makefile.dep
+-include Makefile.dep
