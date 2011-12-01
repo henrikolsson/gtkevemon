@@ -81,17 +81,15 @@ SOURCES += util/bgprocess.cc util/conf.cc util/helpers.cc \
 		   $(wildcard gui/[^_]*.cc) $(wildcard bits/[^_]*.cc) \
 		   gtkevemon.cc
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
+DEPENDENCIES = $(foreach file,$(SOURCES),$(subst .cc,.DEP,$(file)))
 
-#### Makefile targets ####
+#### Building targets ####
 
 all:
 	$(MAKE) -j${CORES} gtkevemon
 
 gtkevemon: ${OBJECTS}
 	${CXX} -o ${BINARY} ${OBJECTS} ${LDFLAGS}
-
-depend:
-	${CXX} -MM ${SOURCES} ${GCC_INCL} > Makefile.dep
 
 gemcache:
 	${RM} gemcache
@@ -103,11 +101,23 @@ gemcache:
 #test: ${OBJECTS}
 #	${CXX} -o _test_ssl _test_ssl.cc net/*.o util/helpers.o ${LDFLAGS} ${GCC_INCL}
 
+#### Dependencies target ####
+
+depend: depend-clean ${DEPENDENCIES}
+
+depend-clean:
+	${RM} Makefile.dep
+
+%.DEP:
+	${CXX} -MM -MT $(subst .DEP,.o,$@) $(subst .DEP,.cc,$@) ${GCC_INCL} >> Makefile.dep
+
+#### Cleaning target ####
+
 clean: FORCE
 	${RM} ${BINARY} ${OBJECTS}
 
 FORCE:
 
-#### Compile dependency information ####
+#### Compile time dependency information ####
 
 -include Makefile.dep
