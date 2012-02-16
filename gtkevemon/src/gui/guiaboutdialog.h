@@ -19,7 +19,7 @@
 #include "net/asynchttp.h"
 #include "winbase.h"
 
-#define SVN_VERSION_HOST "gtkevemon.static.battleclinic.com"
+#define SVN_VERSION_HOST "gtkevemon.battleclinic.com"
 #define SVN_VERSION_PATH "/svn_version.txt"
 
 class GuiAboutDialog : public WinBase

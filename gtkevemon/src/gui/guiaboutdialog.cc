@@ -122,6 +122,14 @@ GuiAboutDialog::request_version_label (void)
 /* ---------------------------------------------------------------- */
 
 void
+string_chop (std::string& str)
+{
+    while (!str.empty() && (str[str.size() - 1] == '\r'
+        || str[str.size() - 1] == '\n'))
+        str.resize(str.size() - 1);
+}
+
+void
 GuiAboutDialog::set_version_label (AsyncHttpData result)
 {
   if (result.data.get() == 0 || result.data->http_code != 200)
@@ -132,8 +140,10 @@ GuiAboutDialog::set_version_label (AsyncHttpData result)
   }
   else
   {
-    this->version_label.set_text(&result.data->data[0]);
-    if (std::string(&result.data->data[0]) != GTKEVEMON_VERSION_STR)
+    std::string version_str(&result.data->data[0]);
+    string_chop(version_str);
+    this->version_label.set_text(version_str);
+    if (version_str != GTKEVEMON_VERSION_STR)
       this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
     else
       this->version_status_image.set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);
