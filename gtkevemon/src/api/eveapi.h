@@ -26,6 +26,7 @@ class EveApiAuth
     std::string user_id;
     std::string api_key;
     std::string char_id;
+    bool is_apiv1;
 
   public:
     EveApiAuth (void);
@@ -98,19 +99,20 @@ class EveApiFetcher
 
 inline
 EveApiAuth::EveApiAuth (void)
+    : is_apiv1(false)
 {
 }
 
 inline
 EveApiAuth::EveApiAuth (std::string const& uid, std::string const& apikey)
-  : user_id(uid), api_key(apikey)
+  : user_id(uid), api_key(apikey), is_apiv1(false)
 {
 }
 
 inline
 EveApiAuth::EveApiAuth (std::string const& uid, std::string const& apikey,
     std::string const& cid)
-  : user_id(uid), api_key(apikey), char_id(cid)
+  : user_id(uid), api_key(apikey), char_id(cid), is_apiv1(false)
 {
 }
 

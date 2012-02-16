@@ -26,9 +26,9 @@ EveApiFetcher::setup_fetcher (void)
 
   /* Setup HTTP post data. */
   std::string post_data;
-  post_data += "userid=";
+  post_data += this->auth.is_apiv1 ? "userID=" : "keyID=";
   post_data += this->auth.user_id;
-  post_data += "&apiKey=";
+  post_data += this->auth.is_apiv1 ? "&apiKey=" : "&vCode=";
   post_data += this->auth.api_key;
   if (!auth.char_id.empty())
   {

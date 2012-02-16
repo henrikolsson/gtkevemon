@@ -33,6 +33,16 @@ ConfValue::create (std::string const& _value)
 
 /* ---------------------------------------------------------------- */
 
+ConfValuePtr
+ConfValue::create (int value)
+{
+  ConfValuePtr c(new ConfValue);
+  c->set(value);
+  return c;
+}
+
+/* ---------------------------------------------------------------- */
+
 double
 ConfValue::get_double (void)
 {

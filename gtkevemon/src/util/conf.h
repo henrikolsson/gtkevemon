@@ -39,6 +39,7 @@ class ConfValue
   public:
     static ConfValuePtr create (void);
     static ConfValuePtr create (std::string const& _value);
+    static ConfValuePtr create (int value);
 
     std::string& get_string (void);
     double get_double (void);

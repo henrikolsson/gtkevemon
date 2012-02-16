@@ -54,6 +54,7 @@ class GuiUserData : public WinBase
     Gtk::Entry userid_entry;
     Gtk::Entry apikey_entry;
     Gtk::Button apply_button;
+    Gtk::CheckButton api_v1_cb;
 
     GuiUserDataComboColRecord combo_cols;
     Glib::RefPtr<Gtk::ListStore> combo_store;

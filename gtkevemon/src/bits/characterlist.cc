@@ -32,10 +32,13 @@ CharacterList::init_from_config (void)
   {
     std::string user_id = iter->first;
     std::string api_key;
+    bool is_apiv1 = true;
     try
     {
-      api_key = Config::conf.get_section("accounts."
-          + user_id)->get_value("apikey")->get_string();
+      ConfSectionPtr key_sect = Config::conf.get_section("accounts." + user_id);
+      api_key = key_sect->get_value("apikey")->get_string();
+      try { is_apiv1 = key_sect->get_value("apiver")->get_int() == 1; }
+      catch (...) { }
     }
     catch (...)
     {
@@ -45,6 +48,7 @@ CharacterList::init_from_config (void)
     }
 
     EveApiAuth auth(user_id, api_key);
+    auth.is_apiv1 = is_apiv1;
 
     std::string char_ids = **iter->second;
     StringVector chars = Helpers::split_string(char_ids, ',');
