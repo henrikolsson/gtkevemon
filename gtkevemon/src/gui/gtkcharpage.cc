@@ -918,11 +918,9 @@ GtkCharPage::on_close_clicked (void)
 /* ---------------------------------------------------------------- */
 
 bool
-GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
+GtkCharPage::on_query_skillview_tooltip (int x, int y, bool /*key*/,
     Glib::RefPtr<Gtk::Tooltip> const& tooltip)
 {
-  key = false;
-
   Gtk::TreeModel::Path path;
   Gtk::TreeViewDropPosition pos;
 
@@ -946,10 +944,8 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
 
 void
 GtkCharPage::on_skill_activated (Gtk::TreeModel::Path const& path,
-    Gtk::TreeViewColumn* col)
+    Gtk::TreeViewColumn* /*col*/)
 {
-  col = 0;
-
   Gtk::TreeIter iter = this->skill_store->get_iter(path);
   int skill_id = (*iter)[this->skill_cols.id];
 

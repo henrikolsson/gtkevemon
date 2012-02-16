@@ -53,10 +53,8 @@ ItemBrowserBase::on_selection_changed (void)
 
 void
 ItemBrowserBase::on_row_activated (Gtk::TreeModel::Path const& path,
-    Gtk::TreeViewColumn* col)
+    Gtk::TreeViewColumn* /*col*/)
 {
-  col = 0;
-
   Gtk::TreeModel::iterator iter = this->store->get_iter(path);
   ApiElement const* elem = (*iter)[this->cols.data];
 

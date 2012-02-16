@@ -243,10 +243,8 @@ GtkDependencyList::recurse_append_cert_req (ApiCert const* cert,
 
 void
 GtkDependencyList::on_row_activated (Gtk::TreeModel::Path const& path,
-    Gtk::TreeViewColumn* col)
+    Gtk::TreeViewColumn* /*col*/)
 {
-  col = 0;
-
   Gtk::TreeModel::iterator iter = this->deps_store->get_iter(path);
   ApiElement const* elem = (*iter)[this->deps_cols.data];
 
@@ -316,11 +314,9 @@ GtkDependencyList::on_view_button_pressed (GdkEventButton* event)
 /* ---------------------------------------------------------------- */
 
 bool
-GtkDependencyList::on_query_element_tooltip (int x, int y, bool key,
+GtkDependencyList::on_query_element_tooltip (int x, int y, bool /*key*/,
     Glib::RefPtr<Gtk::Tooltip> const& tooltip)
 {
-  key = false;
-
   Gtk::TreeModel::Path path;
   Gtk::TreeViewDropPosition pos;
 

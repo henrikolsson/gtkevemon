@@ -33,9 +33,8 @@ WinBase::~WinBase (void)
 }
 
 inline bool
-WinBase::on_delete_event (GdkEventAny* event)
+WinBase::on_delete_event (GdkEventAny* /*event*/)
 {
-  event = 0;
   this->close();
   return false;
 }

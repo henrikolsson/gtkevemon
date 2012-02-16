@@ -195,9 +195,8 @@ GtkPortrait::cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait)
 /* ---------------------------------------------------------------- */
 
 bool
-GtkPortrait::on_button_press_myevent (GdkEventButton* event)
+GtkPortrait::on_button_press_myevent (GdkEventButton* /*event*/)
 {
-  event = 0;
   this->request_from_eve_online();
 
   Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();

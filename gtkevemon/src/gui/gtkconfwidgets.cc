@@ -167,7 +167,6 @@ GtkConfSectionSelection::on_combo_entry_changed (void)
   }
   else
   {
-    Gtk::ListStore::iterator iter = this->get_active();
     ConfSectionPtr section = this->get_active_section();
     this->sig_conf_section_changed.emit(section);
   }

@@ -1138,9 +1138,8 @@ GtkTrainingPlan::on_row_deleted (Gtk::TreePath const& path)
 
 void
 GtkTrainingPlan::on_row_activated (Gtk::TreeModel::Path const& path,
-    Gtk::TreeViewColumn* column)
+    Gtk::TreeViewColumn* /*column*/)
 {
-  column = 0; // Prevent warnings.
   Gtk::ListStore::iterator iter = this->liststore->get_iter(path);
   GtkSkillInfo& info = this->skills[(*iter)[this->cols.skill_index]];
   ApiSkill const* skill = info.skill;
