@@ -13,7 +13,15 @@
 #ifndef THREAD_HEADER
 #define THREAD_HEADER
 
-#if defined(_POSIX_THREADS) || defined(__SunOS)
+#if defined(__linux__) \
+    || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) \
+    || defined(__DragonFly__) \
+    || defined(__APPLE__) \
+    || defined(__SunOS)
+#  include <unistd.h> // for _POSIX_THREADS
+#endif
+
+#if defined(_POSIX_THREADS)
 #  include "thread_posix.h"
 #elif defined(WIN32)
 #  include "thread_win32.h"
