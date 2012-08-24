@@ -11,9 +11,8 @@ STEP 1: BUILDING
 
 GtkEveMon comes in form of source code. You can take a look at the
 code, it's all located in the "src/" directory. In order to execute
-it, it needs to be build.
-
-Execute the following command:
+it, it needs to be build. It does not come with a configure script.
+So just execute the following command:
 
 $ make multicore
 
@@ -48,10 +47,9 @@ To install GtkEveMon execute the following command (as super user):
 The files will be installed to "/usr/local/bin". If you want to change
 that, edit the Makefile.
 
-A version of the "SkillTree.xml" file is build into the binary.
-If you need to use a different version of the file, place it
-into "~/.gtkevemon" and it will be used.
-Ignore this if you don't know what I'm talking about.
+Configuration files as well as data files (SkillTree.xml and
+CertificateTree.xml) are placed in "~/.gtkevemon" whether you
+install GtkEveMon or not.
 
 
 OPTION: UNINSTALLING
