@@ -26,8 +26,9 @@ ServerChecker::run (void)
   {
     try
     {
-      if (!ServerList::list[i]->is_refreshing())
-        ServerList::list[i]->refresh();
+      ServerPtr server = ServerList::list[i];
+      if (!server->is_refreshing())
+        server->refresh();
     }
     catch (Exception& s)
     {
