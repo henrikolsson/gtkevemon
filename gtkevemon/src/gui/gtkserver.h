@@ -23,7 +23,7 @@
 class GtkServer : public Gtk::Table
 {
   private:
-    Server* server;
+    ServerPtr server;
 
     Gtk::Button status_but;
     Gtk::Label name;
@@ -34,7 +34,7 @@ class GtkServer : public Gtk::Table
     void set_status_icon (Gtk::BuiltinStockID const& id);
 
   public:
-    GtkServer (Server* server);
+    GtkServer (ServerPtr server);
     void update (void);
 };
 

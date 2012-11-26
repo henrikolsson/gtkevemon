@@ -11,18 +11,18 @@
 class GtkServerChecker : public Thread
 {
   private:
-    Server* server;
+    ServerPtr server;
 
   protected:
     void* run (void);
 
   public:
-    GtkServerChecker (Server* server);
+    GtkServerChecker (ServerPtr server);
 };
 
 /* ---------------------------------------------------------------- */
 
-GtkServerChecker::GtkServerChecker (Server* server)
+GtkServerChecker::GtkServerChecker (ServerPtr server)
 {
   this->server = server;
 }
@@ -47,7 +47,7 @@ GtkServerChecker::run (void)
 
 /* ================================================================ */
 
-GtkServer::GtkServer (Server* server)
+GtkServer::GtkServer (ServerPtr server)
   : Gtk::Table(2, 3, false)
 {
   this->server = server;

@@ -22,7 +22,7 @@
 class ServerList
 {
   public:
-    static std::vector<Server*> list;
+    static std::vector<ServerPtr> list;
 
   public:
     static void init_from_config (void);

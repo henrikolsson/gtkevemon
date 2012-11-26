@@ -17,6 +17,8 @@
 #include <stdint.h>
 #include <glibmm/dispatcher.h>
 
+#include "util/ref_ptr.h"
+
 /* Amount of seconds until server is declared as offline. */
 #define SERVER_TIMEOUT 5
 
@@ -64,6 +66,8 @@ class Server
 
     Glib::Dispatcher& signal_updated (void);
 };
+
+typedef ref_ptr<Server> ServerPtr;
 
 /* ---------------------------------------------------------------- */
 
