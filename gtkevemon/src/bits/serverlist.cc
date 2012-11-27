@@ -64,8 +64,6 @@ ServerList::init_from_config (void)
 void
 ServerList::unload (void)
 {
-  /*for (unsigned int i = 0; i < ServerList::list.size(); ++i)
-    delete ServerList::list[i];*/
   ServerList::list.clear();
 }
 
