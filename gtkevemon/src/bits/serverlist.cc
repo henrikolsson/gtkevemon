@@ -22,11 +22,13 @@ class ServerChecker : public Thread
 void*
 ServerChecker::run (void)
 {
-  for (unsigned int i = 0; i < ServerList::list.size(); ++i)
+  std::vector<ServerPtr> local = ServerList::list;
+
+  for (unsigned int i = 0; i < local.size(); ++i)
   {
     try
     {
-      ServerPtr server = ServerList::list[i];
+      ServerPtr server = local[i];
       if (!server->is_refreshing())
         server->refresh();
     }
