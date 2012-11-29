@@ -25,6 +25,9 @@
 /* Read N bytes from server to determine status. Don't mess with this. */
 #define SERVER_READ_BYTES 24
 
+class Server;
+typedef ref_ptr<Server> ServerPtr;
+
 /*
  * Class for checking if some EVE server is responsive. Also queries
  * the amount of players currently on that server. Only one server
@@ -66,8 +69,6 @@ class Server
 
     Glib::Dispatcher& signal_updated (void);
 };
-
-typedef ref_ptr<Server> ServerPtr;
 
 /* ---------------------------------------------------------------- */
 

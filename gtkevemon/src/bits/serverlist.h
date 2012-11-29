@@ -17,12 +17,14 @@
 #include <vector>
 #include <stdint.h>
 
+#include "util/thread.h"
 #include "server.h"
 
 class ServerList
 {
-  public:
+  private: 
     static std::vector<ServerPtr> list;
+    static Semaphore list_semaphore;
 
   public:
     static void init_from_config (void);
@@ -31,6 +33,8 @@ class ServerList
     static void add_server (std::string const& name,
         std::string const& host, uint16_t port = 26000);
     static void refresh (void);
+
+    static std::vector<ServerPtr> get_list(void);
 };
 
 #endif /* SERVER_LIST_HEADER */
