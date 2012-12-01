@@ -150,12 +150,11 @@ MainGui::MainGui (void)
   Gtk::HBox* server_box = Gtk::manage(new Gtk::HBox(false, 5));
   server_box->pack_start(*MK_LABEL0, true, true, 0);
   
-  std::vector<ServerPtr> servers = ServerList::get_list();
-  for (unsigned int i = 0; i < servers.size(); ++i)
+  for (unsigned int i = 0; i < ServerList::list.size(); ++i)
   {
-    GtkServer* server = Gtk::manage(new GtkServer(servers[i]));
+    GtkServer* server = Gtk::manage(new GtkServer(ServerList::list[i]));
     server_box->pack_start(*server, false, false, 0);
-    if (i != servers.size() - 1)
+    if (i != ServerList::list.size() - 1)
       server_box->pack_start(*MK_VSEP, false, false, 0);
     this->gtkserver.push_back(server);
   }
@@ -170,7 +169,7 @@ MainGui::MainGui (void)
    * box if there are no servers to monitor. */
   Gtk::VBox* server_info_box = Gtk::manage(new Gtk::VBox(false, 2));
   server_info_box->set_border_width(5);
-  if (servers.size() > 0)
+  if (ServerList::list.size() > 0)
   {
     server_info_box->pack_start(*server_box, false, false, 0);
     server_info_box->pack_start(*MK_HSEP, false, false, 0);

@@ -7,7 +7,6 @@
 #include "config.h"
 
 /* Static members. */
-Semaphore ServerList::list_semaphore;
 std::vector<ServerPtr> ServerList::list;
 
 /* ---------------------------------------------------------------- */
@@ -23,13 +22,12 @@ class ServerChecker : public Thread
 void*
 ServerChecker::run (void)
 {
-  std::vector<ServerPtr> local = ServerList::get_list();
   
-  for (unsigned int i = 0; i < local.size(); ++i)
+  for (unsigned int i = 0; i < ServerList::list.size(); ++i)
   {
+    ServerPtr server = ServerList::list[i];
     try
     {
-      ServerPtr server = local[i];
       if (!server->is_refreshing())
         server->refresh();
     }
@@ -65,17 +63,7 @@ ServerList::init_from_config (void)
 void
 ServerList::unload (void)
 {
-  try 
-  {
-    list_semaphore.wait();
-    ServerList::list.clear();
-    list_semaphore.post();
-  } 
-  catch (Exception& e)
-  {
-    list_semaphore.post();
-    throw e;
-  }
+  ServerList::list.clear();
 }
 
 /* ---------------------------------------------------------------- */
@@ -101,27 +89,4 @@ ServerList::refresh (void)
 
   ServerChecker* checker = new ServerChecker;
   checker->pt_create();
-}
-
-/* ---------------------------------------------------------------- */
-
-std::vector<ServerPtr> 
-ServerList::get_list(void)
-{
-  try 
-  {
-    list_semaphore.wait();
-
-    std::vector<ServerPtr> copy(list);
-
-    list_semaphore.post();
-
-    // actually it will be copied twice
-    return copy;
-  }
-  catch (Exception & e) 
-  {
-    list_semaphore.post();
-    throw e;
-  }
 }
