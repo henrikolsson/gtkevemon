@@ -1,0 +1,10 @@
+# hg ignore for gtkevemon
+
+# object files 
+gtkevemon/.*\.o$
+
+# orig from hg revert
+gtkevemon/.*\.orig$
+
+# end executable
+gtkevemon/src/gtkevemon

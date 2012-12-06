@@ -14,12 +14,7 @@ code, it's all located in the "src/" directory. In order to execute
 it, it needs to be build. It does not come with a configure script.
 So just execute the following command:
 
-$ make multicore
-
-The "multicore" argument is for faster compilation on multicore
-machines but it should also work if you don't have a multicore CPU.
-If it does not work, simply call "make" without arguments.
-
+$ make
 
 STEP 2: RUNNING
 =====================================================================
