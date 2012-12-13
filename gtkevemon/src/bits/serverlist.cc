@@ -14,22 +14,27 @@ std::vector<ServerPtr> ServerList::list;
 class ServerChecker : public Thread
 {
   private:
-    std::vector<ServerPtr> m_list;
+    std::vector<ServerPtr> server_list;
   protected:
     void* run (void);
   public:
-    ServerChecker(std::vector<ServerPtr> list) : m_list(list) {}
+    ServerChecker(std::vector<ServerPtr> const& server_list);
 };
 
 /* ---------------------------------------------------------------- */
+
+ServerChecker::ServerChecker(std::vector<ServerPtr> const& server_list)
+    : server_list(server_list)
+{
+}
 
 void*
 ServerChecker::run (void)
 {
   
-  for (unsigned int i = 0; i < m_list.size(); ++i)
+  for (unsigned int i = 0; i < this->server_list.size(); ++i)
   {
-    ServerPtr server = m_list[i];
+    ServerPtr server = this->server_list[i];
     try
     {
       if (!server->is_refreshing())
