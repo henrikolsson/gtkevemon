@@ -11,3 +11,6 @@ gtkevemon/src/gtkevemon
 
 # etags
 gtkevemon/TAGS
+
+# netbeans project
+gtkevemon/nbproject/.*

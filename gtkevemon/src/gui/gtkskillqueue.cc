@@ -10,6 +10,7 @@
 #include "gtkhelpers.h"
 #include "gtkdefines.h"
 #include "gtkskillqueue.h"
+#include "guiskill.h"
 
 GtkSkillQueueViewCols::GtkSkillQueueViewCols (Gtk::TreeView* view,
     GtkSkillQueueColumns* cols)
@@ -64,6 +65,9 @@ GtkSkillQueue::GtkSkillQueue (void)
   //this->queue_view_cols.set_format("+0 +1 +2 +3 +4 +5 +6 +7");
   this->init_from_config();
   this->queue_view_cols.setup_columns_normal();
+  
+  this->queue_view.signal_row_activated().connect(sigc::mem_fun
+                (*this, &GtkSkillQueue::on_row_activated));
 }
 
 /* ---------------------------------------------------------------- */
@@ -164,6 +168,7 @@ GtkSkillQueue::on_apidata_available (void)
         = EveTime::get_string_for_timediff(duration, true);
     row[this->queue_cols.training]
         = EveTime::get_string_for_timediff(training, true);
+    row[this->queue_cols.skill_id] = item.skill_id;
   }
 }
 
@@ -204,4 +209,20 @@ GtkSkillQueue::raise_error (std::string const& error, bool cached)
       "The error message is:\n\n" + GtkHelpers::locale_to_utf8(error));
   md.set_title("Error - GtkEveMon");
   md.run();
+}
+
+void GtkSkillQueue::on_row_activated(Gtk::TreeModel::Path const& path,
+    Gtk::TreeViewColumn* /*col*/)
+{
+  Gtk::TreeModel::iterator iter = this->queue_store->get_iter(path);
+  
+  Gtk::TreeModel::Row row = *iter;
+  
+  int skill_id = row[this->queue_cols.skill_id];
+   
+  if (skill_id >= 0)
+  {
+    GuiSkill* skillgui = new GuiSkill();
+    skillgui->set_skill(skill_id);
+  }
 }

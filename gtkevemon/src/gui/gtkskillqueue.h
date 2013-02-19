@@ -33,7 +33,8 @@ class GtkSkillQueueColumns : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<Glib::ustring> end_time;
     Gtk::TreeModelColumn<Glib::ustring> duration;
     Gtk::TreeModelColumn<Glib::ustring> training;
-
+    Gtk::TreeModelColumn<int> skill_id;
+    
     GtkSkillQueueColumns (void);
 };
 
@@ -50,6 +51,7 @@ class GtkSkillQueueViewCols : public GtkColumnsBase
     Gtk::TreeView::Column end_time;
     Gtk::TreeView::Column duration;
     Gtk::TreeView::Column training;
+    Gtk::TreeView::Column skill_id;
 
     GtkSkillQueueViewCols (Gtk::TreeView* view, GtkSkillQueueColumns* cols);
 };
@@ -72,6 +74,8 @@ class GtkSkillQueue : public Gtk::VBox
     void raise_error (std::string const& error, bool cached);
     void init_from_config (void);
     void store_to_config (void);
+    void on_row_activated (Gtk::TreeModel::Path const& path,
+        Gtk::TreeViewColumn* col);
 
   public:
     GtkSkillQueue (void);
@@ -95,6 +99,7 @@ GtkSkillQueueColumns::GtkSkillQueueColumns (void)
   this->add(this->end_time);
   this->add(this->duration);
   this->add(this->training);
+  this->add(this->skill_id);
 }
 
 #endif /* GTK_SKILL_QUEUE_HEADER */
