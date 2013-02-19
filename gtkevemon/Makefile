@@ -3,6 +3,9 @@ INSTALL_BIN = /usr/local/bin
 all:
 	$(MAKE) -C src
 
+debug:
+	$(MAKE) -C src debug
+
 clean:
 	$(MAKE) -C src clean
 

@@ -8,3 +8,6 @@ gtkevemon/.*\.orig$
 
 # end executable
 gtkevemon/src/gtkevemon
+
+# etags
+gtkevemon/TAGS

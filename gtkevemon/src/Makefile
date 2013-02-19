@@ -9,7 +9,11 @@ endif
 #include Makefile.$(PLATFORM)
 
 # Compiler options, flags, and libraries
-GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic -Os #-g
+GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic -Os
+ifeq ($(DEBUG),1)
+  GCC_FLAGS += -g -DDEBUG
+endif
+
 GCC_INCL = -I.
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
@@ -87,6 +91,9 @@ DEPENDENCIES = $(foreach file,$(SOURCES),$(subst .cc,.DEP,$(file)))
 
 all:
 	$(MAKE) -j${CORES} gtkevemon
+
+debug:
+	$(MAKE) -j${CORES} DEBUG=1 gtkevemon
 
 gtkevemon: ${OBJECTS}
 	${CXX} -o ${BINARY} ${OBJECTS} ${LDFLAGS}

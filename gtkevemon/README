@@ -16,6 +16,10 @@ So just execute the following command:
 
 $ make
 
+To build a debug version simple run
+
+$ make debug
+
 STEP 2: RUNNING
 =====================================================================
 
