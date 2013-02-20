@@ -9,11 +9,10 @@ endif
 #include Makefile.$(PLATFORM)
 
 # Compiler options, flags, and libraries
-GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic
-ifeq ($(DEBUG),1)
-  GCC_FLAGS += -g -DDEBUG
-else
-  GCC_FLAGS += -Os
+GCC_FLAGS = -Wall -Wextra -ansi -Wundef -Wconversion -pedantic -Os
+ifdef DEBUG
+    GCC_FLAGS := $(filter-out -Os,$(GCC_FLAGS))
+    GCC_FLAGS += -g
 endif
 
 GCC_INCL = -I.
