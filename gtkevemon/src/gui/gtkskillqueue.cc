@@ -65,7 +65,7 @@ GtkSkillQueue::GtkSkillQueue (void)
   //this->queue_view_cols.set_format("+0 +1 +2 +3 +4 +5 +6 +7");
   this->init_from_config();
   this->queue_view_cols.setup_columns_normal();
-  
+
   this->queue_view.signal_row_activated().connect(sigc::mem_fun
                 (*this, &GtkSkillQueue::on_row_activated));
 }

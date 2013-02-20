@@ -129,7 +129,7 @@ GuiSkill::set_skill (int skill_id)
     return;
   }
   this->group_name.set_text(group->name);
-  
+
   this->set_title("Skill Details : " + skill->name + " ("
       + Helpers::get_string_from_int(skill->rank) + ")");
 }
