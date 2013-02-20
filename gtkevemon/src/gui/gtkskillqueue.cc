@@ -215,11 +215,8 @@ void GtkSkillQueue::on_row_activated(Gtk::TreeModel::Path const& path,
     Gtk::TreeViewColumn* /*col*/)
 {
   Gtk::TreeModel::iterator iter = this->queue_store->get_iter(path);
-  
   Gtk::TreeModel::Row row = *iter;
-  
   int skill_id = row[this->queue_cols.skill_id];
-   
   if (skill_id >= 0)
   {
     GuiSkill* skillgui = new GuiSkill();

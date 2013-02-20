@@ -34,7 +34,7 @@ class GtkSkillQueueColumns : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<Glib::ustring> duration;
     Gtk::TreeModelColumn<Glib::ustring> training;
     Gtk::TreeModelColumn<int> skill_id;
-    
+
     GtkSkillQueueColumns (void);
 };
 
