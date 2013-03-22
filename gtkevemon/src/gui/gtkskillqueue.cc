@@ -55,6 +55,8 @@ GtkSkillQueue::GtkSkillQueue (void)
   /* Setup EVE API fetcher. */
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
   scwin->add(this->queue_view);
+  scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+  scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
 
   this->queue_view_cols.position.signal_clicked().connect(sigc::mem_fun
       (this->queue_view_cols, &GtkColumnsBase::toggle_edit_context));
