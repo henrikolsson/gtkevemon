@@ -1,0 +1,16 @@
+# git ignore for gtkevemon
+
+# object files 
+.*\.o$
+
+# orig from hg revert
+.*\.orig$
+
+# end executable
+src/gtkevemon
+
+# etags
+TAGS
+
+# netbeans project
+nbproject/.*
