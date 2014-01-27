@@ -218,7 +218,7 @@ GtkSkillBrowser::fill_store (void)
   bool only_unknown = (active_row_num == CB_FILTER_SKILL_UNKNOWN);
   bool only_partial = (active_row_num == CB_FILTER_SKILL_PARTIAL);
   bool only_enabled = (active_row_num == CB_FILTER_SKILL_ENABLED);
-  bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN);
+  bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN) || (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
   bool only_known_but_v = (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
   std::string unpublished_cfg("planner.show_unpublished_skills");
   bool only_published = !Config::conf.get_value(unpublished_cfg)->get_bool();
