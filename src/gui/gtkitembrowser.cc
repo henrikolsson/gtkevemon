@@ -279,7 +279,7 @@ GtkSkillBrowser::fill_store (void)
         continue;
       
       /* The skill is known and already trained to level v */
-      if (only_known_but_v & cskill->level == 5)
+      if (only_known_but_v && cskill->level == 5)
         continue;
 
       switch (cskill->level)
