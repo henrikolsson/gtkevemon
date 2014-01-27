@@ -141,7 +141,8 @@ enum ComboBoxSkillFilter
   CB_FILTER_SKILL_UNKNOWN,
   CB_FILTER_SKILL_PARTIAL,
   CB_FILTER_SKILL_ENABLED,
-  CB_FILTER_SKILL_KNOWN
+  CB_FILTER_SKILL_KNOWN,
+  CB_FILTER_SKILL_KNOWN_BUT_V
 };
 
 GtkSkillBrowser::GtkSkillBrowser (void)
@@ -154,6 +155,7 @@ GtkSkillBrowser::GtkSkillBrowser (void)
   this->filter_cb.append_text("Only show partial skills");
   this->filter_cb.append_text("Only show enabled skills");
   this->filter_cb.append_text("Only show known skills");
+  this->filter_cb.append_text("Only show known skills not at V");
   this->filter_cb.set_active(0);
 
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
@@ -217,6 +219,7 @@ GtkSkillBrowser::fill_store (void)
   bool only_partial = (active_row_num == CB_FILTER_SKILL_PARTIAL);
   bool only_enabled = (active_row_num == CB_FILTER_SKILL_ENABLED);
   bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN);
+  bool only_known_but_v = (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
   std::string unpublished_cfg("planner.show_unpublished_skills");
   bool only_published = !Config::conf.get_value(unpublished_cfg)->get_bool();
 
@@ -273,6 +276,10 @@ GtkSkillBrowser::fill_store (void)
 
       /* Check if the skill is partially trained. */
       if (only_partial && cskill->points == cskill->points_start)
+        continue;
+      
+      /* The skill is known and already trained to level v */
+      if (only_known_but_v & cskill->level == 5)
         continue;
 
       switch (cskill->level)
