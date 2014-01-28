@@ -23,7 +23,7 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
     ss << "Name: " << skill->name << "\n";
 
   ss << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
-      << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\n";
+     << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\nRank: " << skill->rank << "\n";
 
   if (cskill != 0 && cskill->level != 5)
   {
