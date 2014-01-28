@@ -142,7 +142,12 @@ enum ComboBoxSkillFilter
   CB_FILTER_SKILL_PARTIAL,
   CB_FILTER_SKILL_ENABLED,
   CB_FILTER_SKILL_KNOWN,
-  CB_FILTER_SKILL_KNOWN_BUT_V
+  CB_FILTER_SKILL_KNOWN_BUT_V,
+  CB_FILTER_SKILL_PRIMARY_INTELLIGENCE,
+  CB_FILTER_SKILL_PRIMARY_MEMORY,
+  CB_FILTER_SKILL_PRIMARY_CHARISMA,
+  CB_FILTER_SKILL_PRIMARY_PERCEPTION,
+  CB_FILTER_SKILL_PRIMARY_WILLPOWER
 };
 
 GtkSkillBrowser::GtkSkillBrowser (void)
@@ -156,6 +161,11 @@ GtkSkillBrowser::GtkSkillBrowser (void)
   this->filter_cb.append_text("Only show enabled skills");
   this->filter_cb.append_text("Only show known skills");
   this->filter_cb.append_text("Only show known skills not at V");
+  this->filter_cb.append_text("Only show primary intelligence skills");
+  this->filter_cb.append_text("Only show primary memory skills");
+  this->filter_cb.append_text("Only show primary charisma skills");
+  this->filter_cb.append_text("Only show primary perception skills");
+  this->filter_cb.append_text("Only show primary willpower skills");
   this->filter_cb.set_active(0);
 
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
@@ -220,6 +230,7 @@ GtkSkillBrowser::fill_store (void)
   bool only_enabled = (active_row_num == CB_FILTER_SKILL_ENABLED);
   bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN) || (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
   bool only_known_but_v = (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
+  ApiAttrib primary = (active_row_num >= CB_FILTER_SKILL_PRIMARY_INTELLIGENCE && active_row_num <= CB_FILTER_SKILL_PRIMARY_WILLPOWER) ? (ApiAttrib)(active_row_num-CB_FILTER_SKILL_PRIMARY_INTELLIGENCE) : API_ATTRIB_UNKNOWN;
   std::string unpublished_cfg("planner.show_unpublished_skills");
   bool only_published = !Config::conf.get_value(unpublished_cfg)->get_bool();
 
@@ -250,6 +261,10 @@ GtkSkillBrowser::fill_store (void)
 
     if (cskill == 0)
     {
+      if (primary!=API_ATTRIB_UNKNOWN)
+        if (skill.primary != primary)
+          continue;
+
       /* The skill is unknown. */
       if (only_known || only_partial)
         continue;
@@ -270,6 +285,10 @@ GtkSkillBrowser::fill_store (void)
     }
     else
     {
+      if (primary!=API_ATTRIB_UNKNOWN)
+        if (skill.primary != primary)
+          continue;
+
       /* The skill is known. */
       if (only_unknown || only_enabled)
         continue;
