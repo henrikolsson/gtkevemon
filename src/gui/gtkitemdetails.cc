@@ -331,6 +331,7 @@ GtkDependencyList::on_query_element_tooltip (int x, int y, bool /*key*/,
   if (elem == 0)
     return false;
 
+  this->deps_view.set_tooltip_row(tooltip, path); /* Reposition tooltip. */
   switch (elem->get_type())
   {
     case API_ELEM_SKILL:

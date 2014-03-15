@@ -127,17 +127,17 @@ GtkHelpers::create_tooltip_from_view (int x, int y,
 {
   Gtk::TreeModel::Path path;
   Gtk::TreeViewDropPosition pos;
-
   bool exists = view.get_dest_row_at_pos(x, y, path, pos);
-
   if (!exists)
     return false;
 
   Gtk::TreeIter iter = store->get_iter(path);
   ApiElement const* elem = (*iter)[col];
-
   if (elem == 0)
     return false;
+
+  /* Reposition tooltip. */
+  view.set_tooltip_row(tip, path);
 
   switch (elem->get_type())
   {

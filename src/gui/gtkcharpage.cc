@@ -923,9 +923,7 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool /*key*/,
 {
   Gtk::TreeModel::Path path;
   Gtk::TreeViewDropPosition pos;
-
   bool exists = this->skill_view.get_dest_row_at_pos(x, y, path, pos);
-
   if (!exists)
     return false;
 
@@ -936,6 +934,7 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool /*key*/,
   if (skill_id < 0 || cskill == 0)
     return false;
 
+  this->skill_view.set_tooltip_row(tooltip, path);  /* Reposition tooltip. */
   GtkHelpers::create_tooltip(tooltip, cskill->details, cskill, this->character);
   return true;
 }
