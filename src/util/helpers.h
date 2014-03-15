@@ -44,6 +44,8 @@ class Helpers
     static StringVector tokenize_cmd (std::string const& str);
     static char** create_argv (std::vector<std::string> const& cmd);
     static void delete_argv (char** argv);
+    static void read_file (std::string const& filename, std::string* data);
+    static void write_file (std::string const& filename, std::string const& data);
 };
 
 #endif /* HELPERS_HEADER */

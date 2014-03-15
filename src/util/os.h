@@ -30,6 +30,7 @@ public:
   // TODO: define modes for mkdir() for all platforms?
   static bool  mkdir(char const* pathname/*, mode_t mode*/);
   static bool  unlink(char const* pathname);
+  static std::size_t file_size (char const* pathname);
 
   /* Time interface. */
   static char* strptime (const char *buf, const char *fmt, struct tm *tm);

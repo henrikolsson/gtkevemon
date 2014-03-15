@@ -101,6 +101,17 @@ OS::unlink(char const* pathname)
 
 /* ---------------------------------------------------------------- */
 
+std::size_t
+OS::file_size(char const* pathname)
+{
+  struct stat filestats;
+  if (::stat(pathname, &filestats) < 0)
+    return 0;
+  return static_cast<std::size_t>(filestats.st_size);
+}
+
+/* ---------------------------------------------------------------- */
+
 char*
 OS::strptime(const char *buf, const char *fmt, struct tm *tm)
 {
@@ -124,5 +135,5 @@ OS::timegm(struct tm *tm)
 int
 OS::execv (char const* path, char* const argv[])
 {
-	return ::execv(path, argv);
+    return ::execv(path, argv);
 }

@@ -17,10 +17,10 @@
 #include "net/networking.h"
 #include "api/evetime.h"
 #include "bits/argumentsettings.h"
-#include "bits/versionchecker.h"
 #include "bits/serverlist.h"
 #include "bits/config.h"
 #include "bits/server.h"
+#include "bits/updater.h"
 #include "gui/imagestore.h"
 #include "gui/maingui.h"
 
@@ -49,7 +49,7 @@ main (int argc, char* argv[])
 
   ImageStore::init();
 
-  VersionChecker::check_data_files();
+  Updater::check_data_files();
 
   ServerList::init_from_config();
   EveTime::init_from_config();

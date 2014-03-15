@@ -27,10 +27,11 @@
 struct DownloadItem
 {
   std::string name;
-  std::string url;
+  std::string host;
+  std::string path;
+  bool is_api_call;
 
   DownloadItem (void);
-  DownloadItem (std::string const& name, std::string const& url);
 };
 
 /* ---------------------------------------------------------------- */
@@ -72,13 +73,6 @@ class GtkDownloader : public Gtk::Frame
 inline
 DownloadItem::DownloadItem (void)
 {
-}
-
-inline
-DownloadItem::DownloadItem (std::string const& name, std::string const& url)
-{
-  this->name = name;
-  this->url = url;
 }
 
 inline void

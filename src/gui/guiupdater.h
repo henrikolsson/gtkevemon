@@ -10,28 +10,23 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUI_VERSION_CHECKER_HEADER
-#define GUI_VERSION_CHECKER_HEADER
+#ifndef GUI_UPDATER_HEADER
+#define GUI_UPDATER_HEADER
 
-#include <vector>
 #include <gtkmm/button.h>
 #include <gtkmm/box.h>
-#include <gtkmm/window.h>
 
-#include "util/exception.h"
+#include "bits/updater.h"
 #include "net/asynchttp.h"
-#include "bits/versionchecker.h"
-#include "winbase.h"
 #include "gtkdownloader.h"
+#include "winbase.h"
 
-class GuiVersionChecker : public VersionCheckerBase, public WinBase
+class GuiUpdater : public WinBase, public UpdaterBase
 {
   private:
     bool startup_mode;
     bool is_updated;
-
-    VersionInformation version_info;
-    std::vector<VersionInfoFile> update_list;
+    bool download_error;
 
     GtkDownloader downloader;
     Gtk::Button* close_but;
@@ -41,18 +36,15 @@ class GuiVersionChecker : public VersionCheckerBase, public WinBase
   protected:
     void rebuild_files_box (void);
     void on_update_clicked (void);
-    void on_update_done (void);
     void on_close_clicked (void);
     void on_config_clicked (void);
     void on_download_done (DownloadItem dl, AsyncHttpData data);
+    void on_update_done (void);
+    void append_ui_info (std::string const& message);
 
   public:
-    GuiVersionChecker (bool startup_mode = false);
-    ~GuiVersionChecker (void);
-
-    void handle_version_info (VersionInformation& vi);
-    void handle_version_error (Exception& e);
-    void request_versions (void);
+    GuiUpdater (bool startup_mode);
+    ~GuiUpdater (void);
 };
 
-#endif /* GUI_VERSION_CHECKER_HEADER */
+#endif /* GUI_UPDATER_HEADER */

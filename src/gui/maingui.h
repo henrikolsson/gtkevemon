@@ -23,7 +23,7 @@
 #include "util/conf.h"
 #include "bits/character.h"
 #include "bits/characterlist.h"
-#include "bits/versionchecker.h"
+#include "bits/updater.h"
 #include "gtkinfodisplay.h"
 #include "gtkserver.h"
 
@@ -41,7 +41,7 @@ class MainGui : public Gtk::Window
   private:
     ConfValuePtr conf_windowtitle;
     ConfValuePtr conf_detailed_tooltip;
-    VersionChecker versionchecker;
+    Updater* updater;
     std::vector<GtkServer*> gtkserver;
     Glib::RefPtr<Gtk::ActionGroup> actions;
     Glib::RefPtr<Gtk::UIManager> uiman;
@@ -60,6 +60,8 @@ class MainGui : public Gtk::Window
 
     void on_pages_changed (Gtk::Widget* widget, guint pnum);
     void on_pages_switched (GtkNotebookPage* page, guint pnum);
+    void on_data_files_changed (void);
+    void on_data_files_unchanged (void);
     void check_if_no_pages (void);
 
     /* Update handlers. */

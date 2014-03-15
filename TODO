@@ -1,3 +1,36 @@
+Updater
+-------
+ - Create new config section [DONE]
+   - [updater]
+   - autocheck = true/false
+   - autocheck_interval = 1 week
+   - last_update = <date>
+
+ - Change config UI [DONE]
+   - Automatically check for updated data files
+
+ - Create new class bits/updater.h/cc
+   - Checks if files are locally available, if not launches GuiUpdater [DONE]
+     This should be a static function called from gtkevemon.cc
+   - Checks if autocheck_interval is expired (member of MainGui) [DONE]
+     - If expired, download SkillTree and CertTree in background [DONE]
+     - After download, checks for changes [DONE]
+     - Either fire download_finished or files_changed signal [DONE]
+     - In MainGui: Display message that data files have been updated [DONE]
+
+ - Create new UI class gui/gtkupdater.h/cc  [DONE]
+   - similar to current versionchecker UI  [DONE]
+   - Show the two data files, size and last updated [DONE]
+
+ - Cleanup
+   - Remove ItemTree from update UI  [DONE]
+   - Get rid of the datafiles directory
+   - Remove bits/versionchecker.* [DONE]
+     - Remove from gtkevemon.cc [DONE]
+     - Remove from maingui.cc [DONE]
+   - Remove notification about new GtkEveMon versions [DONE]
+   - Remove dependency on zlib
+
 User interface
 --------------
  - Make links clickable (about dialog)
@@ -9,70 +42,13 @@ User interface
  - Display skill queue / account information in GUI !!!
  - Tray icon when skill queue below some time (24h?) !!!
 
-
 Skill Browser / Planner
 -----------------------
  - Add "Skill Group" column?
  - Priorities?
  - Move multiple skills at once!
+ - Copy/Paste of skills between plans
 
  - Optional:
    - Subplan
    - Enabled skills through training
-
-
-Replace SkillInTraining.xml with SkillQueue.xml
------------------------------------------------
-
- - Get both documents all of the following cases
-   - Skill queue populated, skill is in training
-   - Skill queue populated, training is paused
-   - Skill queue is empty, no skill in training
-     Documents are similar, SIT has <skillInTraining>0</skillInTraining>
-     where SQ has an empty rowset.
-
- - What is "holds_completed" in ApiInTraining good for?
-   - If SIT holds a completed skill, character is updated (skill and SP added)
-   - If training finishes, holds_completed = true and reprocess API data
-
-
-
-Remove SkillInTraining.xml
---------------------------
- - Requires to update a lot of stuff
-
-   - Update GtkCharSheet
-     - Change training_fetcher to skillqueue fetcher
-     - Change trainsheet_info_label to skillqueue_info_label
-     - Change training (sheet) to skillqueue
-
-   - Update GuiSkillPlanner
-     - Simply forward the queue sheet instead of training sheet
-
-   - Update GtkTrainingPlan
-     - GtkSkillList
-       - Requires valid, in_training
-       - Requires skill_id, to_level, end_time
-       - Update GtkSkillIcon or add "bool inqueue"
-     - GtkTraininPlan
-       - Simply forwards the sheet
-       - Update icons
-
-   - Update notifier
-     - It simiply requires skill_id and to_level
-
-   - Update Skill Queue GUI
-     - Sheets needs to be passed
-     - Pay attention to training times
-
-
-Notifications
--------------
- - Notification a few miniutes before actual finish
- - Notification before skill queue finishes !!!
- - Notification when subscription ends?
-
-
-Skill / Certificate Browser
----------------------------
- - History: Check if element is in history, move to the end of history

@@ -42,7 +42,7 @@ SSLTCPSocket::ssl_handshake (void)
     this->sbio = BIO_new_socket(this->sock, BIO_NOCLOSE);
     SSL_set_bio(ssl, this->sbio, this->sbio);
 
-    std::cout << "Establishing SSL connection..." << std::endl;
+    //std::cout << "Establishing SSL connection..." << std::endl;
 
     /* Connect to host (initialize handshake). */
     int sslret = SSL_connect(this->ssl);

@@ -64,8 +64,9 @@ GtkDownloader::start_next_download (void)
   this->filename_label.set_use_markup(true);
 
   this->asynchttp = AsyncHttp::create();
-  this->asynchttp->set_url(dli.url);
-  Config::setup_http(this->asynchttp);
+  this->asynchttp->set_host(dli.host);
+  this->asynchttp->set_path(dli.path);
+  Config::setup_http(this->asynchttp, dli.is_api_call);
 
   this->asynchttp->signal_done().connect(sigc::mem_fun
       (*this, &GtkDownloader::on_download_complete));

@@ -51,9 +51,9 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_versioncheck_cb = Gtk::manage
       (new GtkConfCheckButton("Notify about new SVN and data file versions",
       false, "versionchecker.enabled"));
-  GtkConfCheckButton* misc_raise_update_gui_cb = Gtk::manage
-      (new GtkConfCheckButton("Automatically raise update GUI for data files",
-      false, "versionchecker.raise_updater"));
+  GtkConfCheckButton* misc_updater_autocheck = Gtk::manage
+      (new GtkConfCheckButton("Automatically check for updated data files",
+      false, "updater.autocheck"));
 
   Gtk::VBox* misc_cb_box = MK_VBOX0;
   misc_cb_box->pack_start(*misc_min_on_close_cb, false, false, 0);
@@ -63,7 +63,7 @@ GuiConfiguration::GuiConfiguration (void)
   misc_cb_box->pack_start(*misc_trunc_long_corp_name_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_show_unpublished_skills_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_versioncheck_cb, false, false, 0);
-  misc_cb_box->pack_start(*misc_raise_update_gui_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_updater_autocheck, false, false, 0);
 
   Gtk::VBox* page_misc = MK_VBOX;
   page_misc->set_border_width(5);

@@ -3,13 +3,14 @@
 #include <iostream>
 #include <vector>
 
+#include "util/os.h"
 #include "util/helpers.h"
 #include "util/exception.h"
 #include "bits/config.h"
 #include "xml.h"
 #include "apicerttree.h"
 
-#define CERTTREE_FN "CertificateTree.xml.gz"
+#define CERTTREE_FN "CertificateTree.xml"
 
 ApiCertTreePtr ApiCertTree::instance;
 
@@ -31,8 +32,6 @@ ApiCertTree::request (void)
 
 ApiCertTree::ApiCertTree (void)
 {
-  /* Default version is zero - means the data is not initialized. */
-  this->version = 0;
 }
 
 /* ---------------------------------------------------------------- */
@@ -40,34 +39,27 @@ ApiCertTree::ApiCertTree (void)
 void
 ApiCertTree::refresh (void)
 {
-  /* Try a series of possible file names. */
-  std::vector<std::string> filenames;
-  filenames.push_back("../xml/" CERTTREE_FN);
-  filenames.push_back(CERTTREE_FN);
-  filenames.push_back(Config::get_conf_dir() + "/" CERTTREE_FN);
-
-  for (unsigned int i = 0; i < filenames.size(); ++i)
+  try
   {
-    try
-    {
-      this->parse_xml(filenames[i]);
-      //this->debug_dump();
-      return;
-    }
-    catch (FileException& e)
-    {
-      /* Ignore file exception. File is probably just not there. */
-    }
-    catch (Exception& e)
-    {
-      /* Parse error occured. Report this. */
-      std::cout << std::endl << "XML error: " << e << std::endl;
-    }
+    this->parse_xml(this->get_filename());
+    return;
+  }
+  catch (Exception& e)
+  {
+    /* Parse error occured. Report this. */
+    std::cout << std::endl << "XML error: " << e << std::endl;
   }
 
-  std::cout << "Seeking XML: " << CERTTREE_FN
-      << " not found. Shutdown!" << std::endl;
+  std::cout << "Seeking XML: " CERTTREE_FN " not found. EXIT!" << std::endl;
   std::exit(EXIT_FAILURE);
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+ApiCertTree::get_filename (void) const
+{
+  return Config::get_conf_dir() + "/" CERTTREE_FN;
 }
 
 /* ---------------------------------------------------------------- */
@@ -79,20 +71,16 @@ ApiCertTree::parse_xml (std::string const& filename)
   XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
   xmlNodePtr root = xml->get_root_element();
 
-  std::cout << "Parsing XML: " CERTTREE_FN " ...";
+  std::cout << "Parsing XML: " CERTTREE_FN "... ";
   std::cout.flush();
 
   /* Document was parsed. Reset information. */
   this->certificates.clear();
   this->categories.clear();
   this->classes.clear();
-  this->version = 0;
 
   this->parse_eveapi_tag(root);
-
-  std::cout << " Version " << this->version
-      << (this->version == 0 ? " (not set)" : "")
-      << ", " << this->certificates.size() << " certs." << std::endl;
+  std::cout << this->certificates.size() << " certs." << std::endl;
 }
 
 /* ---------------------------------------------------------------- */
@@ -104,14 +92,7 @@ ApiCertTree::parse_eveapi_tag (xmlNodePtr node)
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
     throw Exception("Invalid tag. Expecting <eveapi> node");
 
-  /* Try to get version information from the file. This will only
-   * work if it's a CertificateTree.xml that is prepared for GtkEveMon. */
-  try
-  { this->version = this->get_property_int(node, "dataVersion"); }
-  catch (...)
-  { }
-
-  /* Look for the result and version tag. */
+  /* Look for the result tag. */
   for (node = node->children; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE

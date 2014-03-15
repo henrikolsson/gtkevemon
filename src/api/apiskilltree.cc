@@ -9,7 +9,7 @@
 #include "xml.h"
 #include "apiskilltree.h"
 
-#define SKILLTREE_FN "SkillTree.xml.gz"
+#define SKILLTREE_FN "SkillTree.xml"
 
 ApiSkillTreePtr ApiSkillTree::instance;
 
@@ -31,8 +31,6 @@ ApiSkillTree::request (void)
 
 ApiSkillTree::ApiSkillTree (void)
 {
-  /* Default version is zero - means the data is not initialized. */
-  this->version = 0;
 }
 
 /* ---------------------------------------------------------------- */
@@ -40,32 +38,27 @@ ApiSkillTree::ApiSkillTree (void)
 void
 ApiSkillTree::refresh (void)
 {
-  /* Try a series of possible file names. */
-  std::vector<std::string> filenames;
-  filenames.push_back("../xml/" SKILLTREE_FN);
-  filenames.push_back(SKILLTREE_FN);
-  filenames.push_back(Config::get_conf_dir() + "/" SKILLTREE_FN);
-
-  for (unsigned int i = 0; i < filenames.size(); ++i)
+  try
   {
-    try
-    {
-      this->parse_xml(filenames[i]);
-      return;
-    }
-    catch (FileException& e)
-    {
-      /* Ignore file exception. File is probably just not there. */
-    }
-    catch (Exception& e)
-    {
-      /* Parse error occured. Report this. */
-      std::cout << std::endl << "XML error: " << e << std::endl;
-    }
+    this->parse_xml(this->get_filename());
+    return;
+  }
+  catch (Exception& e)
+  {
+    /* Parse error occured. Report this. */
+    std::cout << std::endl << "XML error: " << e << std::endl;
   }
 
   std::cout << "Seeking XML: " SKILLTREE_FN " not found. EXIT!" << std::endl;
   std::exit(EXIT_FAILURE);
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+ApiSkillTree::get_filename (void) const
+{
+  return Config::get_conf_dir() + "/" SKILLTREE_FN;
 }
 
 /* ---------------------------------------------------------------- */
@@ -77,18 +70,13 @@ ApiSkillTree::parse_xml (std::string const& filename)
   XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
   xmlNodePtr root = xml->get_root_element();
 
-  std::cout << "Parsing XML: " SKILLTREE_FN " ..." << std::flush;
+  std::cout << "Parsing XML: " SKILLTREE_FN "... " << std::flush;
 
   /* Document was parsed. Reset information. */
   this->skills.clear();
   this->groups.clear();
-  this->version = 0;
-
   this->parse_eveapi_tag(root);
-
-  std::cout << " Version " << this->version
-      << (this->version == 0 ? " (not set)" : "")
-      << ", " << this->skills.size() << " skills." << std::endl;
+  std::cout << this->skills.size() << " skills." << std::endl;
 }
 
 /* ---------------------------------------------------------------- */
@@ -100,14 +88,7 @@ ApiSkillTree::parse_eveapi_tag (xmlNodePtr node)
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
     throw Exception("Invalid tag. Expecting <eveapi> node");
 
-  /* Try to get version information from the file. This will only
-   * work if it's a SkillTree.xml that is prepared for GtkEveMon. */
-  try
-  { this->version = this->get_property_int(node, "dataVersion"); }
-  catch (...)
-  { }
-
-  /* Look for the result and version tag. */
+  /* Look for the result tag. */
   for (node = node->children; node != 0; node = node->next)
   {
     if (node->type != XML_ELEMENT_NODE)

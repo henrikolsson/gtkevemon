@@ -54,13 +54,10 @@ char const* default_config =
     "  verbose_wintitle = true\n"
     "[skillqueue]\n"
     "  columns_format = +0 +1 -2 -3 -4 +5 -6 +7\n"
-    "[versionchecker]\n"
-    "  enabled = true\n"
-    "  raise_updater = true\n"
-    "[versionchecker.datafiles]\n"
-    "  CertificateTree.xml.gz = \n"
-    "  SkillTree.xml.gz = \n"
-    "[versionchecker.last_seen]\n";
+    "[updater]\n"
+    "  autocheck = true\n"
+    "  check_interval = 604800\n"
+    "  last_update = 0\n";
 
 /* The initial configuration is loaded once if the configuration
  * file is created for the first time. Thus it initializes the

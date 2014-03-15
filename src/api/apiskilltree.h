@@ -87,13 +87,14 @@ class ApiSkillTree : public ApiBase
     void set_attribute (ApiAttrib& var, std::string const& str);
 
   public:
+    std::string filename;
     ApiSkillMap skills;
     ApiSkillGroupMap groups;
-    int version;
 
   public:
     static ApiSkillTreePtr request (void);
     void refresh (void);
+    std::string get_filename (void) const;
 
     ApiSkill const* get_skill_for_id (int id) const;
     ApiSkill const* get_skill_for_name (std::string const& name) const;

@@ -83,13 +83,15 @@ class ApiCertTree : public ApiBase
     void parse_certificate_row (ApiCert* cert, xmlNodePtr node);
 
   public:
+    std::string filename;
     ApiCertMap certificates;
     ApiCertCategoryMap categories;
     ApiCertClassMap classes;
-    int version;
 
   public:
     static ApiCertTreePtr request (void);
+    void refresh (void);
+    std::string get_filename (void) const;
 
     ApiCertClass const* get_class_for_id (int id) const;
     ApiCertCategory const* get_category_for_id (int id) const;
@@ -99,7 +101,6 @@ class ApiCertTree : public ApiBase
     static int get_grade_index (int grade);
 
     void debug_dump (void);
-    void refresh (void);
 };
 
 /* ---------------------------------------------------------------- */

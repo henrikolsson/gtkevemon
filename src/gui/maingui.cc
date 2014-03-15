@@ -14,17 +14,16 @@
 #include "bits/config.h"
 #include "bits/server.h"
 #include "bits/serverlist.h"
-#include "bits/versionchecker.h"
 #include "bits/argumentsettings.h"
 #include "imagestore.h"
 #include "gtkdefines.h"
 #include "gtkserver.h"
 #include "gtkcharpage.h"
+#include "guiupdater.h"
 #include "guiuserdata.h"
 #include "guiconfiguration.h"
 #include "guiaboutdialog.h"
 #include "guievelauncher.h"
-#include "guiversionchecker.h"
 #include "guiskillplanner.h"
 #include "guixmlsource.h"
 #include "guicharexport.h"
@@ -36,11 +35,8 @@ MainGui::MainGui (void)
   this->conf_windowtitle = Config::conf.get_value("settings.verbose_wintitle");
   this->conf_detailed_tooltip = Config::conf.get_value
       ("settings.detailed_tray_tooltip");
-
+  this->updater = new Updater();
   this->notebook.set_scrollable(true);
-
-  this->versionchecker.set_info_display(&this->info_display);
-  this->versionchecker.set_parent_window(this);
 
   /* Create the actions, menus and toolbars. */
   this->actions = Gtk::ActionGroup::create();
@@ -149,7 +145,7 @@ MainGui::MainGui (void)
   /* Create the GUI part of server list. */
   Gtk::HBox* server_box = Gtk::manage(new Gtk::HBox(false, 5));
   server_box->pack_start(*MK_LABEL0, true, true, 0);
-  
+
   for (unsigned int i = 0; i < ServerList::list.size(); ++i)
   {
     GtkServer* server = Gtk::manage(new GtkServer(ServerList::list[i]));
@@ -210,6 +206,10 @@ MainGui::MainGui (void)
       (*this, &MainGui::on_pages_changed));
   this->notebook.signal_switch_page().connect(sigc::mem_fun
       (*this, &MainGui::on_pages_switched));
+  this->updater->signal_files_changed().connect(sigc::mem_fun
+      (*this, &MainGui::on_data_files_changed));
+  this->updater->signal_files_unchanged().connect(sigc::mem_fun
+      (*this, &MainGui::on_data_files_unchanged));
 
   /* Connect signals of the character list. */
   CharacterListPtr charlist = CharacterList::request();
@@ -230,7 +230,7 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_charlist();
-  this->versionchecker.request_versions();
+  this->updater->background_check_async();
 }
 
 /* ---------------------------------------------------------------- */
@@ -539,6 +539,27 @@ MainGui::on_pages_switched (GtkNotebookPage* /*page*/, guint /*pnum*/)
 /* ---------------------------------------------------------------- */
 
 void
+MainGui::on_data_files_changed (void)
+{
+  this->info_display.append(INFO_NOTIFICATION,
+      "The data files have been updated. Please restart GtkEveMon!",
+      "The data files updater just updated SkillTree.xml and "
+      "CertificateTree.xml. Please restart GtkEveMon to use the updated "
+      "files. You can disable the automatic updater in the options.");
+  delete this->updater;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::on_data_files_unchanged (void)
+{
+  delete this->updater;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 MainGui::update_char_name (std::string char_id)
 {
   Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
@@ -649,9 +670,8 @@ MainGui::about_dialog (void)
 void
 MainGui::version_checker (void)
 {
-  GuiVersionChecker* checker = new GuiVersionChecker();
-  checker->request_versions();
-  checker->set_transient_for(*this);
+  GuiUpdater* updater = new GuiUpdater(false);
+  updater->set_transient_for(*this);
 }
 
 /* ---------------------------------------------------------------- */

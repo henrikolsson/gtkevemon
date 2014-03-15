@@ -1,7 +1,10 @@
+#include <cstring>
+#include <cerrno>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
-#include <cstring>
 
+#include "exception.h"
 #include "helpers.h"
 
 std::string
@@ -200,7 +203,7 @@ Helpers::split_string (std::string const& str, char delim)
     if (str[cur] == delim)
     {
       parts.push_back(str.substr(last, cur - last));
-	  last = cur + 1;
+      last = cur + 1;
     }
 
   if (last < str.size())
@@ -262,4 +265,32 @@ Helpers::delete_argv (char** argv)
   for (std::size_t i = 0; argv[i] != 0; ++i)
     delete [] argv[i];
   delete [] argv;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Helpers::read_file (std::string const& filename, std::string* data)
+{
+  std::ifstream in(filename.c_str(), std::ios::binary);
+  if (!in)
+    throw FileException(filename, ::strerror(errno));
+
+  in.seekg(0, std::ios::end);
+  data->resize(in.tellg());
+  in.seekg(0, std::ios::beg);
+  in.read(&data->at(0), data->size());
+  in.close();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Helpers::write_file (std::string const& filename, std::string const& data)
+{
+    std::ofstream out(filename.c_str(), std::ios::binary);
+    if (!out)
+        throw FileException(filename, ::strerror(errno));
+    out.write(data.c_str(), data.size());
+    out.close();
 }
