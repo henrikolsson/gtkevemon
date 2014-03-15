@@ -123,6 +123,7 @@ depend-clean:
 
 clean: FORCE
 	${RM} ${BINARY} ${OBJECTS}
+	${RM} gemcache
 
 FORCE:
 
