@@ -1,34 +1,5 @@
 Updater
 -------
- - Create new config section [DONE]
-   - [updater]
-   - autocheck = true/false
-   - autocheck_interval = 1 week
-   - last_update = <date>
-
- - Change config UI [DONE]
-   - Automatically check for updated data files
-
- - Create new class bits/updater.h/cc
-   - Checks if files are locally available, if not launches GuiUpdater [DONE]
-     This should be a static function called from gtkevemon.cc
-   - Checks if autocheck_interval is expired (member of MainGui) [DONE]
-     - If expired, download SkillTree and CertTree in background [DONE]
-     - After download, checks for changes [DONE]
-     - Either fire download_finished or files_changed signal [DONE]
-     - In MainGui: Display message that data files have been updated [DONE]
-
- - Create new UI class gui/gtkupdater.h/cc  [DONE]
-   - similar to current versionchecker UI  [DONE]
-   - Show the two data files, size and last updated [DONE]
-
- - Cleanup
-   - Remove ItemTree from update UI  [DONE]
-   - Get rid of the datafiles directory
-   - Remove bits/versionchecker.* [DONE]
-     - Remove from gtkevemon.cc [DONE]
-     - Remove from maingui.cc [DONE]
-   - Remove notification about new GtkEveMon versions [DONE]
    - Remove dependency on zlib
 
 User interface

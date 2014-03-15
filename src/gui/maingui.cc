@@ -461,14 +461,14 @@ MainGui::on_window_state_event (GdkEventWindowState* event)
     if (**value != "never")
     {
       this->set_skip_taskbar_hint(true);
-      this->hide();
+      //this->hide();
     }
   }
   else
   {
     this->iconified = false;
     this->set_skip_taskbar_hint(false);
-    this->show();
+    //this->show();
   }
 
   while (Gtk::Main::events_pending())
