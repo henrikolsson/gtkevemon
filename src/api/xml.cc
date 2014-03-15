@@ -1,4 +1,3 @@
-#include <zlib.h>
 #include <cstring>
 #include <cerrno>
 
@@ -33,38 +32,9 @@ XmlDocument::parse (char const* data, std::size_t size)
 void
 XmlDocument::parse_from_file (std::string const& filename)
 {
-  struct gzFileHandle
-  {
-    ::gzFile handle;
-
-    gzFileHandle (char const* name)
-    { this->handle = ::gzopen(name, "rb"); }
-    ~gzFileHandle (void)
-    { ::gzclose(this->handle); }
-    ::gzFile& operator() (void)
-    { return this->handle; }
-  };
-
-  gzFileHandle f(filename.c_str());
-  if (f() == 0)
-    throw FileException(filename, ::strerror(errno));
-
-  int res, size = 1024;
-  char chars[1024];
-  xmlParserCtxtPtr ctxt;
-
-  res = ::gzread(f(), chars, 4);
-  if (res > 0)
-  {
-    ctxt = xmlCreatePushParserCtxt(NULL, NULL, chars, res, filename.c_str());
-
-    while ((res = ::gzread(f(), chars, size)) > 0)
-      xmlParseChunk(ctxt, chars, res, 0);
-
-    xmlParseChunk(ctxt, chars, 0, 1);
-    this->doc = ctxt->myDoc;
-    xmlFreeParserCtxt(ctxt);
-  }
+  std::string contents;
+  Helpers::read_file(filename, &contents);
+  this->parse(contents);
 }
 
 /* ---------------------------------------------------------------- */
