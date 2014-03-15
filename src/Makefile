@@ -18,6 +18,7 @@ endif
 GCC_INCL = -I.
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
+SSL_FLAGS = $(shell pkg-config --cflags openssl)
 
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 XML_LIBS = $(shell pkg-config --libs libxml-2.0)
@@ -78,7 +79,7 @@ endif
 
 # Generic compiler flags
 CXXFLAGS ?= ${GCC_FLAGS}
-CXXFLAGS += ${GTK_FLAGS} ${XML_FLAGS} ${GCC_INCL}
+CXXFLAGS += ${GTK_FLAGS} ${XML_FLAGS} ${SSL_FLAGS} ${GCC_INCL}
 
 # Source and object files
 SOURCES += util/bgprocess.cc util/conf.cc util/helpers.cc \

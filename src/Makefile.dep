@@ -223,14 +223,6 @@ gui/guiuserdata.o: gui/guiuserdata.cc util/exception.h api/apicharlist.h \
  bits/character.h api/eveapi.h api/apicharsheet.h api/apiskilltree.h \
  api/apicerttree.h api/apiskillqueue.h gui/gtkdefines.h gui/gtkhelpers.h \
  api/apiskilltree.h bits/character.h gui/guiuserdata.h gui/winbase.h
-gui/guiversionchecker.o: gui/guiversionchecker.cc util/helpers.h \
- bits/config.h util/conf.h util/ref_ptr.h net/asynchttp.h util/thread.h \
- util/thread_posix.h util/exception.h net/http.h util/ref_ptr.h \
- net/nettcpsocket.h net/netdefines.h net/netsocket.h net/httpstatus.h \
- bits/argumentsettings.h gui/imagestore.h gui/gtkdefines.h \
- gui/guiconfiguration.h gui/winbase.h gui/gtkconfwidgets.h \
- gui/guiversionchecker.h bits/versionchecker.h api/xml.h \
- gui/gtkinfodisplay.h gui/winbase.h gui/gtkdownloader.h
 gui/guixmlsource.o: gui/guixmlsource.cc gui/gtkdefines.h \
  gui/guixmlsource.h net/http.h util/ref_ptr.h net/nettcpsocket.h \
  net/netdefines.h net/netsocket.h net/httpstatus.h gui/winbase.h
@@ -317,12 +309,6 @@ bits/updater.o: bits/updater.cc api/evetime.h api/apicerttree.h \
  net/http.h api/xml.h api/apiskilltree.h bits/config.h util/conf.h \
  util/ref_ptr.h util/os.h util/helpers.h gui/guiupdater.h bits/updater.h \
  gui/gtkdownloader.h gui/winbase.h bits/config.h bits/updater.h
-bits/versionchecker.o: bits/versionchecker.cc util/os.h \
- gui/guiversionchecker.h util/exception.h net/asynchttp.h util/thread.h \
- util/thread_posix.h net/http.h util/ref_ptr.h net/nettcpsocket.h \
- net/netdefines.h net/netsocket.h net/httpstatus.h bits/versionchecker.h \
- api/xml.h gui/gtkinfodisplay.h gui/winbase.h gui/gtkdownloader.h \
- bits/config.h util/conf.h util/ref_ptr.h defines.h bits/versionchecker.h
 bits/xmltrainingplan.o: bits/xmltrainingplan.cc bits/xmltrainingplan.h \
  api/xml.h util/ref_ptr.h api/apiskilltree.h api/apibase.h net/http.h \
  net/nettcpsocket.h net/netdefines.h net/netsocket.h net/httpstatus.h \
@@ -337,5 +323,4 @@ gtkevemon.o: gtkevemon.cc net/networking.h net/netdefines.h api/evetime.h \
  bits/character.h api/eveapi.h api/apicharsheet.h api/apibase.h \
  api/eveapi.h api/xml.h api/apiskilltree.h api/apicerttree.h \
  api/apiskillqueue.h bits/characterlist.h bits/character.h bits/updater.h \
- gui/gtkinfodisplay.h gui/winbase.h gui/gtkserver.h bits/server.h \
- gui/guiupdater.h gui/gtkdownloader.h
+ gui/gtkinfodisplay.h gui/winbase.h gui/gtkserver.h bits/server.h
