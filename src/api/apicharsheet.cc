@@ -54,7 +54,7 @@ ApiCharSheet::set_api_data (EveApiData const& data)
     cskill.points_dest = ApiCharSheet::calc_dest_sp
         (skills[i].level, skill->rank);
     cskill.points_max = ApiCharSheet::calc_dest_sp
-        (5, skill->rank);
+        (4, skill->rank);
 
     cskill.completed = (double)(skills[i].points - skills[i].points_start)
         / (double)(skills[i].points_dest - skills[i].points_start);
@@ -319,7 +319,7 @@ ApiCharSheet::add_char_skill (int skill_id, int level)
 
     int skill_start_sp = ApiCharSheet::calc_start_sp(level, skill->rank);
     int skill_dest_sp = ApiCharSheet::calc_dest_sp(level, skill->rank);
-    int skill_max_points = ApiCharSheet::calc_dest_sp(5, skill->rank);
+    int skill_max_points = ApiCharSheet::calc_dest_sp(4, skill->rank);
 
     ApiCharSheetSkill new_cskill;
     new_cskill.id = skill->id;
@@ -345,7 +345,7 @@ ApiCharSheet::add_char_skill (int skill_id, int level)
 
     int skill_start_sp = ApiCharSheet::calc_start_sp(level, skill->rank);
     int skill_dest_sp = ApiCharSheet::calc_dest_sp(level, skill->rank);
-    int skill_max_points = ApiCharSheet::calc_dest_sp(5, skill->rank);
+    int skill_max_points = ApiCharSheet::calc_dest_sp(4, skill->rank);
 
     cskill->level = level;
     cskill->points = skill_start_sp;
