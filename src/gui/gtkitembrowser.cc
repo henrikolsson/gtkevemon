@@ -16,7 +16,15 @@ ItemBrowserBase::ItemBrowserBase (void)
   Gtk::TreeViewColumn* col_name = Gtk::manage(new Gtk::TreeViewColumn);
   col_name->set_title("Name");
   col_name->pack_start(this->cols.icon, false);
-  col_name->pack_start(this->cols.name, true);
+  #ifdef GLIBMM_PROPERTIES_ENABLED
+  Gtk::CellRendererText* name_renderer = Gtk::manage(new Gtk::CellRendererText);
+  col_name->pack_start(*name_renderer, true);
+  col_name->add_attribute(name_renderer->property_markup(),
+      this->cols.name);
+  #else
+  /* FIXME: Activate markup here. */
+  col_name->pack_start(this->cols.name);
+  #endif
   this->view.append_column(*col_name);
   this->view.set_headers_visible(false);
   this->view.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
@@ -357,12 +365,10 @@ GtkSkillBrowser::fill_store (void)
     /* Finally append the skill. */
     Gtk::TreeModel::iterator siter = this->store->append
         (giter->second.first->children());
-    char const *primary_name = ApiSkillTree::get_attrib_name(skill.primary);
-    std::string primary_short_name = std::string(primary_name).substr(0,3);
-    char const *secondary_name = ApiSkillTree::get_attrib_name(skill.secondary);
-    std::string secondary_short_name = std::string(secondary_name).substr(0,3);
+    char const *primary_name = ApiSkillTree::get_attrib_short_name(skill.primary);
+    char const *secondary_name = ApiSkillTree::get_attrib_short_name(skill.secondary);
     (*siter)[this->cols.name] = skill.name + " ("
-        + Helpers::get_string_from_int(skill.rank) + ")";
+        + Helpers::get_string_from_int(skill.rank) + ") <span size=\"small\" foreground=\"grey\">" + primary_name + "/" + secondary_name + "</span>";
     (*siter)[this->cols.data] = &skill;
 
     (*siter)[this->cols.icon] = skill_icon;
