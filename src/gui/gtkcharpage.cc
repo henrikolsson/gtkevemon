@@ -88,13 +88,17 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->skill_view.set_model(this->skill_store);
   this->skill_view.set_rules_hint(true);
   this->skill_view.append_column(*name_column);
-  this->skill_view.append_column("Points", this->skill_cols.points);
   this->skill_view.append_column("Level", this->skill_cols.level);
+  this->skill_view.append_column("Points", this->skill_cols.points);
+  this->skill_view.append_column("Max. Points", this->skill_cols.max_points);
   this->skill_view.append_column("Pri.", this->skill_cols.primary);
   this->skill_view.append_column("Sec.", this->skill_cols.secondary);
   this->skill_view.get_column(0)->set_expand(true);
-  this->skill_view.get_column(1)->get_first_cell_renderer()
+  this->skill_view.get_column(2)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
+  this->skill_view.get_column(3)->get_first_cell_renderer()
+      ->set_property("xalign", 1.0f);
+
   //this->skill_view.set_grid_lines(Gtk::TREE_VIEW_GRID_LINES_BOTH);
 
   /* Build GUI elements. */
@@ -484,6 +488,7 @@ struct SkillGroupInfo
   Gtk::TreeModel::iterator iter;
   int sp;
   bool empty;
+  int max;
 
   SkillGroupInfo (Gtk::TreeModel::iterator iter)
       : iter(iter), sp(0), empty(true) {}
@@ -584,6 +589,9 @@ GtkCharPage::update_skill_list (void)
     (*iter)[this->skill_cols.skill] = &skills[i];
     (*iter)[this->skill_cols.points]
         = Helpers::get_dotted_str_from_int(skills[i].points);
+    (*iter)[this->skill_cols.max_points]
+        = Helpers::get_dotted_str_from_int(skills[i].points_max);
+
     (*iter)[this->skill_cols.name] = skill_name;
     (*iter)[this->skill_cols.level] = ImageStore::skill_progress
         (skills[i].level, skills[i].completed);
@@ -592,6 +600,7 @@ GtkCharPage::update_skill_list (void)
 
     /* Update group info. */
     iiter->second.sp += skills[i].points;
+    iiter->second.max += skills[i].points_max;
     iiter->second.empty = false;
   }
 
@@ -608,6 +617,9 @@ GtkCharPage::update_skill_list (void)
 
     (*iter->second.iter)[this->skill_cols.points]
         = Helpers::get_dotted_str_from_int(iter->second.sp);
+
+    (*iter->second.iter)[this->skill_cols.max_points]
+        = Helpers::get_dotted_str_from_int(iter->second.max);
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)

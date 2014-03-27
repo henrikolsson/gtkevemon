@@ -31,6 +31,7 @@ struct ApiCharSheetSkill
   int id;
   int level;
   int points;
+  int points_max;
   int points_start;
   int points_dest;
   double completed;
