@@ -90,6 +90,8 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->skill_view.append_column(*name_column);
   this->skill_view.append_column("Points", this->skill_cols.points);
   this->skill_view.append_column("Level", this->skill_cols.level);
+  this->skill_view.append_column("Pri.", this->skill_cols.primary);
+  this->skill_view.append_column("Sec.", this->skill_cols.secondary);
   this->skill_view.get_column(0)->set_expand(true);
   this->skill_view.get_column(1)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
@@ -585,6 +587,8 @@ GtkCharPage::update_skill_list (void)
     (*iter)[this->skill_cols.name] = skill_name;
     (*iter)[this->skill_cols.level] = ImageStore::skill_progress
         (skills[i].level, skills[i].completed);
+    (*iter)[this->skill_cols.primary] = ApiSkillTree::get_attrib_short_name(skills[i].details->primary);
+    (*iter)[this->skill_cols.secondary] = ApiSkillTree::get_attrib_short_name(skills[i].details->secondary);
 
     /* Update group info. */
     iiter->second.sp += skills[i].points;
