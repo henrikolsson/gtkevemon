@@ -142,12 +142,17 @@ enum ComboBoxSkillFilter
   CB_FILTER_SKILL_PARTIAL,
   CB_FILTER_SKILL_ENABLED,
   CB_FILTER_SKILL_KNOWN,
-  CB_FILTER_SKILL_KNOWN_BUT_V,
-  CB_FILTER_SKILL_PRIMARY_INTELLIGENCE,
-  CB_FILTER_SKILL_PRIMARY_MEMORY,
-  CB_FILTER_SKILL_PRIMARY_CHARISMA,
-  CB_FILTER_SKILL_PRIMARY_PERCEPTION,
-  CB_FILTER_SKILL_PRIMARY_WILLPOWER
+  CB_FILTER_SKILL_KNOWN_BUT_V
+};
+
+enum ComboBoxSkillFilterAttribute
+{
+  CB_FILTER_ATTRIBUTE_ANY,
+  CB_FILTER_ATTRIBUTE_INTELLIGENCE,
+  CB_FILTER_ATTRIBUTE_MEMORY,
+  CB_FILTER_ATTRIBUTE_CHARISMA,
+  CB_FILTER_ATTRIBUTE_PERCEPTION,
+  CB_FILTER_ATTRIBUTE_WILLPOWER
 };
 
 GtkSkillBrowser::GtkSkillBrowser (void)
@@ -161,12 +166,23 @@ GtkSkillBrowser::GtkSkillBrowser (void)
   this->filter_cb.append_text("Only show enabled skills");
   this->filter_cb.append_text("Only show known skills");
   this->filter_cb.append_text("Only show known skills not at V");
-  this->filter_cb.append_text("Only show primary intelligence skills");
-  this->filter_cb.append_text("Only show primary memory skills");
-  this->filter_cb.append_text("Only show primary charisma skills");
-  this->filter_cb.append_text("Only show primary perception skills");
-  this->filter_cb.append_text("Only show primary willpower skills");
   this->filter_cb.set_active(0);
+
+  this->primary_cb.append_text("Any");
+  this->primary_cb.append_text("Intelligence");
+  this->primary_cb.append_text("Memory");
+  this->primary_cb.append_text("Charisma");
+  this->primary_cb.append_text("Perception");
+  this->primary_cb.append_text("Willpower");
+  this->primary_cb.set_active(0);
+
+  this->secondary_cb.append_text("Any");
+  this->secondary_cb.append_text("Intelligence");
+  this->secondary_cb.append_text("Memory");
+  this->secondary_cb.append_text("Charisma");
+  this->secondary_cb.append_text("Perception");
+  this->secondary_cb.append_text("Willpower");
+  this->secondary_cb.set_active(0);
 
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -183,13 +199,26 @@ GtkSkillBrowser::GtkSkillBrowser (void)
   filter_box->pack_start(this->filter_entry, true, true, 0);
   filter_box->pack_start(*clear_filter_but, false, false, 0);
 
+  Gtk::HBox* attributes_box = MK_HBOX;
+  Gtk::HBox* attributes_label_box = MK_HBOX;
+  attributes_label_box->pack_start(*MK_LABEL("Primary Attribute"), true, true, 0);
+  attributes_label_box->pack_start(*MK_LABEL("Secondary Attribute"), true, true, 0);
+  attributes_box->pack_start(this->primary_cb, true, true, 0);
+  attributes_box->pack_start(this->secondary_cb, true, true, 0);
+
   this->pack_start(*filter_box, false, false, 0);
   this->pack_start(this->filter_cb, false, false, 0);
+  this->pack_start(*attributes_label_box, false, false, 0);
+  this->pack_start(*attributes_box, false, false, 0);
   this->pack_start(*scwin, true, true, 0);
 
   this->filter_entry.signal_activate().connect(sigc::mem_fun
       (*this, &GtkSkillBrowser::fill_store));
   this->filter_cb.signal_changed().connect(sigc::mem_fun
+      (*this, &GtkSkillBrowser::fill_store));
+  this->primary_cb.signal_changed().connect(sigc::mem_fun
+      (*this, &GtkSkillBrowser::fill_store));
+  this->secondary_cb.signal_changed().connect(sigc::mem_fun
       (*this, &GtkSkillBrowser::fill_store));
   clear_filter_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GtkSkillBrowser::clear_filter));
@@ -225,12 +254,15 @@ GtkSkillBrowser::fill_store (void)
 
   /* Prepare some short hands .*/
   int active_row_num = this->filter_cb.get_active_row_number();
+  int primary_active_row_num = this->primary_cb.get_active_row_number();
+  int secondary_active_row_num = this->secondary_cb.get_active_row_number();
   bool only_unknown = (active_row_num == CB_FILTER_SKILL_UNKNOWN);
   bool only_partial = (active_row_num == CB_FILTER_SKILL_PARTIAL);
   bool only_enabled = (active_row_num == CB_FILTER_SKILL_ENABLED);
   bool only_known = (active_row_num == CB_FILTER_SKILL_KNOWN) || (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
   bool only_known_but_v = (active_row_num == CB_FILTER_SKILL_KNOWN_BUT_V);
-  ApiAttrib primary = (active_row_num >= CB_FILTER_SKILL_PRIMARY_INTELLIGENCE && active_row_num <= CB_FILTER_SKILL_PRIMARY_WILLPOWER) ? (ApiAttrib)(active_row_num-CB_FILTER_SKILL_PRIMARY_INTELLIGENCE) : API_ATTRIB_UNKNOWN;
+  ApiAttrib primary = primary_active_row_num == CB_FILTER_ATTRIBUTE_ANY ? API_ATTRIB_UNKNOWN : (ApiAttrib)(primary_active_row_num-CB_FILTER_ATTRIBUTE_INTELLIGENCE);
+  ApiAttrib secondary = secondary_active_row_num == CB_FILTER_ATTRIBUTE_ANY ? API_ATTRIB_UNKNOWN : (ApiAttrib)(secondary_active_row_num-CB_FILTER_ATTRIBUTE_INTELLIGENCE);
   std::string unpublished_cfg("planner.show_unpublished_skills");
   bool only_published = !Config::conf.get_value(unpublished_cfg)->get_bool();
 
@@ -261,8 +293,13 @@ GtkSkillBrowser::fill_store (void)
 
     if (cskill == 0)
     {
+
       if (primary!=API_ATTRIB_UNKNOWN)
         if (skill.primary != primary)
+          continue;
+
+      if (secondary!=API_ATTRIB_UNKNOWN)
+        if (skill.secondary != secondary)
           continue;
 
       /* The skill is unknown. */
@@ -287,6 +324,10 @@ GtkSkillBrowser::fill_store (void)
     {
       if (primary!=API_ATTRIB_UNKNOWN)
         if (skill.primary != primary)
+          continue;
+
+      if (secondary!=API_ATTRIB_UNKNOWN)
+        if (skill.secondary != secondary)
           continue;
 
       /* The skill is known. */
@@ -316,6 +357,10 @@ GtkSkillBrowser::fill_store (void)
     /* Finally append the skill. */
     Gtk::TreeModel::iterator siter = this->store->append
         (giter->second.first->children());
+    char const *primary_name = ApiSkillTree::get_attrib_name(skill.primary);
+    std::string primary_short_name = std::string(primary_name).substr(0,3);
+    char const *secondary_name = ApiSkillTree::get_attrib_name(skill.secondary);
+    std::string secondary_short_name = std::string(secondary_name).substr(0,3);
     (*siter)[this->cols.name] = skill.name + " ("
         + Helpers::get_string_from_int(skill.rank) + ")";
     (*siter)[this->cols.data] = &skill;
@@ -333,7 +378,7 @@ GtkSkillBrowser::fill_store (void)
       this->store->erase(iter->second.first);
   }
 
-  if (!filter.empty() || active_row_num != 0)
+  if (!filter.empty() || primary != API_ATTRIB_UNKNOWN || secondary != API_ATTRIB_UNKNOWN || active_row_num != 0)
     this->view.expand_all();
 }
 
