@@ -58,6 +58,16 @@ struct GtkSkillInfo
 };
 
 /* ---------------------------------------------------------------- */
+typedef struct {
+  time_t optimal_time;
+  double spph;
+  double intelligence;
+  double memory;
+  double perception;
+  double willpower;
+  double charisma;
+} OptimalData;
+
 
 class GtkSkillList : public std::vector<GtkSkillInfo>
 {
@@ -100,6 +110,10 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
     void calc_details (bool use_active_spph = true);
     void calc_details (ApiCharAttribs& attribs, bool use_active_spph = true);
     //void simulate_select (unsigned int index);
+
+    OptimalData get_optimal_data (void) const;
+
+    double get_spph(void) const;
 };
 
 /* ---------------------------------------------------------------- */
@@ -176,6 +190,7 @@ class GtkTrainingPlan : public Gtk::VBox
     Gtk::Button import_plan_but;
     Gtk::Button optimize_att_but;
     Gtk::Label total_time;
+    Gtk::Label optimal_time;
 
     GtkTreeModelColumns cols;
     Glib::RefPtr<Gtk::ListStore> liststore;
