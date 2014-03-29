@@ -67,12 +67,19 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
     {
       ss << "SP per hour: " << (int)spph << "\n";
       if (completed != 0.0)
-        ss << "Remaining time: ";
+        ss << "Remaining time ";
       else
-        ss << "Training time: ";
+        ss << "Training time ";
+      ss << "to level " << Helpers::get_roman_from_int(cskill->level + 1) << ": ";
       ss << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
     }
 
+    for(int level = cskill->level + 2; level <= 5; level++) {
+      time_remaining = (time_t)(3600.0 * (double)(ApiCharSheet::calc_dest_sp(level - 1, cskill->details->rank) - ApiCharSheet::calc_start_sp(level - 1, cskill->details->rank)) / spph);
+      ss << "Training time to level " << Helpers::get_roman_from_int(level) << ": ";
+      ss << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
+    }
+    
     if (completed != 0.0)
       ss << "Completed: " << Helpers::get_string_from_double
           (completed * 100.0, 2) << "%\n";
