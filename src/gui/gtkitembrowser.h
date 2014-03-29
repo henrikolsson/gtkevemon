@@ -66,6 +66,8 @@ class GtkSkillBrowser : public ItemBrowserBase, public Gtk::VBox
   private:
     Gtk::Entry filter_entry;
     Gtk::ComboBoxText filter_cb;
+    Gtk::ComboBoxText primary_cb;
+    Gtk::ComboBoxText secondary_cb;
 
   protected:
     void fill_store (void);
