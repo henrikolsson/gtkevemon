@@ -380,6 +380,107 @@ GtkSkillList::is_dependency (unsigned int index)
   return false;
 }
 
+/* ---------------------------------------------------------------- */
+
+OptimalData
+GtkSkillList::get_optimal_data (void) const {
+  GtkSkillList plan = *this;
+
+  /* Fetch the character from the plan. */
+  ApiCharSheetPtr charsheet = this->get_character()->cs;
+
+  /* Fetch base and implant attribute points. */
+  ApiCharAttribs base_atts = charsheet->base;
+  ApiCharAttribs implant_atts = charsheet->implant;
+  ApiCharAttribs total_atts = charsheet->total;
+
+    /* Use the current total time and base attributes as base. */
+  ApiCharAttribs cur_base_atts = base_atts;
+  ApiCharAttribs cur_total_atts = total_atts;
+  ApiCharAttribs best_base_atts = base_atts;
+  ApiCharAttribs best_total_atts = total_atts;
+
+    /* Calculate the maximum number of points that can be assigned to each
+   * attribute. */
+  int max_points_per_att = MAXIMUM_VALUE_PER_ATTRIB
+      - MINIMUM_VALUE_PER_ATTRIB;
+
+  /* Calculate the total number of base attribute points to distribute if it
+   * changes in the future. */
+  int total_base_atts = (int)cur_base_atts.cha + (int)cur_base_atts.intl
+      + (int)cur_base_atts.mem + (int)cur_base_atts.per
+      + (int)cur_base_atts.wil - (MINIMUM_VALUE_PER_ATTRIB * 5);
+
+  plan.calc_details(cur_total_atts, false);
+
+  time_t orig_total_time = plan.back().train_duration;
+  time_t cur_total_time = orig_total_time;
+  time_t best_total_time = orig_total_time;
+
+  /* Go through all combinations and compare the runtime.
+   * This algorithm has been found in EVEMon.
+   *
+   * This is O(scary), but seems quick enough in practice.
+   */
+  for (int intl = 0; intl <= max_points_per_att; intl++)
+  {
+    int max_mem = total_base_atts - intl;
+    for (int mem = 0; mem <= max_points_per_att && mem <= max_mem; mem++)
+    {
+      int max_cha = max_mem - mem;
+      for (int cha = 0; cha <= max_points_per_att && cha <= max_cha; cha++)
+      {
+        int max_per = max_cha - cha;
+        for (int per = 0; per <= max_points_per_att && per <= max_per; per++)
+        {
+          int wil = max_per - per;
+          if (wil <= max_points_per_att)
+          {
+            /* Calculate the base attributes based on the current
+             * values. */
+            cur_base_atts.intl = intl + MINIMUM_VALUE_PER_ATTRIB;
+            cur_base_atts.mem = mem + MINIMUM_VALUE_PER_ATTRIB;
+            cur_base_atts.cha = cha + MINIMUM_VALUE_PER_ATTRIB;
+            cur_base_atts.per = per + MINIMUM_VALUE_PER_ATTRIB;
+            cur_base_atts.wil = wil + MINIMUM_VALUE_PER_ATTRIB;
+
+            /* Calculate the total attributes based on the
+             * current base attributes and the fetched learning skills
+             * and implants. */
+            cur_total_atts = cur_base_atts + implant_atts;
+
+            ApiCharAttribs cur_total_atts_copy = cur_total_atts;
+            plan.calc_details(cur_total_atts_copy, false);
+            cur_total_time = plan.back().train_duration;
+
+            if (cur_total_time < best_total_time)
+            {
+              best_total_time = cur_total_time;
+              best_base_atts = cur_base_atts;
+              best_total_atts = cur_total_atts;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Calculate the details for the new list with the best attributes. */
+  {
+    ApiCharAttribs best_total_atts_copy = best_total_atts;
+    plan.calc_details(best_total_atts_copy, false);
+  }
+  OptimalData result;
+  result.optimal_time = plan.back().train_duration;
+  result.spph = plan.get_spph();
+  result.intelligence = best_total_atts.intl;
+  result.memory = best_total_atts.mem;
+  result.perception = best_total_atts.per;
+  result.willpower = best_total_atts.wil;
+  result.charisma = best_total_atts.cha;
+  return result;
+}
+
 /* ================================================================ */
 
 GtkTreeModelColumns::GtkTreeModelColumns (void)
@@ -506,12 +607,16 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->total_time.set_alignment(Gtk::ALIGN_LEFT);
   this->optimize_att_but.set_label("Optimize attributes");
 
+  this->optimal_time.set_text("n/a");
+  this->optimal_time.set_alignment(Gtk::ALIGN_LEFT);
+
   this->reorder_new_index = -1;
   //this->clean_plan_but.set_label("Clean up");
   this->currently_editing = -1;
 
   /* Setup treeview. */
-  //this->treeview.get_selection()->set_mode(Gtk::SELECTION_EXTENDED);
+  // check this out: http://kevinmehall.net/2010/pygtk_multi_select_drag_drop
+  this->treeview.get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
   this->treeview.set_headers_visible(true);
   this->treeview.set_rules_hint(true);
   this->treeview.set_reorderable(true);
@@ -541,8 +646,10 @@ GtkTrainingPlan::GtkTrainingPlan (void)
 
   Gtk::Label* select_label = MK_LABEL("Training plan:");
   Gtk::Label* time_label = MK_LABEL("Total time:");
+  Gtk::Label* optimal_time_label = MK_LABEL("Optimal time:");
   select_label->set_alignment(Gtk::ALIGN_LEFT);
   time_label->set_alignment(Gtk::ALIGN_LEFT);
+  optimal_time_label->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::HBox* time_file_ops = MK_HBOX0;
   time_file_ops->pack_start(this->total_time, false, false, 0);
@@ -562,7 +669,11 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       Gtk::SHRINK | Gtk::FILL, Gtk::SHRINK);
   gui_table->attach(*time_file_ops, 2, 3, 1, 2,
       Gtk::EXPAND | Gtk::FILL, Gtk::SHRINK);
-  gui_table->attach(*button_vbox, 1, 3, 2, 3,
+  gui_table->attach(*optimal_time_label, 1, 3, 2, 3,
+      Gtk::SHRINK | Gtk::FILL, Gtk::SHRINK);
+  gui_table->attach(optimal_time, 2, 3, 2, 3,
+      Gtk::EXPAND | Gtk::FILL, Gtk::SHRINK);
+  gui_table->attach(*button_vbox, 1, 3, 3, 4,
       Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL);
 
   this->delete_plan_but.set_tooltip_text("Delete the current plan");
@@ -761,6 +872,14 @@ GtkTrainingPlan::on_user_notes_editing_canceled (void)
 
 /* ---------------------------------------------------------------- */
 
+double
+GtkSkillList::get_spph (void) const
+{
+  return total_plan_sp * 3600.0 / (double)this->back().train_duration;
+}
+
+/* ---------------------------------------------------------------- */
+
 void
 GtkTrainingPlan::update_plan (bool rebuild)
 {
@@ -843,15 +962,27 @@ GtkTrainingPlan::update_plan (bool rebuild)
   this->updating_liststore = false;
 
   /* Update the total time label in the GUI. */
-  if (this->skills.empty())
+  if (this->skills.empty()) {
     this->total_time.set_text("Skill plan is empty.");
+    this->optimal_time.set_text("Skill plan is empty.");
+  }
   else
   {
+    OptimalData optimal_data = this->skills.get_optimal_data();
     this->total_time.set_text(EveTime::get_string_for_timediff
         (this->skills.back().train_duration, false)
         + "  (" + Helpers::get_string_from_sizet(this->skills.size())
         + " skills, " + Helpers::get_dotted_str_from_uint
-        (this->skills.get_total_plan_sp()) + " SP)");
+          (this->skills.get_total_plan_sp()) + " SP, "
+        + Helpers::get_string_from_double(this->skills.get_spph(),0) + " SP/h)");
+    this->optimal_time.set_text(EveTime::get_string_for_timediff
+          (optimal_data.optimal_time, false) + " ("
+                                + Helpers::get_string_from_double(optimal_data.spph,0) + " SP/h, Int: "
+                                + Helpers::get_string_from_double(optimal_data.intelligence,0) + ", Mem: "
+                                + Helpers::get_string_from_double(optimal_data.memory,0) + ", Wil: "
+                                + Helpers::get_string_from_double(optimal_data.willpower,0) + ", Per: "
+                                + Helpers::get_string_from_double(optimal_data.perception,0) + ", Cha: "
+                                + Helpers::get_string_from_double(optimal_data.charisma,0) + ")");
   }
 }
 
