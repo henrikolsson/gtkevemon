@@ -91,12 +91,15 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->skill_view.append_column("Level", this->skill_cols.level);
   this->skill_view.append_column("Points", this->skill_cols.points);
   this->skill_view.append_column("Max. Points", this->skill_cols.max_points);
+  this->skill_view.append_column("% of Max.", this->skill_cols.percent_of_max);
   this->skill_view.append_column("Pri.", this->skill_cols.primary);
   this->skill_view.append_column("Sec.", this->skill_cols.secondary);
   this->skill_view.get_column(0)->set_expand(true);
   this->skill_view.get_column(2)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
   this->skill_view.get_column(3)->get_first_cell_renderer()
+      ->set_property("xalign", 1.0f);
+  this->skill_view.get_column(4)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
 
   //this->skill_view.set_grid_lines(Gtk::TREE_VIEW_GRID_LINES_BOTH);
@@ -542,7 +545,15 @@ GtkCharPage::update_skill_list (void)
     SkillGroupInfo group_info(siter);
     iter_map.insert(std::make_pair(iter->first, SkillGroupInfo(siter)));
   }
-
+  for (ApiSkillMap::iterator iter = tree->skills.begin();
+       iter != tree->skills.end(); iter++)
+  {
+    IterMapType::iterator iiter = iter_map.find(iter->second.group);
+    if (iiter != iter_map.end())
+    {
+      iiter->second.max += ApiCharSheet::calc_dest_sp(4, iter->second.rank);
+    }
+  }
   /* Append all skills to the skill groups. */
   std::vector<ApiCharSheetSkill>& skills = this->character->cs->skills;
   for (unsigned int i = 0; i < skills.size(); ++i)
@@ -591,6 +602,8 @@ GtkCharPage::update_skill_list (void)
         = Helpers::get_dotted_str_from_int(skills[i].points);
     (*iter)[this->skill_cols.max_points]
         = Helpers::get_dotted_str_from_int(skills[i].points_max);
+    (*iter)[this->skill_cols.percent_of_max]
+        = Helpers::get_dotted_str_from_int(skills[i].points * 100.0 / skills[i].points_max) + "%";
 
     (*iter)[this->skill_cols.name] = skill_name;
     (*iter)[this->skill_cols.level] = ImageStore::skill_progress
@@ -600,7 +613,6 @@ GtkCharPage::update_skill_list (void)
 
     /* Update group info. */
     iiter->second.sp += skills[i].points;
-    iiter->second.max += skills[i].points_max;
     iiter->second.empty = false;
   }
 
@@ -620,6 +632,9 @@ GtkCharPage::update_skill_list (void)
 
     (*iter->second.iter)[this->skill_cols.max_points]
         = Helpers::get_dotted_str_from_int(iter->second.max);
+
+    (*iter->second.iter)[this->skill_cols.percent_of_max]
+        = Helpers::get_dotted_str_from_int(iter->second.sp * 100.0 / iter->second.max) + "%";
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)
