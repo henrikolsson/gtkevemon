@@ -23,7 +23,8 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
     ss << "Name: " << skill->name << "\n";
 
   ss << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
-     << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\nRank: " << skill->rank << "\n";
+     << " / " << ApiSkillTree::get_attrib_name(skill->secondary)
+     << "\nRank: " << skill->rank << "\n";
 
   if (cskill != 0 && cskill->level != 5)
   {
@@ -74,10 +75,16 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
       ss << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
     }
 
-    for(int level = cskill->level + 2; level <= 5; level++) {
-      time_remaining = (time_t)(3600.0 * (double)(ApiCharSheet::calc_dest_sp(level - 1, cskill->details->rank) - ApiCharSheet::calc_start_sp(level - 1, cskill->details->rank)) / spph);
-      ss << "Training time to level " << Helpers::get_roman_from_int(level) << ": ";
-      ss << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
+    for (int level = cskill->level + 2; level <= 5; level++) 
+    {
+      time_remaining = (time_t)(3600.0
+        * (double)(ApiCharSheet::calc_dest_sp(
+        level - 1, cskill->details->rank) 
+        - ApiCharSheet::calc_start_sp(level - 1,
+        cskill->details->rank)) / spph);
+      ss << "Training time to level " 
+        << Helpers::get_roman_from_int(level) << ": "
+        << EveTime::get_string_for_timediff(time_remaining, false) << "\n";
     }
     
     if (completed != 0.0)
