@@ -383,7 +383,8 @@ GtkSkillList::is_dependency (unsigned int index)
 /* ---------------------------------------------------------------- */
 
 OptimalData
-GtkSkillList::get_optimal_data (void) const {
+GtkSkillList::get_optimal_data (void) const 
+{
   GtkSkillList plan = *this;
 
   /* Fetch the character from the plan. */
@@ -962,7 +963,8 @@ GtkTrainingPlan::update_plan (bool rebuild)
   this->updating_liststore = false;
 
   /* Update the total time label in the GUI. */
-  if (this->skills.empty()) {
+  if (this->skills.empty())
+  {
     this->total_time.set_text("Skill plan is empty.");
     this->optimal_time.set_text("Skill plan is empty.");
   }
@@ -977,12 +979,12 @@ GtkTrainingPlan::update_plan (bool rebuild)
         + Helpers::get_string_from_double(this->skills.get_spph(),0) + " SP/h)");
     this->optimal_time.set_text(EveTime::get_string_for_timediff
           (optimal_data.optimal_time, false) + " ("
-                                + Helpers::get_string_from_double(optimal_data.spph,0) + " SP/h, Int: "
-                                + Helpers::get_string_from_double(optimal_data.intelligence,0) + ", Mem: "
-                                + Helpers::get_string_from_double(optimal_data.memory,0) + ", Wil: "
-                                + Helpers::get_string_from_double(optimal_data.willpower,0) + ", Per: "
-                                + Helpers::get_string_from_double(optimal_data.perception,0) + ", Cha: "
-                                + Helpers::get_string_from_double(optimal_data.charisma,0) + ")");
+          + Helpers::get_string_from_double(optimal_data.spph,0) + " SP/h, Int: "
+          + Helpers::get_string_from_double(optimal_data.intelligence,0) + ", Mem: "
+          + Helpers::get_string_from_double(optimal_data.memory,0) + ", Wil: "
+          + Helpers::get_string_from_double(optimal_data.willpower,0) + ", Per: "
+          + Helpers::get_string_from_double(optimal_data.perception,0) + ", Cha: "
+          + Helpers::get_string_from_double(optimal_data.charisma,0) + ")");
   }
 }
 

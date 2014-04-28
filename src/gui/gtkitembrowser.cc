@@ -16,7 +16,7 @@ ItemBrowserBase::ItemBrowserBase (void)
   Gtk::TreeViewColumn* col_name = Gtk::manage(new Gtk::TreeViewColumn);
   col_name->set_title("Name");
   col_name->pack_start(this->cols.icon, false);
-  #ifdef GLIBMM_PROPERTIES_ENABLED
+ #ifdef GLIBMM_PROPERTIES_ENABLED
   Gtk::CellRendererText* name_renderer = Gtk::manage(new Gtk::CellRendererText);
   col_name->pack_start(*name_renderer, true);
   col_name->add_attribute(name_renderer->property_markup(),
@@ -301,7 +301,6 @@ GtkSkillBrowser::fill_store (void)
 
     if (cskill == 0)
     {
-
       if (primary!=API_ATTRIB_UNKNOWN)
         if (skill.primary != primary)
           continue;
@@ -368,7 +367,9 @@ GtkSkillBrowser::fill_store (void)
     char const *primary_name = ApiSkillTree::get_attrib_short_name(skill.primary);
     char const *secondary_name = ApiSkillTree::get_attrib_short_name(skill.secondary);
     (*siter)[this->cols.name] = skill.name + " ("
-        + Helpers::get_string_from_int(skill.rank) + ") <span size=\"small\" foreground=\"grey\">" + primary_name + "/" + secondary_name + "</span>";
+        + Helpers::get_string_from_int(skill.rank)
+        + ") <span size=\"small\" foreground=\"grey\">" + primary_name + "/"
+        + secondary_name + "</span>";
     (*siter)[this->cols.data] = &skill;
 
     (*siter)[this->cols.icon] = skill_icon;
@@ -384,7 +385,8 @@ GtkSkillBrowser::fill_store (void)
       this->store->erase(iter->second.first);
   }
 
-  if (!filter.empty() || primary != API_ATTRIB_UNKNOWN || secondary != API_ATTRIB_UNKNOWN || active_row_num != 0)
+  if (!filter.empty() || primary != API_ATTRIB_UNKNOWN
+      || secondary != API_ATTRIB_UNKNOWN || active_row_num != 0)
     this->view.expand_all();
 }
 

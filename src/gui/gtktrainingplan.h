@@ -58,7 +58,9 @@ struct GtkSkillInfo
 };
 
 /* ---------------------------------------------------------------- */
-typedef struct {
+
+struct OptimalData
+{
   time_t optimal_time;
   double spph;
   double intelligence;
@@ -66,8 +68,7 @@ typedef struct {
   double perception;
   double willpower;
   double charisma;
-} OptimalData;
-
+};
 
 class GtkSkillList : public std::vector<GtkSkillInfo>
 {
