@@ -82,6 +82,7 @@ class ApiSkillTree : public ApiBase
     void parse_skills_rowset (xmlNodePtr node);
     void parse_skills_row (ApiSkill& skill, xmlNodePtr node);
     void parse_skill_requirements (ApiSkill& skill, xmlNodePtr node);
+    void parse_extra_skill_requirements (ApiSkill& skill, xmlNodePtr node);
     void parse_skill_attribs (ApiSkill& skill, xmlNodePtr node);
 
     void set_attribute (ApiAttrib& var, std::string const& str);

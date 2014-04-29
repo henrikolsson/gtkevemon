@@ -206,6 +206,10 @@ ApiSkillTree::parse_skills_row (ApiSkill& skill, xmlNodePtr node)
         && this->get_property(node, "name") == "requiredSkills")
       this->parse_skill_requirements(skill, node->children);
 
+    if (!xmlStrcmp(node->name, (xmlChar const*)"rowset")
+        && this->get_property(node, "name") == "skillBonusCollection")
+      this->parse_extra_skill_requirements(skill, node->children);
+
     if (!xmlStrcmp(node->name, (xmlChar const*)"requiredAttributes"))
       this->parse_skill_attribs(skill, node->children);
   }
@@ -225,6 +229,36 @@ ApiSkillTree::parse_skill_requirements (ApiSkill& skill, xmlNodePtr node)
         int type_id = this->get_property_int(node, "typeID");
         int level = this->get_property_int(node, "skillLevel");
         skill.deps.push_back(std::make_pair(type_id, level));
+      }
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+ApiSkillTree::parse_extra_skill_requirements (ApiSkill& skill, xmlNodePtr node)
+{
+  std::map<std::string,int> data;
+  for (; node != 0; node = node->next)
+  {
+    if (node->type == XML_ELEMENT_NODE)
+    {
+      if (!xmlStrcmp(node->name, (xmlChar const*)"row"))
+      {
+        std::string bonusType = this->get_property(node, "bonusType");
+        int value = this->get_property_int(node, "bonusValue");
+        data[bonusType] = value;
+        std::string suffix = bonusType.substr(bonusType.size() - 5, bonusType.size());
+        std::string basename = bonusType.substr(0, bonusType.size() - 5);
+        // check whether the other value was already inserted
+        if(data.count(bonusType + "Level") == 1 || data.count(basename) == 1) {
+          if(suffix == "Level") {
+            skill.deps.push_back(std::make_pair(data[basename], value));
+          } else {
+            skill.deps.push_back(std::make_pair(value, data[bonusType + "Level"]));
+          }
+        }
       }
     }
   }
