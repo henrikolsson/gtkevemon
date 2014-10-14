@@ -91,15 +91,12 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->skill_view.append_column("Level", this->skill_cols.level);
   this->skill_view.append_column("Points", this->skill_cols.points);
   this->skill_view.append_column("Max. Points", this->skill_cols.max_points);
-  this->skill_view.append_column("% of Max.", this->skill_cols.percent_of_max);
   this->skill_view.append_column("Pri.", this->skill_cols.primary);
   this->skill_view.append_column("Sec.", this->skill_cols.secondary);
   this->skill_view.get_column(0)->set_expand(true);
   this->skill_view.get_column(2)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
   this->skill_view.get_column(3)->get_first_cell_renderer()
-      ->set_property("xalign", 1.0f);
-  this->skill_view.get_column(4)->get_first_cell_renderer()
       ->set_property("xalign", 1.0f);
 
   //this->skill_view.set_grid_lines(Gtk::TREE_VIEW_GRID_LINES_BOTH);
@@ -291,7 +288,7 @@ GtkCharPage::update_charsheet_details (void)
 {
   ApiCharSheetPtr cs = this->character->cs;
   ApiSkillTreePtr tree = ApiSkillTree::request();
-  
+
   this->char_name_label.set_text("<b>"
       + this->character->get_char_name() + "</b>");
   this->char_name_label.set_use_markup(true);
@@ -338,8 +335,8 @@ GtkCharPage::update_charsheet_details (void)
     this->known_skills_label.set_text(Helpers::get_string_from_sizet
         (cs->skills.size()) + " known skills ("
         + Helpers::get_string_from_uint(cs->skills_at[5])
-        + " at V) of " + Helpers::get_string_from_int(tree->count_total_skills())
-        + " total");
+        + " at V)");
+        // "of " + Helpers::get_string_from_int(tree->count_total_skills()) + " total");
 
     this->attr_cha_label.set_text(Helpers::get_string_from_double
         (cs->total.cha, 2));
@@ -544,9 +541,10 @@ GtkCharPage::update_skill_list (void)
     (*siter)[this->skill_cols.skill] = 0;
     (*siter)[this->skill_cols.name] = name;
     (*siter)[this->skill_cols.icon] = ImageStore::skillicons[0];
-    SkillGroupInfo group_info(siter);
     iter_map.insert(std::make_pair(iter->first, SkillGroupInfo(siter)));
   }
+
+  /* Compute max points per skill group. */
   for (ApiSkillMap::iterator iter = tree->skills.begin();
        iter != tree->skills.end(); iter++)
   {
@@ -556,6 +554,7 @@ GtkCharPage::update_skill_list (void)
       iiter->second.max += ApiCharSheet::calc_dest_sp(4, iter->second.rank);
     }
   }
+
   /* Append all skills to the skill groups. */
   std::vector<ApiCharSheetSkill>& skills = this->character->cs->skills;
   for (unsigned int i = 0; i < skills.size(); ++i)
@@ -604,8 +603,6 @@ GtkCharPage::update_skill_list (void)
         = Helpers::get_dotted_str_from_int(skills[i].points);
     (*iter)[this->skill_cols.max_points]
         = Helpers::get_dotted_str_from_int(skills[i].points_max);
-    (*iter)[this->skill_cols.percent_of_max]
-        = Helpers::get_dotted_str_from_int(skills[i].points * 100.0 / skills[i].points_max) + "%";
 
     (*iter)[this->skill_cols.name] = skill_name;
     (*iter)[this->skill_cols.level] = ImageStore::skill_progress
@@ -617,32 +614,7 @@ GtkCharPage::update_skill_list (void)
     iiter->second.sp += skills[i].points;
     iiter->second.empty = false;
   }
-  
-  /* Add unknown skills */
-  ApiSkillMap& all_skills = tree->skills;
-  for (ApiSkillMap::iterator iter = all_skills.begin();
-      iter != all_skills.end(); iter++)
-  {
-    ApiSkill const& skill = iter->second;
-    if(!this->character->cs->is_skill_known(skill.id) && skill.published) {
-      std::string skill_name = "<span foreground=\"grey\">" + skill.name + " ("
-        + Helpers::get_string_from_int(skill.rank) + ")" + "</span>";
 
-      IterMapType::iterator iiter = iter_map.find(skill.group);
-      Gtk::TreeModel::iterator xiter = this->skill_store->append
-        (iiter->second.iter->children());
-          (*xiter)[this->skill_cols.id] = skill.id;
-          //          (*xiter)[this->skill_cols.skill] = &skills[i];
-          (*xiter)[this->skill_cols.points]
-            = Helpers::get_dotted_str_from_int(0);
-          (*xiter)[this->skill_cols.max_points]
-            = Helpers::get_dotted_str_from_int(ApiCharSheet::calc_dest_sp(4, skill.rank));
-          (*xiter)[this->skill_cols.name] = skill_name;
-          (*xiter)[this->skill_cols.primary] = ApiSkillTree::get_attrib_short_name(skill.primary);
-          (*xiter)[this->skill_cols.secondary] = ApiSkillTree::get_attrib_short_name(skill.secondary);
-
-    }
-  }
   /* Update the skillpoints for the groups. */
   for (IterMapType::iterator iter = iter_map.begin();
       iter != iter_map.end(); iter++)
@@ -659,25 +631,6 @@ GtkCharPage::update_skill_list (void)
 
     (*iter->second.iter)[this->skill_cols.max_points]
         = Helpers::get_dotted_str_from_int(iter->second.max);
-
-    int known_skill_count = 0;
-    int total_skill_count = 0;
-    int group_id = iter->first;
-    for (ApiSkillMap::iterator xiter = all_skills.begin();
-         xiter != all_skills.end(); xiter++)
-    {
-      ApiSkill const& skill = xiter->second;
-      if(skill.group == group_id && skill.published) {
-        if(this->character->cs->is_skill_known(xiter->first))
-          known_skill_count++;
-        total_skill_count++;
-      }
-    }
-
-    (*iter->second.iter)[this->skill_cols.primary] = Helpers::get_dotted_str_from_int(known_skill_count);
-    (*iter->second.iter)[this->skill_cols.secondary] = Helpers::get_dotted_str_from_int(total_skill_count);
-    (*iter->second.iter)[this->skill_cols.percent_of_max]
-        = Helpers::get_dotted_str_from_int(iter->second.sp * 100.0 / iter->second.max) + "%";
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)
@@ -801,7 +754,7 @@ GtkCharPage::api_info_changed (void)
         "Error: Skill with ID " + Helpers::get_string_from_int
         (this->character->training_info.skill_id) + " did not resolve!");
   }
-  
+
   /* Update the char sheet and training sheet info. */
   this->update_cached_duration();
   this->update_charsheet_details();

@@ -495,11 +495,11 @@ ApiCharSheet::debug_dump (void)
 /* ---------------------------------------------------------------- */
 
 bool
-ApiCharSheet::is_skill_known(int id)
+ApiCharSheet::is_skill_known (int id)
 {
-  for(size_t i = 0; i < skills.size(); i++)
+  for (size_t i = 0; i < skills.size(); i++)
   {
-    if(skills[i].id == id)
+    if (skills[i].id == id)
       return true;
   }
   return false;

@@ -97,7 +97,7 @@ class ApiSkillTree : public ApiBase
     void refresh (void);
     std::string get_filename (void) const;
 
-    int count_total_skills() const;
+    int count_total_skills (void) const;
     ApiSkill const* get_skill_for_id (int id) const;
     ApiSkill const* get_skill_for_name (std::string const& name) const;
     ApiSkillGroup const* get_group_for_id (int id) const;

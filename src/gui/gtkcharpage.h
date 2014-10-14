@@ -49,7 +49,6 @@ class GtkCharSkillsCols : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::ustring> points;
     Gtk::TreeModelColumn<Glib::ustring> max_points;
-    Gtk::TreeModelColumn<Glib::ustring> percent_of_max;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > level;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
     Gtk::TreeModelColumn<Glib::ustring> primary;
@@ -152,7 +151,6 @@ GtkCharSkillsCols::GtkCharSkillsCols (void)
   this->add(this->name);
   this->add(this->points);
   this->add(this->max_points);
-  this->add(this->percent_of_max);
   this->add(this->level);
   this->add(this->icon);
   this->add(this->primary);
