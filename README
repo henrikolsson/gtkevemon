@@ -10,9 +10,17 @@ STEP 1: BUILDING
 =====================================================================
 
 GtkEveMon comes in form of source code. You can take a look at the
-code, it's all located in the "src/" directory. In order to execute
-it, it needs to be build. It does not come with a configure script.
-So just execute the following command:
+code, it's all located in the "src/" directory. In order to execute it, 
+it needs to be build. You do have to install some required libraries 
+in order to build successfully. On Debian/Ubuntu, these are
+
+	build-essential
+	libxml++2.6-dev
+	libgtmm-2.4-dev
+	libssl-dev
+
+The source does not come with a configure script. So just execute the 
+following command:
 
 $ make
 
