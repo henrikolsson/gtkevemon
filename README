@@ -14,10 +14,9 @@ code, it's all located in the "src/" directory. In order to execute it,
 it needs to be build. You do have to install some required libraries 
 in order to build successfully. On Debian/Ubuntu, these are
 
-	build-essential
-	libxml++2.6-dev
-	libgtmm-2.4-dev
-	libssl-dev
+	libxml++ (development packages)
+	libgtkmm (development packages, at least version 2.4)
+	libssl (development packages)
 
 The source does not come with a configure script. So just execute the 
 following command:
