@@ -1,3 +1,6 @@
+GtkEveMon
+=========
+
 This is the README file for GtkEveMon. It covers:
 
 * Building GtkEveMon
@@ -21,11 +24,11 @@ in order to build successfully. On Debian/Ubuntu, these are
 The source does not come with a configure script. So just execute the 
 following command:
 
-$ make
+    $ make
 
 To build a debug version simple run
 
-$ make debug
+    $ make debug
 
 STEP 2: RUNNING
 =====================================================================
@@ -34,8 +37,8 @@ Note that you DO NOT NEED to install GtkEveMon in order to use it.
 If you don't want to install GtkEveMon, issue the following commands,
 relative to this README file:
 
-$ cd src
-$ ./gtkevemon
+    $ cd src
+    $ ./gtkevemon
 
 If you're going to install GtkEveMon (read below), just type
 "gtkevemon" anywhere in your system or make a nice shortcut in
@@ -48,7 +51,7 @@ OPTION: INSTALLING
 Make sure your current working directory is relative to this file.
 To install GtkEveMon execute the following command (as super user):
 
-# make install
+    # make install
 
 The files will be installed to "/usr/local/bin". If you want to change
 that, edit the Makefile.
@@ -64,6 +67,6 @@ OPTION: UNINSTALLING
 If you want to uninstall GtkEveMon, just type
 following command (as super user):
 
-# make uninstall
+    # make uninstall
 
 This will not remove your user data in your home directory.
