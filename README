@@ -12,21 +12,20 @@ This is the README file for GtkEveMon. It covers:
 STEP 1: BUILDING
 =====================================================================
 
-GtkEveMon comes in form of source code. You can take a look at the
-code, it's all located in the "src/" directory. In order to execute it, 
-it needs to be build. You do have to install some required libraries 
-in order to build successfully. On Debian/Ubuntu, these are
+GtkEveMon comes in form of source code, which is located in the "src/"
+directory. The source code needs to be built in order to execute it.
+The required libraries to build GtkEveMon (which can be installed
+using your distribution's package management) are:
 
-	libxml++ (development packages)
-	libgtkmm (development packages, at least version 2.4)
-	libssl (development packages)
+	libxml++ (with headers)
+	libgtkmm (with headers, at least version 2.4)
+	libssl (with headers)
 
-The source does not come with a configure script. So just execute the 
-following command:
+The source does not come with a configure script. Just execute:
 
     $ make
 
-To build a debug version simple run
+To build a debug version execute:
 
     $ make debug
 
@@ -34,15 +33,12 @@ STEP 2: RUNNING
 =====================================================================
 
 Note that you DO NOT NEED to install GtkEveMon in order to use it.
-If you don't want to install GtkEveMon, issue the following commands,
-relative to this README file:
+If you don't want to install GtkEveMon, just execute GtkEveMon with:
 
-    $ cd src
-    $ ./gtkevemon
+    $ ./src/gtkevemon
 
-If you're going to install GtkEveMon (read below), just type
-"gtkevemon" anywhere in your system or make a nice shortcut in
-your window manager yourself.
+Once you install GtkEveMon (read below), type "gtkevemon" anywhere 
+in your system or make a shortcut in your window manager.
 
 
 OPTION: INSTALLING
@@ -69,4 +65,4 @@ following command (as super user):
 
     # make uninstall
 
-This will not remove your user data in your home directory.
+This will not remove the data in your home directory.
