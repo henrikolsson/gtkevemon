@@ -29,8 +29,8 @@ NET_NAMESPACE_BEGIN
 class TCPSocket : public Socket
 {
   protected:
-    struct sockaddr_in remote;
-    struct sockaddr_in local;
+    struct sockaddr_storage remote;
+    struct sockaddr_storage local;
     std::size_t timeout;
 
   public:
@@ -73,7 +73,7 @@ class TCPSocket : public Socket
     /**
      * Same as the function above but it uses another host format.
      */
-    virtual void connect (in_addr_t host, int port);
+    void connect (struct addrinfo *addr);
 
     /**
      * The `set_connect_timeout' function allows to define a timeout in
