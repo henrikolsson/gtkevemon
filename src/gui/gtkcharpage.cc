@@ -51,7 +51,6 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   this->corp_label.set_alignment(Gtk::ALIGN_LEFT);
   this->balance_label.set_alignment(Gtk::ALIGN_LEFT);
   this->skill_points_label.set_alignment(Gtk::ALIGN_LEFT);
-  this->clone_warning_label.set_alignment(Gtk::ALIGN_LEFT);
   this->known_skills_label.set_alignment(Gtk::ALIGN_LEFT);
   this->attr_cha_label.set_alignment(Gtk::ALIGN_LEFT);
   this->attr_int_label.set_alignment(Gtk::ALIGN_LEFT);
@@ -142,10 +141,9 @@ GtkCharPage::GtkCharPage (CharacterPtr character)
   Gtk::HBox* char_buts_hbox = MK_HBOX;
   char_buts_hbox->pack_end(*char_buts_vbox, false, false, 0);
 
-  /* Character SP and clone warning box. */
+  /* Character SP */
   Gtk::HBox* char_skillpoints_box = MK_HBOX;
   char_skillpoints_box->pack_start(this->skill_points_label, false, false, 0);
-  char_skillpoints_box->pack_start(this->clone_warning_label, false, false, 0);
 
   info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::SHRINK, Gtk::SHRINK);
   info_table->attach(this->char_name_label, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
@@ -363,23 +361,6 @@ GtkCharPage::update_charsheet_details (void)
         skills_at_tt += "\n";
     }
 
-    /* Build clone information (tooltip). */
-    Glib::ustring clone_tt;
-    clone_tt = "<u><b>Character clone information</b></u>\nName: ";
-    clone_tt += cs->clone_name + "\nKeeps: ";
-    clone_tt += Helpers::get_dotted_str_from_uint(cs->clone_sp);
-    clone_tt += " SP";
-
-    if (this->character->char_base_sp > cs->clone_sp)
-    {
-      clone_tt += "\n\n<b>Warning:</b> Your clone is outdated!";
-      this->clone_warning_label.set_markup("<b>(outdated)</b>");
-    }
-    else
-    {
-      this->clone_warning_label.set_text("");
-    }
-
     /* Build detailed attribute information (tooltip). */
     Glib::ustring attr_cha_tt;
     attr_cha_tt = "<u><b>Attribute: Charisma</b></u>\nBase: ";
@@ -413,8 +394,6 @@ GtkCharPage::update_charsheet_details (void)
 
     /* Update some character sheet related skills. */
     this->known_skills_label.set_tooltip_markup(skills_at_tt);
-    this->skill_points_label.set_tooltip_markup(clone_tt);
-    this->clone_warning_label.set_tooltip_markup(clone_tt);
     this->attr_cha_label.set_tooltip_markup(attr_cha_tt);
     this->attr_int_label.set_tooltip_markup(attr_int_tt);
     this->attr_per_label.set_tooltip_markup(attr_per_tt);
