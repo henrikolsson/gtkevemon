@@ -140,8 +140,6 @@ ApiCharSheet::parse_result_tag (xmlNodePtr node)
     this->set_string_if_node_text(node, "gender", this->gender);
     this->set_string_if_node_text(node, "corporationName", this->corp);
     this->set_string_if_node_text(node, "balance", this->balance);
-    this->set_string_if_node_text(node, "cloneName", this->clone_name);
-    this->set_uint_if_node_text(node, "cloneSkillPoints", this->clone_sp);
 
     if (!xmlStrcmp(node->name, (xmlChar const*)"attributes"))
       this->parse_attribute_tag(node->children);

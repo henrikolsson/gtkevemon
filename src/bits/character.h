@@ -22,7 +22,6 @@
 #include "api/apiskillqueue.h"
 
 /* TODO
- * Emit signal if clone runs out of SP?
  * Move caching to this class? This enables to read API errors
  */
 
