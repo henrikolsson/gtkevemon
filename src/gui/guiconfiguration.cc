@@ -48,9 +48,6 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_show_unpublished_skills_cb = Gtk::manage
       (new GtkConfCheckButton("Show non-public skills in training planner",
       false, "planner.show_unpublished_skills"));
-  GtkConfCheckButton* misc_versioncheck_cb = Gtk::manage
-      (new GtkConfCheckButton("Notify about new SVN and data file versions",
-      false, "versionchecker.enabled"));
   GtkConfCheckButton* misc_updater_autocheck = Gtk::manage
       (new GtkConfCheckButton("Automatically check for updated data files",
       false, "updater.autocheck"));
@@ -62,7 +59,6 @@ GuiConfiguration::GuiConfiguration (void)
   misc_cb_box->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_trunc_long_corp_name_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_show_unpublished_skills_cb, false, false, 0);
-  misc_cb_box->pack_start(*misc_versioncheck_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_updater_autocheck, false, false, 0);
 
   Gtk::VBox* page_misc = MK_VBOX;
