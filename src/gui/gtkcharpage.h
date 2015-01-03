@@ -70,7 +70,6 @@ class GtkCharPage : public Gtk::VBox
     Gtk::Label corp_label;
     Gtk::Label balance_label;
     Gtk::Label skill_points_label;
-    Gtk::Label clone_warning_label;
     Gtk::Label known_skills_label;
     Gtk::Label attr_cha_label;
     Gtk::Label attr_int_label;
