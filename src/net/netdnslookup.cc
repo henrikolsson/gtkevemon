@@ -15,7 +15,7 @@
 
 NET_NAMESPACE_BEGIN
 
-in_addr_t
+struct addrinfo*
 DNSLookup::get_hostname (char const* dnsname)
 {
   struct addrinfo hints;
@@ -31,20 +31,12 @@ DNSLookup::get_hostname (char const* dnsname)
         + std::string(::gai_strerror(retval)));
   }
 
-  // FIXME
-  // why is this class even used?
-  /*in_addr_t result = ((struct sockaddr_storage*)res->ai_addr)->sin_addr.s_addr;
-  
-  ::freeaddrinfo(res);
-
-  return result;
-  */
-  return NULL;
+  return res;
 }
 
 /* ---------------------------------------------------------------- */
 
-in_addr_t
+struct addrinfo*
 DNSLookup::get_hostname (std::string const& dnsname)
 {
   return DNSLookup::get_hostname(dnsname.c_str());
