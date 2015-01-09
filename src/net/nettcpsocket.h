@@ -81,42 +81,6 @@ class TCPSocket : public Socket
      * fail if no connection has been established if the timeout expires.
      */
     void set_connect_timeout (std::size_t timeout_ms);
-
-    /**
-     * The `get_local_port' function returns the remote port.
-     */
-    int get_local_port (void) const;
-
-    /**
-     * The `get_remote_port' function returns the remote port.
-     */
-    int get_remote_port (void) const;
-
-    /**
-     * The `get_local_address' function returns the local address in the
-     * standard numbers-and-dots notation.
-     */
-    std::string get_local_address (void) const;
-
-    /**
-     * The `get_remote_address' function returns the remote address in the
-     * standard numbers-and-dots notation.
-     */
-    std::string get_remote_address (void) const;
-
-    /*
-     * The `get_full_local' function returns the local address in the
-     * standard numbers-and-dots notation, followed by a colon (":") and
-     * the local port.
-     */
-    std::string get_full_local (void) const;
-
-    /*
-     * The `get_full_remote' function returns the remote address in the
-     * standard numbers-and-dots notation, followed by a colon (":") and
-     * the remote port.
-     */
-    std::string get_full_remote (void) const;
 };
 
 NET_NAMESPACE_END
